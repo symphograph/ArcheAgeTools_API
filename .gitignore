@@ -1,6 +1,8 @@
-/includes/env.php
-/vendor/
-/logs/
+.idea
 composer.lock
 composer.phar
-.idea
+/vendor/
+/logs/
+/includes/env.php
+/public/img/avatars/
+/public/img/icons/
