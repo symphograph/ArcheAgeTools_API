@@ -1,0 +1,6 @@
+/includes/env.php
+/vendor/
+/logs/
+composer.lock
+composer.phar
+.idea
