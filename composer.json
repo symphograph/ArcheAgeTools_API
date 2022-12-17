@@ -1,0 +1,13 @@
+{
+  "require" : {
+    "ext-mysqli": "*",
+    "ext-iconv": "*",
+    "ext-gmp": "*",
+    "ext-curl": "*",
+    "ext-bcmath": "*",
+    "ext-json": "*",
+    "ext-pdo" : "*",
+    "symphograph/bicycle": "^1.0",
+    "ext-mbstring": "*"
+  }
+}
