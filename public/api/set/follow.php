@@ -9,10 +9,10 @@ or die(Api::errorMsg('Обновите страницу'));
 $master = intval($_POST['master'] ?? 0)
     or die(Api::errorMsg('master'));
 
-$server_id = intval($_POST['server_id'] ?? 0)
+$serverId = intval($_POST['serverId'] ?? 0)
 or die(Api::errorMsg('server'));
 
-$Server = Server::byId($server_id)
+$Server = Server::byId($serverId)
 or die(Api::errorMsg('server not found'));
 
 if(($_POST['isFollow'] ?? null) === true){

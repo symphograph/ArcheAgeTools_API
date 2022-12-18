@@ -7,8 +7,8 @@ use Symphograph\Bicycle\DB;
 
 class Price
 {
-    public int    $account_id  = 1;
-    public int    $item_id     = 0;
+    public int    $accountId  = 1;
+    public int    $itemId     = 0;
     public int    $price       = 0;
     public int    $serverGroup = 0;
     public string $datetime    = '';
@@ -21,27 +21,27 @@ class Price
 
     public function __set(string $name, $value): void{}
 
-    public static function bySolo(int $item_id): self|bool
+    public static function bySolo(int $itemId): self|bool
     {
         global $Account;
-        if($Price = self::byAccount($item_id, $Account->id, $Account->AccSets->server_group)){
+        if($Price = self::byAccount($itemId, $Account->id, $Account->AccSets->serverGroup)){
             $Price->method = 'bySolo';
             $Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Ваша цена';
             return $Price;
         }
         //return false;
-        return self::byToNPC($item_id);
+        return self::byToNPC($itemId);
     }
 
-    public static function byAccount(int $item_id, int $account_id, int $serverGroup): self|bool
+    public static function byAccount(int $itemId, int $accountId, int $serverGroup): self|bool
     {
         $qwe = qwe("
             select * from uacc_prices 
-            where account_id = :account_id 
-                and item_id = :item_id 
+            where accountId = :accountId 
+                and itemId = :itemId 
                 and serverGroup = :serverGroup",
-            ['account_id'  => $account_id,
-             'item_id'     => $item_id,
+            ['accountId'  => $accountId,
+             'itemId'     => $itemId,
              'serverGroup' => $serverGroup]
         );
         if (!$qwe || !$qwe->rowCount()){
@@ -52,22 +52,22 @@ class Price
         return $Price;
     }
 
-    public static function byToNPC(int $item_id): self|bool
+    public static function byToNPC(int $itemId): self|bool
     {
 
-        if(!in_array($item_id,Item::privateItems())){
+        if(!in_array($itemId,Item::privateItems())){
             return false;
         }
 
-        if(self::isCurrency($item_id)){
+        if(self::isCurrency($itemId)){
             return false;
         }
 
 
         //Можно ли продать NPC?
-        if($toNPC = self::toNPC($item_id)){
+        if($toNPC = self::toNPC($itemId)){
             $Price = new self();
-            $Price->account_id = 1;
+            $Price->accountId = 1;
             $Price->price = $toNPC;
             $Price->method = 'byToNPC';
             return $Price;
@@ -75,22 +75,22 @@ class Price
         return false;
     }
 
-    public static function byInput(int $account_id, int $item_id, int $serverGroup, int $price): self|bool
+    public static function byInput(int $accountId, int $itemId, int $serverGroup, int $price): self|bool
     {
         $Price = new self();
-        $Price->account_id = $account_id;
-        $Price->item_id = $item_id;
+        $Price->accountId = $accountId;
+        $Price->itemId = $itemId;
         $Price->serverGroup = $serverGroup;
         $Price->price = $price;
         return $Price;
     }
 
-    private static function toNPC(int $item_id): int|bool
+    private static function toNPC(int $itemId): int|bool
     {
         $qwe = qwe("
             select priceToNPC from items 
-            where item_id = :item_id and priceToNPC",
-            ['item_id'=>$item_id]
+            where id = :item_id and priceToNPC",
+            ['itemId'=>$itemId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -98,9 +98,9 @@ class Price
         return $qwe->fetchAll(PDO::FETCH_COLUMN)[0];
     }
 
-    public static function isCurrency(int $item_id): bool
+    public static function isCurrency(int $itemId): bool
     {
-        $qwe = qwe("select * from valutas where id = :item_id", ['item_id'=>$item_id]);
+        $qwe = qwe("select * from valutas where id = :itemId", ['item_id'=>$itemId]);
         return ($qwe && $qwe->rowCount());
     }
 
@@ -127,9 +127,9 @@ class Price
     public function putToDB(): bool
     {
         $params = [
-            'account_id'  => $this->account_id,
+            'accountId'  => $this->accountId,
             'serverGroup' => $this->serverGroup,
-            'item_id'     => $this->item_id,
+            'itemId'     => $this->itemId,
             'price'       => $this->price,
             'datetime'    => $this->datetime ?? date('Y-m-d H:i:s')
         ];

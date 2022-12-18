@@ -6,12 +6,12 @@ use PDO;
 
 class Mat
 {
-    public int $id;
-    public int|null $craft_id;
-    public int|null $result_item_id;
-    public int|null $grade;
+    public int  $id;
+    public ?int $craftId;
+    public ?int $resultItemId;
+    public ?int $grade;
     public int|float|null $need;
-    public Item|null $Item;
+    public ?Item          $Item;
 
     public function __set(string $name, $value): void{}
 
@@ -23,9 +23,16 @@ class Mat
     /**
      * @return array<self>|bool
      */
-    public static function getList(int $craft_id) : array|bool
+    public static function getList(int $craftId) : array|bool
     {
-        $qwe = qwe("select *, item_id id, mat_grade grade, mater_need need from craft_materials where craft_id = :craft_id",['craft_id' => $craft_id]);
+        $qwe = qwe("
+            select *, 
+                   itemId as id, 
+                   matGrade as grade 
+            from craftMaterials 
+            where craftId = :craftId",
+            ['craftId' => $craftId]
+        );
         if(!$qwe || !$qwe->rowCount()){
             return false;
         }

@@ -7,7 +7,7 @@ use Symphograph\Bicycle\DB;
 class Sess
 {
     public string   $id;
-    public int|null $account_id;
+    public int|null $accountId;
     public string   $token;
     public string   $first_ip;
     public string   $last_ip;
@@ -100,14 +100,14 @@ class Sess
         return bin2hex($token);
     }
 
-    public static function newSess(int $account_id): self|bool
+    public static function newSess(int $accountId): self|bool
     {
         $agent = get_browser();
 
         $Sess = new self();
         $Sess->id = self::newToken();
         $Sess->token = self::newToken();
-        $Sess->account_id = $account_id;
+        $Sess->accountId = $accountId;
         $Sess->first_ip = $_SERVER['REMOTE_ADDR'];
         $Sess->last_ip = $_SERVER['REMOTE_ADDR'];
         $Sess->platform = $agent->platform;
@@ -129,7 +129,7 @@ class Sess
     {
         $params = [
             'id'             => $this->id,
-            'account_id'     => $this->account_id,
+            'accountId'     => $this->accountId,
             'token'          => $this->token,
             'first_ip'       => $this->first_ip,
             'last_ip'        => $this->last_ip,

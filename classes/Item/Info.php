@@ -28,16 +28,16 @@ class Info
     private function getResults() : array
     {
         $qwe = qwe("
-        SELECT any_value(craft_materials.result_item_id) as result_item_id 
-        FROM craft_materials  
-        INNER JOIN items ON items.item_id = craft_materials.result_item_id
-        AND items.on_off
-        AND craft_materials.item_id = :item_id
-        INNER JOIN crafts c on craft_materials.craft_id = c.craft_id
-        AND c.on_off
-        GROUP BY c.result_item_id
+        SELECT any_value(craftMaterials.resultItemId) as resultItemId 
+        FROM craftMaterials  
+        INNER JOIN items ON items.id = craftMaterials.resultItemId
+        AND items.onOff
+        AND craftMaterials.itemId = :item_id
+        INNER JOIN crafts on craftMaterials.craftId = crafts.id
+        AND crafts.onOff
+        GROUP BY crafts.resultItemId
         ",
-            ['item_id' => $this->id]
+            ['itemId' => $this->id]
         );
         if(!$qwe or !$qwe->rowCount()){
             return [];

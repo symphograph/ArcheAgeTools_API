@@ -82,7 +82,7 @@ class MailruOldUser
         $newMailUser->name = $oldMuser->mailnick;
         $newMailUser->image = $oldMuser->avatar;
         $newMailUser->user_id = $newAccount->user_id;
-        $newMailUser->account_id = $newAccount->id;
+        $newMailUser->accountId = $newAccount->id;
 
         if(!$newMailUser->putToDB()){
             User::delete($newAccount->user_id);
@@ -92,7 +92,7 @@ class MailruOldUser
         $newAccount->AccSets->mode = $oldMuser->mode ?? 1;
         $newAccount->AccSets->publicNick = $oldMuser->user_nick ?? AccSettings::genNickName();
         $newAccount->AccSets->siol = boolval($oldMuser->siol ?? 0);
-        $newAccount->AccSets->server_id = $oldMuser->server_id ?? 9;
+        $newAccount->AccSets->serverId = $oldMuser->server_id ?? 9;
         $newAccount->AccSets->putToDB();
 
         $Prices = Price::getOldList($newAccount->AccSets->old_id);
@@ -100,7 +100,7 @@ class MailruOldUser
             return;
         }
         foreach ($Prices as $price){
-            $price->account_id = $newAccount->id;
+            $price->accountId = $newAccount->id;
             $price->putToDB();
         }
     }

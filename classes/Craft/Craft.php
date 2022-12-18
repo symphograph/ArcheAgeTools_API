@@ -10,27 +10,29 @@ class Craft
     /**
      * @var array<Mat>|null
      */
-    public array|null  $Mats;
-    public int|null    $result_item_id;
-    public int|float   $result_amount = 1;
-    public int|null    $dood_id;
-    public string|null $dood_name;
-    public int         $prof_id       = 25;
-    public int|null    $prof_need;
-    public Prof|null   $Prof;
+    public ?array    $Mats;
+    public ?int      $resultItemId;
+    public int|float $resultAmount = 1;
+    public ?int      $doodId;
+    public ?string   $doodName;
+    public int       $profId       = 25;
+    public ?int      $profNeed;
+    public ?Prof     $Prof;
 
     public function __set(string $name, $value): void{}
 
     public static function byId(int $id) : self|bool
     {
         $qwe = qwe("
-            select *, craft_id id 
+            select crafts.*, 
+                   doods.id as doodId,
+                   doods.name as doodName
             from crafts 
-            inner join items on items.item_id = crafts.result_item_id
-                and items.on_off
-                and crafts.on_off                     
-                and crafts.craft_id = :id
-            inner join doods on doods.dood_id = crafts.dood_id",
+            inner join items on items.id = crafts.resultItemId
+                and items.onOff
+                and crafts.onOff                     
+                and crafts.id = :id
+            inner join doods on doods.id = crafts.doodId",
             ['id' => $id]
         );
         if(!$qwe || !$qwe->rowCount()){
@@ -45,12 +47,14 @@ class Craft
 
     private function initMats(): void
     {
-        $this->Mats = Mat::getList($this->id);
+        if($Mats = Mat::getList($this->id)){
+            $this->Mats = $Mats;
+        }
     }
 
     private function initProf(): void
     {
-        $Prof = Prof::byNeed($this->prof_id, $this->prof_need);
+        $Prof = Prof::byNeed($this->profId, $this->profNeed);
         if($Prof){
             $this->Prof = $Prof;
         }
@@ -59,25 +63,27 @@ class Craft
     /**
      * @return array<self>|bool
      */
-    public static function getList(int $item_id) : array|bool
+    public static function getList(int $itemId) : array|bool
     {
-        $qwe = qwe("select *, craft_id id 
+        $qwe = qwe("select crafts.*, 
+                   doods.id as doodId,
+                   doods.name as doodName
             from crafts 
-            inner join items on items.item_id = crafts.result_item_id
-                and items.on_off
-                and crafts.on_off                   
-                and crafts.result_item_id = :item_id
-            inner join doods on doods.dood_id = crafts.dood_id",
-        ['item_id'=>$item_id]
+            inner join items on items.id = crafts.resultItemId
+                and items.onOff
+                and crafts.onOff                   
+                and crafts.resultItemId = :itemId
+            inner join doods on doods.id = crafts.doodId",
+        ['itemId'=>$itemId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
         }
         $Crafts = $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
+
         $List = [];
         foreach ($Crafts as $craft){
             $craft->initMats();
-            //var_dump($craft->prof_need);
             $craft->initProf();
             $List[] = $craft;
         }

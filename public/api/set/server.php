@@ -5,7 +5,7 @@ use User\Account;
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
 
-$Account->AccSets->server_id = intval($_POST['server'] ?? 0)
+$Account->AccSets->serverId = intval($_POST['server'] ?? 0)
 or die(Api::errorMsg('Ой!'));
 
 $Account->AccSets->putToDB()

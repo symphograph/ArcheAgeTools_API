@@ -7,7 +7,7 @@ class TeleUser
 {
     public int $id = 0;
     public int|null $user_id = 0;
-    public int|null $account_id;
+    public int|null $accountId;
     public string $first_name = '';
     public string $last_name = '';
     public string $username = '';
@@ -70,12 +70,12 @@ class TeleUser
         return $qwe->fetchObject(self::class);
     }
 
-    public static function byAccountId(int $account_id)
+    public static function byAccountId(int $accountId)
     {
         $qwe = qwe("
             select * from user_telegram 
-            where account_id = :account_id",
-            ['account_id'=> $account_id]
+            where accountId = :accountId",
+            ['accountId'=> $accountId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -87,7 +87,7 @@ class TeleUser
     {
         $params = [
             'id'         => $this->id,
-            'account_id' => $this->account_id,
+            'accountId' => $this->accountId,
             'user_id'    => $this->user_id,
             'first_name' => $this->first_name,
             'last_name'  => $this->last_name,

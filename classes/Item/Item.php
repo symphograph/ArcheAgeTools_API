@@ -3,21 +3,22 @@
 namespace Item;
 
 use PDO;
+use Symphograph\Bicycle\Helpers;
 
 class Item
 {
-    public int|null $id;
-    public string|null $name;
-    public bool $craftable = false;
-    public bool $personal = false;
-    public bool $isTradeNPC = false;
-    public int|null $valut_id;
-    public string|null $icon;
-    public int|null $grade;
-    public int|null $categ_id;
-    public Info|null $Info;
-    public Price|null $Price;
-    public Pricing|null $Pricing;
+    public ?int     $id;
+    public ?string  $name;
+    public bool     $craftable  = false;
+    public bool     $personal   = false;
+    public bool     $isTradeNPC = false;
+    public ?int     $currencyId;
+    public ?string  $icon;
+    public ?int     $grade;
+    public ?int     $categId;
+    public ?Info    $Info;
+    public ?Price   $Price;
+    public ?Pricing $Pricing;
 
     public function __set(string $name, $value): void{}
 
@@ -29,26 +30,22 @@ class Item
 
         if(empty($ItemIds)){
             $qwe = qwe("select *, 
-            item_id as id, 
-            item_name as name, 
-            if(basic_grade,basic_grade,1) as grade 
-            from items where on_off
+            if(basicGrade,basicGrade,1) as grade 
+            from items where onOff
             order by name, craftable desc, personal, grade"
             );
 
         }else
         {
-            if(!\MyHelpers::isArrayIntList($ItemIds)){
+            if(!Helpers::isArrayIntList($ItemIds)){
                 return false;
             }
 
             $ItemIds = '('.implode(',',$ItemIds).')';
             $qwe = qwe("select *, 
-            item_id as id, 
-            item_name as name, 
-            if(basic_grade,basic_grade,1) as grade 
-            from items where on_off
-                       and item_id in $ItemIds
+            if(basicGrade,basicGrade,1) as grade 
+            from items where onOff
+                       and id in $ItemIds
             order by name, craftable desc, personal, grade"
             );
         }
@@ -61,11 +58,9 @@ class Item
     public static function byId(int $id) : self|bool
     {
         $qwe = qwe("select *, 
-            item_id as id, 
-            item_name as name, 
-            if(basic_grade,basic_grade,1) as grade 
-            from items where on_off
-                       and item_id = :id",
+            if(basicGrade,basicGrade,1) as grade 
+            from items where onOff
+                       and id = :id",
         ['id' => $id]
         );
         if(!$qwe || !$qwe->rowCount()) {
@@ -82,7 +77,7 @@ class Item
     public function initPrice(): bool
     {
         global $Account;
-        $Price = Price::byAccount($Account->id, $this->id, $Account->AccSets->server_group);
+        $Price = Price::byAccount($Account->id, $this->id, $Account->AccSets->serverGroup);
         if($Price){
             $this->Price = $Price;
             return true;
@@ -106,19 +101,19 @@ class Item
 
 
         $qwe = qwe("
-            SELECT item_id FROM items 
+            SELECT id FROM items 
             WHERE 
             (
                 (
                     !isTradeNPC
                     AND ismat
                     AND !craftable
-                    AND on_off
+                    AND onOff
                     AND personal
                 )
-                OR item_id IN (SELECT valut_id FROM valutas)
+                OR id IN (SELECT id FROM valutas)
             )
-            AND item_id != 500
+            AND id != 500
 	    ");
         if(!$qwe or !$qwe->rowCount()){
             return [];

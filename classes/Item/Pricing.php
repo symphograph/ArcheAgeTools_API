@@ -4,26 +4,26 @@ namespace Item;
 
 class Pricing
 {
-    private int  $item_id;
-    private int  $categ_id;
-    public bool  $isTradeNPC;
-    public int   $priceFromNPC;
-    public int   $priceToNPC;
-    public int   $valut_id;
+    private int  $itemId;
+    private int  $categId;
     private bool $personal;
     private bool $craftable;
+    public int   $priceFromNPC;
+    public int   $priceToNPC;
+    public int   $currencyId;
+    public bool  $isTradeNPC;
     public bool  $isGoldable = false;
     public Price $Price;
 
     public function __set(string $name, $value): void{}
 
-    public static function byItemId(int $item_id): bool|self
+    public static function byItemId(int $itemId): bool|self
     {
         $qwe = qwe("
-            select item_id, categ_id, isTradeNPC, priceFromNPC, priceToNPC, valut_id, personal, craftable
+            select id as itemId, categId, isTradeNPC, priceFromNPC, priceToNPC, currencyId, personal, craftable
             from items 
-            where item_id = :item_id",
-            ['item_id' => $item_id]
+            where id = :itemId",
+            ['itemId' => $itemId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -41,12 +41,12 @@ class Pricing
 
     private function isGoldable() : bool
     {
-        if(in_array($this->categ_id,[133,171,122])){
+        if(in_array($this->categId,[133, 171, 122])){
             return false;
         }
 
         if ($this->isTradeNPC) {
-            if ($this->valut_id == 500)
+            if ($this->currencyId == 500)
                 return false;
 
             if ($this->personal)
@@ -62,7 +62,7 @@ class Pricing
 
     private function initPrice(): bool
     {
-        if($Price = Price::bySolo($this->item_id)){
+        if($Price = Price::bySolo($this->itemId)){
             $this->Price = $Price;
             return true;
         }

@@ -11,15 +11,11 @@ class Api
 
     public static function resultMsg(string|array $msg = 'Готово'): bool|string
     {
-        //global $User;
-        //LogAction::putToDb($User->id, $msg);
         return json_encode(['result'=>$msg],JSON_UNESCAPED_UNICODE);
     }
 
     public static function resultData(array|object $data, string|array $msg = 'Готово'): bool|string
     {
-        //global $User;
-        //LogAction::putToDb($User->id, $msg);
         return json_encode(['result'=>$msg,'data' => $data],JSON_UNESCAPED_UNICODE);
     }
 

@@ -7,21 +7,21 @@ use Symphograph\Bicycle\JsonDecoder;
 
 class MailruUser
 {
-    public int|null    $id;
-    public int|null    $user_id;
-    public int|null    $account_id;
-    public string|null $client_id;
-    public string|null $gender;
-    public string|null $name;
-    public string|null $nickname;
-    public string|null $first_name;
-    public string|null $last_name;
-    public string|null $locale;
-    public string|null $email;
-    public string|null $birthday;
-    public string|null $image;
-    public string|null $first_time;
-    public string|null $last_time;
+    public ?int    $id;
+    public ?int    $user_id;
+    public ?int    $accountId;
+    public ?string $client_id;
+    public ?string $gender;
+    public ?string $name;
+    public ?string $nickname;
+    public ?string $first_name;
+    public ?string $last_name;
+    public ?string $locale;
+    public ?string $email;
+    public ?string $birthday;
+    public ?string $image;
+    public ?string $first_time;
+    public ?string $last_time;
 
     public function __set(string $name, $value): void
     {
@@ -52,7 +52,7 @@ class MailruUser
 
     public static function byAccountId(int $id): self|bool
     {
-        $qwe = qwe("select * from user_mailru where account_id = :id", ['id'=>$id]);
+        $qwe = qwe("select * from user_mailru where accountId = :id", ['id'=>$id]);
         if(!$qwe || !$qwe->rowCount()){
             return false;
         }
@@ -84,7 +84,7 @@ class MailruUser
         $params =         [
             'id'         => $this->id ?? null,
             'user_id'    => $this->user_id,
-            'account_id' => $this->account_id,
+            'accountId' => $this->accountId,
             'gender'     => $this->gender ?? null,
             'name'       => $this->name ?? null,
             'nickname'   => $this->nickname ?? null,

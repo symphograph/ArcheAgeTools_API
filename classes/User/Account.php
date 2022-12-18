@@ -23,7 +23,7 @@ class Account
     public ?TeleUser    $TeleUser;
     public ?MailruUser  $MailruUser;
     public ?AccSettings $AccSets;
-    public ?Member $Member;
+    public ?Member      $Member;
 
     /*public function __set(string $name, $value): void
     {
@@ -67,7 +67,7 @@ class Account
             return false;
         }
 
-        if(!($Account = self::byId($Sess->account_id))){
+        if(!($Account = self::byId($Sess->accountId))){
             return false;
         }
         $Account->Sess = $Sess;
@@ -82,7 +82,7 @@ class Account
             return false;
         }
 
-        return self::byId($Sess->account_id, $withOAuthData);
+        return self::byId($Sess->accountId, $withOAuthData);
     }
 
     public static function byTelegram(int $tele_id): self|bool
@@ -91,7 +91,7 @@ class Account
             return false;
         }
 
-        if(!($Account = Account::byId($TeleUser->account_id))){
+        if(!($Account = Account::byId($TeleUser->accountId))){
             return false;
         }
         $Account->TeleUser = $TeleUser;
@@ -104,7 +104,7 @@ class Account
             return false;
         }
 
-        if(!($Account = Account::byId($MailruUser->account_id))){
+        if(!($Account = Account::byId($MailruUser->accountId))){
             return false;
         }
 
@@ -132,17 +132,17 @@ class Account
     /**
      * @return array<self>
      */
-    public static function getServerList(int $serverGroup, int $account_id): array
+    public static function getServerList(int $serverGroup, int $accountId): array
     {
        /*
         $qwe = qwe("
             select user_accounts.id from user_accounts
-                inner join uacc_settings us on user_accounts.id = us.account_id
+                inner join uacc_settings us on user_accounts.id = us.accountId
                  inner join servers on us.server_id = servers.id
                    and servers.`group` = :serverGroup
                                     LIMIT 100",
 
-            ['serverGroup'=>$serverGroup, 'account_id'=> $account_id]
+            ['serverGroup'=>$serverGroup, 'accountId'=> $accountId]
         );
        */
 
@@ -157,16 +157,16 @@ class Account
                         flwt.flws
                         from 
                         (
-                            select account_id, COUNT(*) as cnt, max(datetime) as lastTime 
+                            select accountId, COUNT(*) as cnt, max(datetime) as lastTime 
                             from uacc_prices
                             where serverGroup = :serverGroup
-                                and item_id not in ( $privateItemsStr )
-                            group by account_id
+                                and itemId not in ( $privateItemsStr )
+                            group by accountId
                             order by lastTime desc 
                         ) as tmp
-                        inner join user_accounts uAcc on uAcc.id = tmp.account_id
+                        inner join user_accounts uAcc on uAcc.id = tmp.accountId
                             and uAcc.authTypeId > 1
-                        left join uacc_follows uf on uf.master = uAcc.id and uf.follower = :account_id
+                        left join uacc_follows uf on uf.master = uAcc.id and uf.follower = :accountId
                         left join 
                             (
                                 select count(*) as flws, uf.follower, uf.master  
@@ -306,7 +306,7 @@ class Account
     {
         $TeleUser->auth_date = date('Y-m-d H:i:s', intval($TeleUser->auth_date));
         $TeleUser->user_id = $this->user_id;
-        $TeleUser->account_id = $this->id;
+        $TeleUser->accountId = $this->id;
         return $TeleUser->putToDB();
     }
 
@@ -314,7 +314,7 @@ class Account
     {
         $MailruUser->last_time = date('Y-m-d H:i:s');
         $MailruUser->user_id = $this->user_id;
-        $MailruUser->account_id = $this->id;
+        $MailruUser->accountId = $this->id;
         return $MailruUser->putToDB();
     }
 }

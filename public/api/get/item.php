@@ -12,7 +12,7 @@ die(Api::errorMsg('id'));
 
 $Item = Item::byId($id) or die(Api::errorMsg('Предмет не найден'));
 $Item->initInfo();
-$Item->Info->initCategory($Item->categ_id);
+$Item->Info->initCategory($Item->categId);
 $Item->initPrice();
 $Item->initPricing();
 echo Api::resultData($Item);

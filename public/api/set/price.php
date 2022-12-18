@@ -11,7 +11,7 @@ or die(Api::errorMsg('id'));
 $price = intval($_POST['price'] ?? 0)
 or die(Api::errorMsg('price'));
 
-$Price = \Item\Price::byInput($Account->id,$item_id,$Account->AccSets->server_group, $price);
+$Price = \Item\Price::byInput($Account->id,$item_id,$Account->AccSets->serverGroup, $price);
 $Price->putToDB() or die(Api::errorMsg('Ошибка при сохранении'));
 
 echo Api::resultMsg();

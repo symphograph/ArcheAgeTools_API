@@ -5,8 +5,8 @@ class Prof
     public int         $id;
     public string|null $name;
     public int|null    $lvl;
-    public int|null    $save_or;
-    public int|null    $save_time;
+    public int|null    $savesOr;
+    public int|null    $savesTime;
 
     public function __set(string $name, $value): void{}
 
@@ -14,8 +14,8 @@ class Prof
     {
 
         $qwe = qwe("select * from profs
-            inner join prof_lvls on id = :id
-            and :need between prof_lvls.min and prof_lvls.max
+            inner join profLvls on id = :id
+            and :need between profLvls.min and profLvls.max
             order by lvl desc limit 1
             ",
         ['id'=>$id, 'need'=>$need]
@@ -29,8 +29,8 @@ class Prof
     public static function byLvl(int $id, int $lvl = 1): self|bool
     {
         $qwe = qwe("select * from profs
-            inner join prof_lvls on id = :id
-            and prof_lvls.lvl = :lvl
+            inner join profLvls on id = :id
+            and profLvls.lvl = :lvl
             ",
             ['id'=>$id, 'lvl'=>$lvl]
         );

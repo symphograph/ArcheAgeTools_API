@@ -6,27 +6,27 @@ use Symphograph\Bicycle\DB;
 
 class AccSettings
 {
-    public int      $account_id   = 0;
-    public int      $server_id    = 9;
-    public int      $server_group = 2;
-    public string   $publicNick   = 'Никнейм';
-    public int      $grade        = 1;
-    public int      $mode         = 1;
-    public ?int $old_id;
-    public bool $siol = false;
+    public int $accountId  = 0;
+    public int $serverId    = 9;
+    public int $serverGroup = 2;
+    public string $publicNick  = 'Никнейм';
+    public int    $grade       = 1;
+    public int    $mode        = 1;
+    public ?int   $old_id;
+    public bool   $siol        = false;
 
     public function __set(string $name, $value): void
     {
     }
 
     //Get-----------------------------------------------------------
-    public static function byId(int $account_id): self|bool
+    public static function byId(int $accountId): self|bool
     {
-        if (!$account_id) return false;
+        if (!$accountId) return false;
 
-        $qwe = qwe("select * from uacc_settings where account_id = :id", ['id' => $account_id]);
+        $qwe = qwe("select * from uacc_settings where accountId = :id", ['id' => $accountId]);
         if (!$qwe || !$qwe->rowCount()) {
-            return self::getDefault($account_id);
+            return self::getDefault($accountId);
         }
 
         $AccSets = $qwe->fetchObject(self::class);
@@ -34,17 +34,17 @@ class AccSettings
         return $AccSets;
     }
 
-    public static function getDefault(int $account_id): self
+    public static function getDefault(int $accountId): self
     {
         $AccSets = new self();
-        $AccSets->account_id = $account_id;
+        $AccSets->accountId = $accountId;
         $AccSets->publicNick = self::genNickName();
         return $AccSets;
     }
 
-    public static function byOld(int $account_id): self|bool
+    public static function byOld(int $accountId): self|bool
     {
-        $Account = Account::byId($account_id, true);
+        $Account = Account::byId($accountId, true);
         if($Account->authTypeId !== 3){
             return false;
         }
@@ -87,8 +87,8 @@ class AccSettings
 
     public function initServerGroup(): void
     {
-        $Server = Server::byId($this->server_id);
-        $this->server_group = $Server->group ?? 2;
+        $Server = Server::byId($this->serverId);
+        $this->serverGroup = $Server->group ?? 2;
     }
 
 
@@ -96,12 +96,12 @@ class AccSettings
     public function putToDB(): bool
     {
         $params = [
-            'account_id' => $this->account_id,
-            'server_id'  => $this->server_id,
+            'accountId' => $this->accountId,
+            'serverId'  => $this->serverId,
             'publicNick' => $this->publicNick,
             'grade'      => $this->grade,
             'mode'       => $this->mode,
-            'siol' => intval($this->siol),
+            'siol'       => intval($this->siol),
             'old_id'     => $this->old_id ?? null
         ];
         return DB::replace('uacc_settings', $params);

@@ -7,7 +7,7 @@ use PDO;
 
 class Member
 {
-    public int $account_id;
+    public int $accountId;
     public bool $isFollow;
     public int $pricesCount;
     public int $followersCount;
@@ -36,31 +36,31 @@ class Member
     /**
      * @return array<self>
      */
-    public static function getList(int $account_id, int $serverGroup): array
+    public static function getList(int $accountId, int $serverGroup): array
     {
         $privateItemsStr = implode(',', Item::privateItems());
         $qwe = qwe("
             select
-            uAcc.id as account_id,
+            uAcc.id as accountId,
             pricesCount,
             lastPriceTime,
             if(uf.master > 0,1,0) as isFollow,
             if(flwt.flws, flwt.flws, 0) as followersCount
             from
             (
-                select account_id, COUNT(*) as pricesCount, max(datetime) as lastPriceTime
+                select accountId, COUNT(*) as pricesCount, max(datetime) as lastPriceTime
                 from uacc_prices
                 where serverGroup = :serverGroup1
-                  and item_id not in ( $privateItemsStr )
-                group by account_id
+                  and itemId not in ( $privateItemsStr )
+                group by accountId
                 order by lastPriceTime desc
             ) as tmp
             inner join user_accounts uAcc 
-                on uAcc.id = tmp.account_id
+                on uAcc.id = tmp.accountId
                 and uAcc.authTypeId > 1
             left join uacc_follows uf
                 on uf.master = uAcc.id
-                and uf.follower = :account_id
+                and uf.follower = :accountId
                 and uf.serverGroup = :serverGroup2
             left join
             (
@@ -80,7 +80,7 @@ class Member
                      lastPriceTime desc
             LIMIT 100
         ", ['serverGroup1' => $serverGroup,
-            'account_id'   => $account_id,
+            'accountId'   => $accountId,
             'serverGroup2' => $serverGroup,
             'serverGroup3' => $serverGroup]
         );
