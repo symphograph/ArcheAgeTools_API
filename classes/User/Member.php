@@ -8,29 +8,42 @@ use PDO;
 class Member
 {
     public int $accountId;
-    public bool $isFollow;
-    public int $pricesCount;
-    public int $followersCount;
+    public ?bool $isFollow;
+    public ?int $pricesCount;
+    public ?int $followersCount;
 
     /**
      * @var array<int>
      */
-    public array $followMasters;
+    private array $followMasters = [];
 
     public function __set(string $name, $value): void
     {
     }
 
+    public static function byId(int $accountId)
+    {
+        $member = new self();
+        $member->accountId = $accountId;
+        $member->initFollowMasters();
+        return $member;
+    }
+
     /**
      * @return array<int>
      */
-    public static function getFollowMasters(int $follower): array
+    public function getFollowMasters(): array
     {
-        $qwe = qwe("select master from uacc_follows where follower = :follower");
+        return $this->followMasters;
+    }
+
+    private function initFollowMasters(): void
+    {
+        $qwe = qwe("select master from uacc_follows where follower = :follower",['follower'=>$this->accountId]);
         if(!$qwe || !$qwe->rowCount()){
-            return [];
+            return;
         }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN);
+        $this->followMasters = $qwe->fetchAll(PDO::FETCH_COLUMN);
     }
 
     /**

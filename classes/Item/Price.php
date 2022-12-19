@@ -33,6 +33,18 @@ class Price
         return self::byToNPC($itemId);
     }
 
+    public static function byFriends(int $itemId) : self|bool
+    {
+        global $Account;
+        $follows = $Account->Member->getFollowMasters();
+        if(empty($follows)){
+            return self::bySolo($itemId);
+        }
+
+
+
+    }
+
     public static function byAccount(int $itemId, int $accountId, int $serverGroup): self|bool
     {
         $qwe = qwe("

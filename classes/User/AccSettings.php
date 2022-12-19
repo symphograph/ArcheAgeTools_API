@@ -44,7 +44,9 @@ class AccSettings
 
     public static function byOld(int $accountId): self|bool
     {
-        $Account = Account::byId($accountId, true);
+        $Account = Account::byId($accountId);
+        $Account->initOAuthUserData();
+
         if($Account->authTypeId !== 3){
             return false;
         }

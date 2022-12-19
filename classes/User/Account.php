@@ -31,7 +31,7 @@ class Account
 */
 
     //Get------------------------------------------------------------------------------------
-    public static function byId(int $id, bool $withOAuthData = false): self|bool
+    public static function byId(int $id): self|bool
     {
         $qwe = qwe("select * from user_accounts where id = :id", ['id' => $id]);
         if (!$qwe || !$qwe->rowCount()) {
@@ -39,21 +39,13 @@ class Account
         }
         $Account = $qwe->fetchObject(self::class);
 
-        if($Account->authTypeId > 1){
-            if (!$Account->initOAuthUserData()) {
-                return false;
-            }
-            if(!$withOAuthData){
-                unset($Account->TeleUser, $Account->MailruUser);
-            }
-        }else{
+        if($Account->authTypeId === 1){
             $Account->avatar = '/img/avatars/init_ava.png';
             $Account->nickName = 'Не авторизован';
         }
         if (!$Account->initSettings()) {
             return false;
         }
-
         return $Account;
     }
 
@@ -74,7 +66,7 @@ class Account
         return $Account;
     }
 
-    public static function byToken(string $token, bool $withOAuthData = false): self|bool
+    public static function byToken(string $token): self|bool
     {
         if(empty($token))
             return false;
@@ -82,7 +74,7 @@ class Account
             return false;
         }
 
-        return self::byId($Sess->accountId, $withOAuthData);
+        return self::byId($Sess->accountId);
     }
 
     public static function byTelegram(int $tele_id): self|bool
@@ -202,7 +194,7 @@ class Account
         return $List;
     }
 
-    private function initOAuthUserData(): bool
+    public function initOAuthUserData(): bool
     {
         if($this->authTypeId === 2){
             return self::initTeleUser();
@@ -245,6 +237,14 @@ class Account
             return false;
         }
         $this->AccSets = $AccSets;
+        return true;
+    }
+
+    public function initMember(): bool{
+        if(!($member = Member::byId($this->id))){
+            return false;
+        }
+        $this->Member = $member;
         return true;
     }
 

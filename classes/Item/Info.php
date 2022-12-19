@@ -32,7 +32,7 @@ class Info
         FROM craftMaterials  
         INNER JOIN items ON items.id = craftMaterials.resultItemId
         AND items.onOff
-        AND craftMaterials.itemId = :item_id
+        AND craftMaterials.itemId = :itemId
         INNER JOIN crafts on craftMaterials.craftId = crafts.id
         AND crafts.onOff
         GROUP BY crafts.resultItemId

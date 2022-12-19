@@ -32,7 +32,7 @@ class Craft
                 and items.onOff
                 and crafts.onOff                     
                 and crafts.id = :id
-            inner join doods on doods.id = crafts.doodId",
+            left join doods on doods.id = crafts.doodId",
             ['id' => $id]
         );
         if(!$qwe || !$qwe->rowCount()){
@@ -73,7 +73,7 @@ class Craft
                 and items.onOff
                 and crafts.onOff                   
                 and crafts.resultItemId = :itemId
-            inner join doods on doods.id = crafts.doodId",
+            left join doods on doods.id = crafts.doodId",
         ['itemId'=>$itemId]
         );
         if(!$qwe || !$qwe->rowCount()){
