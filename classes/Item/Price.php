@@ -4,6 +4,7 @@ namespace Item;
 
 use PDO;
 use Symphograph\Bicycle\DB;
+use User\Account;
 
 class Price
 {
@@ -16,33 +17,146 @@ class Price
     public string $label = 'Цена не найдена';
 
     private const methods = [
-        'bySolo', 'byAccount', 'byToNPC'
+        'bySolo', 'byAccount', 'byToNPC', 'byFriends', 'byWellKnown', 'byAny'
     ];
 
+
     public function __set(string $name, $value): void{}
+
+    public static function getPrice(int $itemId, int $mode): self|bool
+    {
+        return match ($mode) {
+            1 => self::byMode1($itemId),
+            2 => self::byMode2($itemId),
+            3 => self::byMode3($itemId),
+            default => false
+        };
+    }
+
+    private static function byMode1(int $itemId): self|bool
+    {
+        if(in_array($itemId,Item::privateItems())){
+            if($Price = self::bySolo($itemId)){
+                return $Price;
+            }
+        }
+
+        if($Price = self::byFriends($itemId)){
+            return $Price;
+        }
+
+        if($Price = self::byWellKnown($itemId)){
+            return $Price;
+        }
+
+        if($Price = self::byAny($itemId)){
+            return $Price;
+        }
+        return false;
+    }
+
+    private static function byMode2(int $itemId): self|bool
+    {
+        if(in_array($itemId,Item::privateItems())){
+            if($Price = self::bySolo($itemId)){
+                return $Price;
+            }
+        }
+        return self::byFriends($itemId);
+    }
+
+    private static function byMode3(int $itemId): self|bool
+    {
+        return self::bySolo($itemId);
+    }
+
+    private static function byAny(int $itemId)
+    {
+        global $Account;
+        $qwe = qwe("select * from uacc_prices
+            where itemId = :itemId
+            and serverGroup = :serverGroup
+            order by datetime desc 
+            limit 1",
+        ['itemId'=>$itemId, 'serverGroup'=> $Account->AccSets->serverGroup]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return false;
+        }
+        $Price = $qwe->fetchObject(self::class);
+        $Price->method = 'byAny';
+        return $Price;
+    }
 
     public static function bySolo(int $itemId): self|bool
     {
         global $Account;
         if($Price = self::byAccount($itemId, $Account->id, $Account->AccSets->serverGroup)){
             $Price->method = 'bySolo';
-            $Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Ваша цена';
+            //$Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Ваша цена';
             return $Price;
         }
         //return false;
         return self::byToNPC($itemId);
     }
 
-    public static function byFriends(int $itemId) : self|bool
+    private static function byFriends(int $itemId) : self|bool
     {
         global $Account;
-        $follows = $Account->Member->getFollowMasters();
-        if(empty($follows)){
+        $members = $Account->Member->getFollowMasters();
+        if(empty($members)){
             return self::bySolo($itemId);
         }
+        $members[] = $Account->id;
 
+        $Price = self::byMemberList($itemId, $Account->AccSets->serverGroup, $members);
+        if(!$Price){
+            return false;
+        }
+        $Price->method = 'byFriends';
+        //$Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Цена друга';
 
+        if($Price->accountId === $Account->id){
+            $Price->method = 'bySolo';
+            //$Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Ваша цена';
+        }
+        return $Price;
+    }
 
+    private static function byWellKnown(int $itemId)
+    {
+        global $env, $Account;
+        $serverGroup = $Account->AccSets->serverGroup;
+
+        $adminAccount = Account::byId($env->adminAccountId);
+        $adminAccount->AccSets->serverGroup = $serverGroup;
+        $adminAccount->initMember();
+        $members = $adminAccount->Member->getFollowMasters();
+        $Price = self::byMemberList($itemId, $serverGroup, $members);
+        if(!$Price){
+            return false;
+        }
+        $Price->method = 'byWellKnown';
+        return $Price;
+    }
+
+    private static function byMemberList(int $itemId, int $serverGroup, array $members)
+    {
+        $stringMembers = implode(',', $members);
+        $qwe = qwe("
+            SELECT * 
+            FROM uacc_prices
+            WHERE uacc_prices.accountId in ( $stringMembers )
+            AND itemId = :itemId
+            AND serverGroup = :serverGroup
+            ORDER BY datetime DESC 
+            LIMIT 1",
+            ['itemId'=>$itemId, 'serverGroup'=>$serverGroup]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return false;
+        }
+        return $qwe->fetchObject(self::class);
     }
 
     public static function byAccount(int $itemId, int $accountId, int $serverGroup): self|bool
@@ -64,7 +178,7 @@ class Price
         return $Price;
     }
 
-    public static function byToNPC(int $itemId): self|bool
+    private static function byToNPC(int $itemId): self|bool
     {
 
         if(!in_array($itemId,Item::privateItems())){
@@ -108,6 +222,11 @@ class Price
             return false;
         }
         return $qwe->fetchAll(PDO::FETCH_COLUMN)[0];
+    }
+
+    public function initLabel(): void
+    {
+        $this->label = PriceEnum::label($this);
     }
 
     public static function isCurrency(int $itemId): bool

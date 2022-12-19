@@ -20,8 +20,18 @@ use User\MailruOldUser;
 <?php
 //printr($env);
 //die('ttt');
-$List = \User\Member::getList(938,2);
-printr($List);
+$Account = \User\Account::bySess();
+$Account->initMember();
+$List = Item::searchList();
+foreach ($List as $item){
+    $Price = \Item\Price::getPrice($item->id,1);
+    if(!$Price) continue;
+    $Price->initLabel();
+    echo $item->name . '<br>';
+    printr($Price);
+    echo '<hr>';
+}
+//printr($List);
 //MailruOldUser::importOldMusers();
 //Test::pricingByItemId();
 /*

@@ -77,7 +77,7 @@ class Item
     public function initPrice(): bool
     {
         global $Account;
-        $Price = Price::byAccount($Account->id, $this->id, $Account->AccSets->serverGroup);
+        $Price = Price::getPrice($this->id, $Account->AccSets->mode);
         if($Price){
             $this->Price = $Price;
             return true;

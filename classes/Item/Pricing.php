@@ -60,13 +60,15 @@ class Pricing
         return true;
     }
 
-    private function initPrice(): bool
+    private function initPrice(): void
     {
-        if($Price = Price::bySolo($this->itemId)){
-            $this->Price = $Price;
-            return true;
+        global $Account;
+        $Price = Price::getPrice($this->itemId, $Account->AccSets->mode);
+        if(!$Price){
+            $this->Price = new Price();
+            return;
         }
-        $this->Price = new Price();
-        return true;
+        $Price->initLabel();
+        $this->Price = $Price;
     }
 }

@@ -241,7 +241,7 @@ class Account
     }
 
     public function initMember(): bool{
-        if(!($member = Member::byId($this->id))){
+        if(!($member = Member::byId($this->id, $this->AccSets->serverGroup))){
             return false;
         }
         $this->Member = $member;

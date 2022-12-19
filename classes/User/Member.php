@@ -21,11 +21,11 @@ class Member
     {
     }
 
-    public static function byId(int $accountId)
+    public static function byId(int $accountId, int $serverGroup)
     {
         $member = new self();
         $member->accountId = $accountId;
-        $member->initFollowMasters();
+        $member->initFollowMasters($serverGroup);
         return $member;
     }
 
@@ -37,9 +37,13 @@ class Member
         return $this->followMasters;
     }
 
-    private function initFollowMasters(): void
+    private function initFollowMasters(int $serverGroup): void
     {
-        $qwe = qwe("select master from uacc_follows where follower = :follower",['follower'=>$this->accountId]);
+        $qwe = qwe("
+            select master from uacc_follows 
+              where follower = :follower and serverGroup = :serverGroup",
+            ['follower' => $this->accountId, 'serverGroup' => $serverGroup]
+        );
         if(!$qwe || !$qwe->rowCount()){
             return;
         }
