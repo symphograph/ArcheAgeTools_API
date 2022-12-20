@@ -6,14 +6,15 @@ use Symphograph\Bicycle\DB;
 
 class AccSettings
 {
-    public int $accountId  = 0;
-    public int $serverId    = 9;
-    public int $serverGroup = 2;
+    public int    $accountId   = 0;
+    public int    $serverId    = 9;
+    public int    $serverGroup = 2;
     public string $publicNick  = 'Никнейм';
     public int    $grade       = 1;
     public int    $mode        = 1;
     public ?int   $old_id;
     public bool   $siol        = false;
+    public ?array  $Profs;
 
     public function __set(string $name, $value): void
     {
@@ -91,6 +92,14 @@ class AccSettings
     {
         $Server = Server::byId($this->serverId);
         $this->serverGroup = $Server->group ?? 2;
+    }
+
+    public function initProfs(): void
+    {
+        $profs = Prof::getAccountProfs($this->accountId);
+        if($profs){
+            $this->Profs = $profs;
+        }
     }
 
 

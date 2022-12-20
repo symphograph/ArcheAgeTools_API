@@ -2,7 +2,8 @@
 
 namespace Craft;
 
-use PDO, Prof;
+use PDO;
+use User\Prof;
 
 class Craft
 {

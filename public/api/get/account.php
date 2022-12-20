@@ -6,4 +6,5 @@ $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('badToken'));
 $Account->initOAuthUserData();
 $Account->initMember();
+$Account->AccSets->initProfs();
 echo Api::resultData(['curAccount'=>$Account]);

@@ -189,6 +189,7 @@ class Account
             if(!($account = Account::byId($account->id))){
                 continue;
             }
+            $account->initOAuthUserData();
             $List[] = $account;
         }
         return $List;

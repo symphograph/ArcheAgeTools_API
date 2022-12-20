@@ -1,0 +1,98 @@
+<?php
+
+namespace User;
+use PDO;
+
+class Prof
+{
+    public int     $id;
+    public ?string $name;
+    public ?int    $lvl;
+    public ?int    $laborBonus;
+    public ?int    $timeBonus;
+
+    public function __set(string $name, $value): void
+    {
+    }
+
+    public static function byNeed(int $id, int $need = 0): self|bool
+    {
+
+        $qwe = qwe("select * from profs
+            inner join profLvls on id = :id
+            and :need between profLvls.min and profLvls.max
+            order by lvl desc limit 1
+            ",
+            ['id' => $id, 'need' => $need]
+        );
+        if (!$qwe || !$qwe->rowCount()) {
+            return false;
+        }
+        return $qwe->fetchObject(self::class);
+    }
+
+    public static function byLvl(int $id, int $lvl = 1): self|bool
+    {
+        $qwe = qwe("select * from profs
+            inner join profLvls on id = :id
+            and profLvls.lvl = :lvl
+            ",
+            ['id' => $id, 'lvl' => $lvl]
+        );
+        if (!$qwe || $qwe->rowCount()) {
+            return false;
+        }
+        return $qwe->fetchObject(self::class);
+    }
+
+    /**
+     * @return array<self>|bool
+     */
+    public static function getAccountProfs(int $accountId): array|bool
+    {
+        $qwe = qwe("
+            select * from
+             (
+                 select profs.*,
+                        if(up.lvl, up.lvl, 1) as lvl
+                 from profs
+                   left join uacc_profs up
+                     on profs.id = up.profId
+                         and up.accountId = :accountId
+                   where profs.used
+             ) as tmp
+            inner join profLvls pL 
+                on tmp.lvl = pL.lvl
+            ", ['accountId' => $accountId]
+        );
+        if (!$qwe || !$qwe->rowCount()) {
+            return false;
+        }
+        return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
+    }
+
+    /**
+     * @return array<self>|bool
+     */
+    public static function getList(): array|bool
+    {
+        $qwe = qwe("select * from profs where used");
+        if (!$qwe || !$qwe->rowCount()) {
+            return false;
+        }
+        return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
+    }
+
+    public static function saveLvl(int $accountId, int $profId, int $lvl): bool
+    {
+        $qwe = qwe("
+        replace into uacc_profs 
+            (accountId, profId, lvl) 
+        VALUES 
+            (:accountId, :profId, :lvl)",
+        ['accountId'=>$accountId, 'profId'=>$profId, 'lvl'=>$lvl]
+        );
+        return boolval($qwe);
+    }
+
+}
