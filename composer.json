@@ -8,6 +8,7 @@
     "ext-json": "*",
     "ext-pdo" : "*",
     "symphograph/bicycle": "^1.0",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "ext-exif": "*"
   }
 }

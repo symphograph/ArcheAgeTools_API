@@ -18,35 +18,9 @@ use User\MailruOldUser;
 </head>
 <body style="color: white; background-color: #262525">
 <?php
-//printr($env);
-//die('ttt');
 $Account = \User\Account::bySess();
-$Account->initMember();
-$List = Item::searchList();
-foreach ($List as $item){
-    $Price = \Item\Price::getPrice($item->id,1);
-    if(!$Price) continue;
-    $Price->initLabel();
-    echo $item->name . '<br>';
-    printr($Price);
-    echo '<hr>';
-}
-//printr($List);
-//MailruOldUser::importOldMusers();
-//Test::pricingByItemId();
-/*
-$Account = \User\Account::bySess();
-$List = Item::searchList() or die(Api::errorMsg('pricingByItemId err'));
-$i = 0;
-foreach ($List as $item){
-    $i++;
-    if ($Price = \Item\Price::bySolo($item->id)) {
-        //echo "<br>item_id: $item->id. err";
-        printr($Price);
-    }
-    if($i > 10000) break;
-}
-*/
+$Account->initOAuthUserData();
+\User\Avatar::byExternalUrl($Account->externalAvaUrl);
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';
 ?>
 </body>

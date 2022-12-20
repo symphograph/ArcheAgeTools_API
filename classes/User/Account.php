@@ -16,14 +16,16 @@ class Account
     public int     $authTypeId;
     public ?string $created;
 
-    public ?string      $nickName;
-    public ?string      $avatar;
-    public ?string      $label;
+    public ?string $nickName;
+    public ?string $externalAvaUrl;
+    public ?string $avaFileName;
+    public ?string $label;
     public ?Sess        $Sess;
     public ?TeleUser    $TeleUser;
     public ?MailruUser  $MailruUser;
     public ?AccSettings $AccSets;
     public ?Member      $Member;
+    public ?Avatar $Avatar;
 
     /*public function __set(string $name, $value): void
     {
@@ -40,7 +42,7 @@ class Account
         $Account = $qwe->fetchObject(self::class);
 
         if($Account->authTypeId === 1){
-            $Account->avatar = '/img/avatars/init_ava.png';
+            $Account->externalAvaUrl = '/img/avatars/init_ava.png';
             $Account->nickName = 'Не авторизован';
         }
         if (!$Account->initSettings()) {
@@ -190,6 +192,7 @@ class Account
                 continue;
             }
             $account->initOAuthUserData();
+            $account->initAvatar();
             $List[] = $account;
         }
         return $List;
@@ -212,7 +215,7 @@ class Account
             return false;
         }
         $this->TeleUser = $TeleUser;
-        $this->avatar = $TeleUser->photo_url;
+        $this->externalAvaUrl = $TeleUser->photo_url;
         $this->label = 'Телеграм';
         $this->nickName = ($TeleUser->first_name ?? '') . ' ' . ($TeleUser->last_name ?? '');
         $this->nickName = trim($this->nickName);
@@ -225,11 +228,17 @@ class Account
             return false;
         }
         $this->MailruUser = $MailruUser;
-        $this->avatar = $MailruUser->image;
+        $this->externalAvaUrl = $MailruUser->image;
         $this->label = 'mail.ru';
         $this->nickName = $MailruUser->getNickName();
         return true;
 
+    }
+
+    private function unsetOAuthUserData(): void
+    {
+        unset($this->MailruUser);
+        unset($this->TeleUser);
     }
 
     private function initSettings(): bool
@@ -247,6 +256,28 @@ class Account
         }
         $this->Member = $member;
         return true;
+    }
+
+    public function initAvatar(): void
+    {
+        $Avatar = false;
+        if(empty($this->avaFileName)){
+            self::initOAuthUserData();
+            $Avatar = Avatar::byExternalUrl($this->externalAvaUrl);
+            if($Avatar){
+                $this->avaFileName = $Avatar->fileName;
+                self::putToDB();
+            }
+            self::unsetOAuthUserData();
+        }
+
+        if(!$Avatar){
+            $Avatar = Avatar::byAvaFileName($this->avaFileName);
+        }
+        if(!$Avatar){
+            $Avatar = new Avatar();
+        }
+        $this->Avatar = $Avatar;
     }
 
 
@@ -275,10 +306,11 @@ class Account
     private function putToDB(): bool
     {
         $params = [
-            'id' => $this->id,
-            'user_id' => $this->user_id,
+            'id'         => $this->id,
+            'user_id'    => $this->user_id,
             'authTypeId' => $this->authTypeId,
-            'created' => $this->created
+            'created'    => $this->created,
+            'avaFileName'    => $this->avaFileName ?? null
         ];
         if(!DB::replace('user_accounts', $params)){
             return false;

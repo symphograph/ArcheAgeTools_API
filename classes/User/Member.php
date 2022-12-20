@@ -3,6 +3,7 @@
 namespace User;
 
 use Item\Item;
+use Item\Price;
 use PDO;
 
 class Member
@@ -16,6 +17,7 @@ class Member
      * @var array<int>
      */
     private array $followMasters = [];
+    public ?Item $LastPricedItem;
 
     public function __set(string $name, $value): void
     {
@@ -129,6 +131,17 @@ class Member
             ['follower' => $follower, 'master' => $master, 'serverGroup'=> $serverGroup]
         );
         return boolval($qwe);
+    }
+
+    public function initLastPricedItem(int $serverGroup): void
+    {
+        $Price = Price::getLastMemberPrice($this->accountId, $serverGroup);
+        if(!$Price){
+            return;
+        }
+        $Item = Item::byId($Price->itemId);
+        $Item->Price = $Price;
+        $this->LastPricedItem = $Item;
     }
 
 }

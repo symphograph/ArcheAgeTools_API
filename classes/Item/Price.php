@@ -211,6 +211,26 @@ class Price
         return $Price;
     }
 
+    public static function getLastMemberPrice(int $accountId, int $serverGroup): self|false
+    {
+        $privateItems = Item::privateItems();
+        $privateItemsStr = '(' . implode(',', $privateItems) . ')';
+        $qwe = qwe("            select * from uacc_prices 
+             where accountId = :accountId
+             and serverGroup = :serverGroup
+             and itemId NOT IN " . $privateItemsStr . "
+             order by datetime desc 
+             limit 1",
+            ['accountId'=> $accountId, 'serverGroup'=> $serverGroup]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return false;
+        }
+        $Price = $qwe->fetchObject(self::class);
+        unset($Price->method, $Price->label);
+        return $Price;
+    }
+
     private static function toNPC(int $itemId): int|bool
     {
         $qwe = qwe("
