@@ -6,3 +6,4 @@ composer.phar
 /includes/env.php
 /public/img/avatars/
 /public/img/icons/
+/uploadtmp/
