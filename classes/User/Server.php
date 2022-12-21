@@ -44,4 +44,12 @@ class Server
         }
         return $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
     }
+
+    public static function getGroup(int $serverId): false|int
+    {
+       if(!($Server = Server::byId($serverId))){
+           return false;
+       }
+       return $Server->group;
+    }
 }

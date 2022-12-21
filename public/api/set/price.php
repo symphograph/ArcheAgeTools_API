@@ -5,10 +5,11 @@ use User\Account;
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
 
-$item_id = intval($_POST['item_id'] ?? 0)
+$item_id = intval($_POST['itemId'] ?? 0)
 or die(Api::errorMsg('id'));
 
-$price = intval($_POST['price'] ?? 0)
+$price = preg_replace("/[^0-9]/", '', $_POST['price'] ?? 0);
+$price = intval($price)
 or die(Api::errorMsg('price'));
 
 $Price = \Item\Price::byInput($Account->id,$item_id,$Account->AccSets->serverGroup, $price);

@@ -18,9 +18,8 @@ use User\MailruOldUser;
 </head>
 <body style="color: white; background-color: #262525">
 <?php
-$Account = \User\Account::bySess();
-$Account->initOAuthUserData();
-\User\Avatar::byExternalUrl($Account->externalAvaUrl);
+$List = \Item\Price::memberPriceList(83,1);
+printr($List);
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';
 ?>
 </body>

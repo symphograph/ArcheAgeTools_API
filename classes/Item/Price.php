@@ -8,13 +8,16 @@ use User\Account;
 
 class Price
 {
-    public int    $accountId  = 1;
-    public int    $itemId     = 0;
-    public int    $price       = 0;
-    public int    $serverGroup = 0;
-    public string $datetime    = '';
-    public string $method      = 'empty';
-    public string $label = 'Цена не найдена';
+    public int     $accountId   = 1;
+    public int     $itemId      = 0;
+    public int     $price       = 0;
+    public int     $serverGroup = 0;
+    public string  $datetime    = '';
+    public string  $method      = 'empty';
+    public ?string  $label;
+    public ?string $name;
+    public ?int    $grade;
+    public ?string $icon;
 
     private const methods = [
         'bySolo', 'byAccount', 'byToNPC', 'byFriends', 'byWellKnown', 'byAny'
@@ -231,6 +234,29 @@ class Price
         return $Price;
     }
 
+    /**
+     * @return array<self>|false
+     */
+    public static function memberPriceList(int $accountId, int $serverGroup): array|false
+    {
+        $qwe = qwe("
+            select up.*, 
+                   items.name,
+                   if(items.basicGrade,items.basicGrade,1) as grade,
+                   items.icon
+            from uacc_prices up
+             inner join items on up.itemId = items.id 
+                and items.onOff
+             where accountId = :accountId 
+               and serverGroup = :serverGroup",
+            ['accountId' => $accountId, 'serverGroup' => $serverGroup]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return false;
+        }
+        return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
+    }
+
     private static function toNPC(int $itemId): int|bool
     {
         $qwe = qwe("
@@ -277,12 +303,15 @@ class Price
 
     public function putToDB(): bool
     {
+        if(empty($this->datetime)){
+            $this->datetime = date('Y-m-d H:i:s');
+        }
         $params = [
             'accountId'  => $this->accountId,
             'serverGroup' => $this->serverGroup,
             'itemId'     => $this->itemId,
             'price'       => $this->price,
-            'datetime'    => $this->datetime ?? date('Y-m-d H:i:s')
+            'datetime'    => $this->datetime
         ];
         return DB::replace('uacc_prices', $params);
     }
