@@ -18,6 +18,8 @@ class Price
     public ?string $name;
     public ?int    $grade;
     public ?string $icon;
+    public ?bool $craftable;
+    public ?bool $buyOnly;
 
     private const methods = [
         'bySolo', 'byAccount', 'byToNPC', 'byFriends', 'byWellKnown', 'byAny'
@@ -242,6 +244,7 @@ class Price
         $qwe = qwe("
             select up.*, 
                    items.name,
+                   items.craftable,
                    if(items.basicGrade,items.basicGrade,1) as grade,
                    items.icon
             from uacc_prices up
