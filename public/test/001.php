@@ -18,8 +18,11 @@ use User\MailruOldUser;
 </head>
 <body style="color: white; background-color: #262525">
 <?php
-$List = \Item\Price::memberPriceList(83,1);
-printr($List);
+$Account = \User\Account::bySess();
+$Account->initMember();
+//$Mats = \Craft\Mat::allPotentialMats(8319);
+$Crafts = Craft::allPotentialCrafts(8319);
+printr($Crafts);
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';
 ?>
 </body>

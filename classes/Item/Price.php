@@ -2,6 +2,8 @@
 
 namespace Item;
 
+use Craft\CountData;
+use Craft\BufferSecond;
 use PDO;
 use Symphograph\Bicycle\DB;
 use User\Account;
@@ -14,23 +16,27 @@ class Price
     public int     $serverGroup = 0;
     public string  $datetime    = '';
     public string  $method      = 'empty';
-    public ?string  $label;
+    public ?string $label;
     public ?string $name;
+    public ?string $author;
     public ?int    $grade;
     public ?string $icon;
-    public ?bool $craftable;
-    public ?bool $buyOnly;
+    public ?bool   $craftable;
+    public ?bool   $buyOnly;
 
     private const methods = [
         'bySolo', 'byAccount', 'byToNPC', 'byFriends', 'byWellKnown', 'byAny'
     ];
 
 
+
+
     public function __set(string $name, $value): void{}
 
-    public static function getPrice(int $itemId, int $mode): self|bool
+    public static function bySaved(int $itemId): self|bool
     {
-        return match ($mode) {
+        global $Account;
+        return match ($Account->AccSets->mode) {
             1 => self::byMode1($itemId),
             2 => self::byMode2($itemId),
             3 => self::byMode3($itemId),
@@ -108,6 +114,9 @@ class Price
     private static function byFriends(int $itemId) : self|bool
     {
         global $Account;
+        if(empty($Account->Member)){
+            $Account->initMember();
+        }
         $members = $Account->Member->getFollowMasters();
         if(empty($members)){
             return self::bySolo($itemId);
@@ -246,11 +255,14 @@ class Price
                    items.name,
                    items.craftable,
                    if(items.basicGrade,items.basicGrade,1) as grade,
-                   items.icon
+                   items.icon,
+                   if(ubO.itemId, 1, 0) as buyOnly
             from uacc_prices up
              inner join items on up.itemId = items.id 
                 and items.onOff
-             where accountId = :accountId 
+            left join uacc_buyOnly ubO on items.id = ubO.itemId
+            and ubO.accountId = up.accountId
+             where up.accountId = :accountId 
                and serverGroup = :serverGroup",
             ['accountId' => $accountId, 'serverGroup' => $serverGroup]
         );
@@ -258,6 +270,23 @@ class Price
             return false;
         }
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
+    }
+
+    /**
+     * @return array<self>
+     */
+    public static function basedList(): array
+    {
+
+        $qwe = qwe("select * from basedItems");
+        $qwe = $qwe->fetchAll(PDO::FETCH_COLUMN);
+        $List = [];
+        foreach ($qwe as $id){
+            $price = self::bySaved($id);
+            $price->initItemProps();
+            $List[] = $price;
+        }
+        return $List;
     }
 
     private static function toNPC(int $itemId): int|bool
@@ -271,6 +300,55 @@ class Price
             return false;
         }
         return $qwe->fetchAll(PDO::FETCH_COLUMN)[0];
+    }
+
+    public static function byCraft(int $itemId): self|false
+    {
+        global $Account;
+        $qwe = qwe("
+        select * from uacc_crafts 
+         where itemId = :itemId 
+           and accountId = :accountId
+           and serverGroup = :serverGroup",
+        ['itemId'=>$itemId, 'accountId'=>$Account->id, 'serverGroup' => $Account->AccSets->serverGroup]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return false;
+        }
+        $CraftData = $qwe->fetchObject(CountData::class);
+        $Price = new self();
+        $Price->itemId = $itemId;
+        $Price->price = $CraftData->craftCost;
+        $Price->accountId = $Account->id;
+        $Price->method = 'byCraft';
+        return $Price;
+    }
+
+    public static function byBuffer(int $craftId): Price|false
+    {
+        global $Account;
+        $bufferData = BufferSecond::byCraftId($craftId);
+        if(!$bufferData){
+            return false;
+        }
+        $Price = new self();
+        $Price->itemId = $bufferData->itemId;
+        $Price->price = $bufferData->craftCost;
+        $Price->accountId = $Account->id;
+        $Price->method = 'byBuffer';
+        return $Price;
+    }
+
+    public function initItemProps(): void
+    {
+        $item = Item::byId($this->itemId);
+        $this->name = $item->name;
+        $this->grade = $item->grade;
+        $this->icon = $item->icon;
+        $Author = Account::byId($this->accountId);
+        $this->author = $Author->AccSets->publicNick;
+
+        self::initLabel();
     }
 
     public function initLabel(): void

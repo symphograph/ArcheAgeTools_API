@@ -63,7 +63,7 @@ class Pricing
     private function initPrice(): void
     {
         global $Account;
-        $Price = Price::getPrice($this->itemId, $Account->AccSets->mode);
+        $Price = Price::bySaved($this->itemId);
         if(!$Price){
             $this->Price = new Price();
             return;

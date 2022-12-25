@@ -13,6 +13,8 @@ class PriceEnum
             'byToNPC' => self::byToNPC(),
             'byFriends' => self::byFriends($Price),
             'byWellKnown', 'byAny' => self::byAny($Price),
+            'byFromNPC' => self::byFromNPC(),
+            'byCraft' => self::byCraft(),
             default => ''
         };
     }
@@ -42,5 +44,12 @@ class PriceEnum
     private static function dateFormat(string $datetime): string
     {
        return date('d.m.Y H:i', strtotime($datetime));
+    }
+
+    private static function byFromNPC(): string {
+        return 'Куплено у NPC';
+    }
+    private static function byCraft(): string {
+        return 'Себестоимость (крафт)';
     }
 }

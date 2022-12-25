@@ -12,6 +12,8 @@ class Item
     public bool     $craftable  = false;
     public bool     $personal   = false;
     public bool     $isTradeNPC = false;
+    public ?int $priceFromNPC;
+    public ?int $priceToNPC;
     public ?int     $currencyId;
     public ?string  $icon;
     public ?int     $grade;
@@ -77,7 +79,7 @@ class Item
     public function initPrice(): bool
     {
         global $Account;
-        $Price = Price::getPrice($this->id, $Account->AccSets->mode);
+        $Price = Price::bySaved($this->id);
         if($Price){
             $this->Price = $Price;
             return true;

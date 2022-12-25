@@ -9,18 +9,16 @@ $itemId = intval($_POST['itemId'] ?? 0)
 or die(Api::errorMsg('id'));
 
 $buyable = intval($_POST['buyable'] ?? 0);
+if (!$buyable){
+    $sql = "delete from uacc_buyOnly where accountId = :accountId and itemId = :itemId";
+}else{
+    $sql = "replace into uacc_buyOnly (accountId, itemId) VALUES (:accountId, :itemId)";
+}
 
-$qwe = qwe("
-update uacc_prices 
-set buyOnly = :buyable 
-where itemId = :itemId 
-  and serverGroup = :serverGroup
-  and accountId = :accountId",
+$qwe = qwe($sql,
 [
-    'buyable'     => $buyable,
+    'accountId'   => $Account->id,
     'itemId'      => $itemId,
-    'serverGroup' => $Account->AccSets->serverGroup,
-    'accountId'   => $Account->id
 ]
 ) or die(Api::errorMsg());
 

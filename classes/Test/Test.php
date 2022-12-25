@@ -29,7 +29,7 @@ class Test
         $Account->initMember();
         $List = Item::searchList();
         foreach ($List as $item){
-            $Price = Price::getPrice($item->id,1);
+            $Price = Price::bySaved($item->id,1);
             if(!$Price) continue;
             $Price->initLabel();
             echo $item->name . '<br>';
