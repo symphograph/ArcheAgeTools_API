@@ -45,14 +45,16 @@ if(str_starts_with($_SERVER['SCRIPT_NAME'], '/api/')) {
         die('emptyToken');
     }
 
-    if($env->debug) {
-
-    }
-
     //cors();
 }
 
-if(str_starts_with($_SERVER['SCRIPT_NAME'],'/test/') || str_starts_with($_SERVER['SCRIPT_NAME'],'/api/')){
+if(
+    str_starts_with($_SERVER['SCRIPT_NAME'],'/test/')
+    ||
+    str_starts_with($_SERVER['SCRIPT_NAME'],'/api/')
+    ||
+    str_starts_with($_SERVER['SCRIPT_NAME'],'/services/')
+){
     if(!$env->myip){
         die('permis');
     }

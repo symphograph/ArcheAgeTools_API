@@ -2,8 +2,7 @@
 
 namespace Item;
 
-use Craft\CountData;
-use Craft\BufferSecond;
+use Craft\{AccountCraft, BufferSecond};
 use PDO;
 use Symphograph\Bicycle\DB;
 use User\Account;
@@ -32,6 +31,32 @@ class Price
 
 
     public function __set(string $name, $value): void{}
+
+    public static function byParams(
+        int     $itemId,
+        int     $accountId = 1,
+        int     $price = 0,
+        int     $serverGroup = 2,
+        string  $datetime = '',
+        string  $method = '',
+        ?string $label = null,
+        ?string $name = null,
+        ?string $author = null,
+        ?int    $grade = 1,
+        ?string $icon = null,
+        ?bool   $craftable = null,
+        ?bool   $buyOnly = null
+
+    ): self
+    {
+        $Price = new Price();
+        foreach (get_defined_vars() as $k => $var){
+            if($var === null)
+                continue;
+            $Price->$k = $var;
+        }
+        return $Price;
+    }
 
     public static function bySaved(int $itemId): self|bool
     {
@@ -146,6 +171,7 @@ class Price
         $adminAccount->AccSets->serverGroup = $serverGroup;
         $adminAccount->initMember();
         $members = $adminAccount->Member->getFollowMasters();
+        $members[] = $adminAccount->id;
         $Price = self::byMemberList($itemId, $serverGroup, $members);
         if(!$Price){
             return false;
@@ -158,13 +184,13 @@ class Price
     {
         $stringMembers = implode(',', $members);
         $qwe = qwe("
-            SELECT * 
-            FROM uacc_prices
-            WHERE uacc_prices.accountId in ( $stringMembers )
-            AND itemId = :itemId
-            AND serverGroup = :serverGroup
-            ORDER BY datetime DESC 
-            LIMIT 1",
+            select * 
+            from uacc_prices
+            where uacc_prices.accountId in ( $stringMembers )
+            and itemId = :itemId
+            and serverGroup = :serverGroup
+            order by datetime desc 
+            limit 1",
             ['itemId'=>$itemId, 'serverGroup'=>$serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){
@@ -283,6 +309,10 @@ class Price
         $List = [];
         foreach ($qwe as $id){
             $price = self::bySaved($id);
+            if(!$price){
+                $price = new Price();
+                $price->itemId = $id;
+            }
             $price->initItemProps();
             $List[] = $price;
         }
@@ -315,7 +345,7 @@ class Price
         if(!$qwe || !$qwe->rowCount()){
             return false;
         }
-        $CraftData = $qwe->fetchObject(CountData::class);
+        $CraftData = $qwe->fetchObject(AccountCraft::class);
         $Price = new self();
         $Price->itemId = $itemId;
         $Price->price = $CraftData->craftCost;
@@ -324,15 +354,15 @@ class Price
         return $Price;
     }
 
-    public static function byBuffer(int $craftId): Price|false
+    public static function byBuffer(int $itemId): Price|false
     {
         global $Account;
-        $bufferData = BufferSecond::byCraftId($craftId);
+        $bufferData = BufferSecond::byItemId($itemId);
         if(!$bufferData){
             return false;
         }
         $Price = new self();
-        $Price->itemId = $bufferData->itemId;
+        $Price->itemId = $bufferData->resultItemId;
         $Price->price = $bufferData->craftCost;
         $Price->accountId = $Account->id;
         $Price->method = 'byBuffer';
@@ -358,7 +388,7 @@ class Price
 
     public static function isCurrency(int $itemId): bool
     {
-        $qwe = qwe("select * from valutas where id = :itemId", ['item_id'=>$itemId]);
+        $qwe = qwe("select * from valutas where id = :itemId", ['itemId'=>$itemId]);
         return ($qwe && $qwe->rowCount());
     }
 
@@ -395,6 +425,31 @@ class Price
             'datetime'    => $this->datetime
         ];
         return DB::replace('uacc_prices', $params);
+    }
+
+    /**
+     * @param array<int> $lost
+     * @return array<self>
+     */
+    public static function lostList(array $lost): array
+    {
+        $items = Item::searchList($lost);
+        $Prices = [];
+        foreach ($items as $item){
+            $Prices[] = self::byParams(
+                itemId: $item->id,
+                name: $item->name,
+                grade: $item->grade,
+                icon: $item->icon
+            );
+        }
+        return $Prices;
+    }
+
+    public function initAuthor(): void
+    {
+        $Author = Account::byId($this->accountId);
+        $this->author = $Author->AccSets->publicNick;
     }
 
 }

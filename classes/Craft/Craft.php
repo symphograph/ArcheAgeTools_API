@@ -11,16 +11,18 @@ class Craft
     /**
      * @var array<Mat>|null
      */
-    public ?array     $Mats;
-    public ?int       $resultItemId;
-    public int|float  $resultAmount = 1;
-    public ?int       $doodId;
-    public ?string    $doodName;
-    public int        $profId       = 25;
-    public ?int       $profNeed;
-    public ?int       $laborNeed;
-    public ?Prof      $Prof;
-    public ?CountData $countData;
+    public ?array        $Mats;
+    public ?int          $resultItemId;
+    public ?string       $itemName;
+    public ?string $craftName;
+    public int|float     $resultAmount = 1;
+    public ?int          $doodId;
+    public ?string       $doodName;
+    public int           $profId       = 25;
+    public ?int          $profNeed;
+    public ?int          $laborNeed;
+    public ?Prof         $Prof;
+    public ?AccountCraft $countData;
 
     public function __set(string $name, $value): void{}
 
@@ -64,8 +66,9 @@ class Craft
 
     private function initCountData(): void
     {
-        if($countData = CountData::byID($this->id)){
+        if($countData = AccountCraft::byID($this->id)){
             $this->countData = $countData;
+            $this->countData->LaborData = LaborData::byCraft($this);
         }
     }
 
@@ -116,7 +119,8 @@ class Craft
                 and items.onOff
                 and crafts.onOff                   
                 and crafts.resultItemId = :itemId
-            left join doods on doods.id = crafts.doodId",
+            left join doods 
+                on doods.id = crafts.doodId",
         ['itemId'=>$itemId]
         );
         if(!$qwe || !$qwe->rowCount()){
@@ -138,7 +142,8 @@ class Craft
         $allMatsImpl = implode(',', $allMats);
 
         $qwe = qwe("
-            select crafts.*, 
+            select crafts.*,
+                   items.name as itemName,
                    doods.name as  doodName 
             from crafts 
                  inner join items on crafts.resultItemId = items.id
@@ -163,6 +168,29 @@ class Craft
         return $List;
     }
 
+    public static function isCountedItem(int $resultItemId): bool
+    {
+        global $Account;
+        $qwe = qwe("
+            select * from uacc_crafts 
+            where accountId = :accountId
+            and serverGroup = :serverGroup
+            and itemId = :resultItemId",
+            ['accountId'    => $Account->id,
+             'serverGroup'  => $Account->AccSets->serverGroup,
+             'resultItemId' => $resultItemId]
+        );
+        return boolval($qwe);
+    }
 
+    public function initMatPrice(): void
+    {
+        $mats = [];
+        foreach ($this->Mats as $mat){
+            $mat->initPrice();
+            $mats[] = $mat;
+        }
+        $this->Mats = $mats;
+    }
 
 }

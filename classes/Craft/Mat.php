@@ -87,7 +87,8 @@ class Mat
         $qwe = qwe("
             select *, 
                    itemId as id, 
-                   matGrade as grade 
+                   /*if(matGrade, matGrade, 1) as grade */
+                    matGrade as grade
             from craftMaterials 
             where craftId = :craftId",
             ['craftId' => $craftId]
@@ -100,6 +101,7 @@ class Mat
         $List = [];
         foreach ($arr as $mat){
             $mat->initItem();
+            $mat->craftable = $mat->Item->craftable;
             $List[] = $mat;
         }
 
@@ -146,11 +148,10 @@ class Mat
     public function initPrice(): bool
     {
         if($this->id === 500){
-            $this->Price = new Price();
-            $this->Price->price=1;
+            $this->Price = Price::byParams(itemId: 500, price: 1);
             return true;
         }
-
+        self::initIsByOnly();
         if($this->isBuyOnly || $this->need < 0){
             $Price = Price::bySaved($this->id);
             if($Price){
@@ -169,14 +170,14 @@ class Mat
                 $this->Price = $Price;
                 return true;
             }
+            if($Price = Price::byBuffer($this->id)){
+                $this->Price = $Price;
+                return true;
+            }
+            return false;
         }
 
         if($Price = Price::bySaved($this->id)){
-            $this->Price = $Price;
-            return true;
-        }
-
-        if($Price = Price::byBuffer($this->craftId)){
             $this->Price = $Price;
             return true;
         }
@@ -189,9 +190,11 @@ class Mat
     private function initPriceFromNPC(): bool
     {
         if($this->Item->currencyId === 500){
-            $this->Price = new Price();
-            $this->Price->price = $this->Item->priceFromNPC;
-            $this->Price->method = 'byFromNPC';
+            $this->Price = Price::byParams(
+                itemId: $this->id,
+                price: $this->Item->priceFromNPC,
+                method: 'byFromNPC'
+            );
             return true;
         }
 
@@ -203,9 +206,11 @@ class Mat
 
         $vPrice = Price::bySaved($this->Item->currencyId);
         if($vPrice){
-            $this->Price = new Price();
-            $this->Price->price = $vPrice->price * $this->Item->priceFromNPC;
-            $this->Price->method = 'byFromNPC';
+            $this->Price = Price::byParams(
+                itemId: $this->id,
+                price: $vPrice->price * $this->Item->priceFromNPC,
+                method: 'byFromNPC'
+            );
             return true;
         }
         return false;

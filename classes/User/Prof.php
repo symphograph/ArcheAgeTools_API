@@ -5,25 +5,25 @@ use PDO;
 
 class Prof
 {
-    public int     $id;
-    public ?string $name;
-    public ?int    $lvl;
-    public ?int    $laborBonus;
-    public ?int    $timeBonus;
+    public int     $id = 25;
+    public ?string $name = 'Прочее';
+    public ?int    $lvl = 1;
+    public ?int    $laborBonus = 0;
+    public ?int    $timeBonus = 0;
 
     public function __set(string $name, $value): void
     {
     }
 
-    public static function byNeed(int $id, int $need = 0): self|bool
+    public static function byNeed(int $profId, int $profNeed = 0): self|bool
     {
 
         $qwe = qwe("select * from profs
-            inner join profLvls on id = :id
-            and :need between profLvls.min and profLvls.max
+            inner join profLvls on id = :profId
+            and :profNeed between profLvls.min and profLvls.max
             order by lvl desc limit 1
             ",
-            ['id' => $id, 'need' => $need]
+            ['profId' => $profId, 'profNeed' => $profNeed]
         );
         if (!$qwe || !$qwe->rowCount()) {
             return false;
@@ -93,6 +93,26 @@ class Prof
         ['accountId'=>$accountId, 'profId'=>$profId, 'lvl'=>$lvl]
         );
         return boolval($qwe);
+    }
+
+    public static function getAccProfById(int $profId) :Prof|bool
+    {
+        if($profId === 25){
+            return new self();
+        }
+        global $Account;
+        if(empty($Account->AccSets->Profs)){
+            $Account->AccSets->initProfs();
+        }
+        $profs = $Account->AccSets->Profs;
+
+        foreach ($profs as $prof){
+            if($prof->id === $profId){
+                return $prof;
+            }
+        }
+
+        return false;
     }
 
 }

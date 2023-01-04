@@ -2,6 +2,8 @@
 
 namespace User;
 
+use Craft\LaborData;
+use Item\Price;
 use Symphograph\Bicycle\DB;
 
 class AccSettings
@@ -14,7 +16,11 @@ class AccSettings
     public int    $mode        = 1;
     public ?int   $old_id;
     public bool   $siol        = false;
-    public ?array  $Profs;
+    /**
+     * @var array<Prof>|null
+     */
+    public ?array $Profs;
+    public ?int $laborCost;
 
     public function __set(string $name, $value): void
     {
@@ -92,6 +98,23 @@ class AccSettings
     {
         $Server = Server::byId($this->serverId);
         $this->serverGroup = $Server->group ?? 2;
+    }
+
+    public function initLaborCost(): void
+    {
+        if($Price = Price::bySaved(2)){
+            $this->laborCost = $Price->price;
+            return;
+        }
+        $this->laborCost = LaborData::defaultLaborCost;
+    }
+
+    public function getLaborCost(): int
+    {
+        if(empty($this->laborCost)){
+            self::initLaborCost();
+        }
+        return $this->laborCost;
     }
 
     public function initProfs(): void

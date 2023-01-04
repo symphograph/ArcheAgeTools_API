@@ -2,6 +2,8 @@
 
 namespace Craft;
 
+use Item\Item;
+
 class BufferSecond
 {
     public int $accountId;
@@ -48,5 +50,55 @@ class BufferSecond
             return false;
         }
         return $qwe->fetchObject(self::class);
+    }
+
+    public static function putToDB(int $craftId, int $resultItemId, int $craftCost, int $spm): bool
+    {
+        global $Account;
+        $qwe = qwe("
+            replace into craftBuffer2 
+                (accountId, craftId, resultItemId, craftCost, spm) 
+            VALUES 
+                (:accountId, :craftId, :resultItemId, :craftCost, :spm)", [
+                'accountId'    => $Account->id,
+                'craftId'      => $craftId,
+                'resultItemId' => $resultItemId,
+                'craftCost'    => $craftCost,
+                'spm'          => $spm
+            ]
+        );
+        return boolval($qwe);
+    }
+
+    public static function saveCrafts(int $resultItemId): void
+    {
+        global $Account;
+        $firstBuffer = BufferFirst::getCounted($resultItemId);
+        $i = 0;
+        foreach ($firstBuffer as $buffCraft){
+            $i++;
+            $isBest = intval($buffCraft->isUBest);
+            if($i === 1){
+                self::putToDB($buffCraft->craftId, $buffCraft->resultItemId, $buffCraft->craftCost, $buffCraft->spm);
+                if(!$isBest){
+                    $isBest = 1;
+                }
+            }else{
+                $isBest = 0;
+            }
+            $AccCraft = AccountCraft::byParams(
+                $Account->id,$Account->AccSets->serverGroup,
+                $buffCraft->craftId,
+                $buffCraft->resultItemId,
+                $isBest,
+                $buffCraft->craftCost,
+                date('Y-m-d H:i:s'),
+                null,
+                $buffCraft->spmu,
+                null
+            );
+            $AccCraft->putToDB();
+
+        }
     }
 }
