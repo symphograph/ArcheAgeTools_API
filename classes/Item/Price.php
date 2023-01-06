@@ -124,7 +124,7 @@ class Price
         return $Price;
     }
 
-    public static function bySolo(int $itemId): self|bool
+    private static function bySolo(int $itemId): self|bool
     {
         global $Account;
         if($Price = self::byAccount($itemId, $Account->id, $Account->AccSets->serverGroup)){
@@ -199,7 +199,7 @@ class Price
         return $qwe->fetchObject(self::class);
     }
 
-    public static function byAccount(int $itemId, int $accountId, int $serverGroup): self|bool
+    private static function byAccount(int $itemId, int $accountId, int $serverGroup): self|bool
     {
         $qwe = qwe("
             select * from uacc_prices 
@@ -354,7 +354,7 @@ class Price
         return $Price;
     }
 
-    public static function byBuffer(int $itemId): Price|false
+    public static function byBuffer(int $itemId): self|false
     {
         global $Account;
         $bufferData = BufferSecond::byItemId($itemId);
@@ -369,7 +369,7 @@ class Price
         return $Price;
     }
 
-    public function initItemProps(): void
+    private function initItemProps(): void
     {
         $item = Item::byId($this->itemId);
         $this->name = $item->name;
@@ -386,7 +386,7 @@ class Price
         $this->label = PriceEnum::label($this);
     }
 
-    public static function isCurrency(int $itemId): bool
+    private static function isCurrency(int $itemId): bool
     {
         $qwe = qwe("select * from valutas where id = :itemId", ['itemId'=>$itemId]);
         return ($qwe && $qwe->rowCount());

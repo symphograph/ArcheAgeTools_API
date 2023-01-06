@@ -2,9 +2,7 @@
 
 namespace User;
 
-use Api;
-use Auth\Mailru\MailruUser;
-use Auth\Telegram\TeleUser;
+use Auth\{Mailru\MailruUser, Telegram\TeleUser};
 use Item\Item;
 use PDO;
 use Symphograph\Bicycle\DB;
@@ -128,17 +126,6 @@ class Account
      */
     public static function getServerList(int $serverGroup, int $accountId): array
     {
-       /*
-        $qwe = qwe("
-            select user_accounts.id from user_accounts
-                inner join uacc_settings us on user_accounts.id = us.accountId
-                 inner join servers on us.server_id = servers.id
-                   and servers.`group` = :serverGroup
-                                    LIMIT 100",
-
-            ['serverGroup'=>$serverGroup, 'accountId'=> $accountId]
-        );
-       */
 
         $privateItemsStr = implode(',', Item::privateItems());
         $qwe = qwe("select 

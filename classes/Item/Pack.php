@@ -9,7 +9,7 @@ class Pack
     /**
      * @return array<Item>|false
      */
-    public static function getPackItems(): array
+    public static function getPackItems(): array|false
     {
         $qwe = qwe("
             select * from items 

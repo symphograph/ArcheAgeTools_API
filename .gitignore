@@ -7,3 +7,5 @@ composer.phar
 /public/img/avatars/
 /public/img/icons/
 /uploadtmp/
+/public/html_report/
+/public/myreport/

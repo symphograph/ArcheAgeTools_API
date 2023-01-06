@@ -2,8 +2,7 @@
 
 namespace User;
 
-use Item\Item;
-use Item\Price;
+use Item\{Item, Price};
 use PDO;
 
 class Member
