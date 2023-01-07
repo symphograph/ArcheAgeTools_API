@@ -15,6 +15,9 @@ class LaborData
     public static function byCraft(Craft $craft): self
     {
         $prof = Prof::getAccProfById($craft->profId);
+        if(!$prof) {
+            $prof = new Prof();
+        }
         $LaborData = new self();
         $LaborData->forThisCraftDefault= $craft->laborNeed;
         $LaborData->forThisCraftBonused = round($craft->laborNeed * ((100 - $prof->laborBonus) / 100));

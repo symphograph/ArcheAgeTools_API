@@ -111,7 +111,6 @@ class Prof
                 return $prof;
             }
         }
-
         return false;
     }
 

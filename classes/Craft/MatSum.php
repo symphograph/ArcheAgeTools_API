@@ -21,7 +21,7 @@ class MatSum
         $craftCost += $LaborData->forThisCraftBonused * $LaborData::getLaborCost();
         $craftCost = round($craftCost / $craft->resultAmount);
         $sumSPM = round($sumSPM / $craft->resultAmount);
-        return new MatSum($craftCost, $sumSPM);
+        return new self($craftCost, $sumSPM);
     }
 
 }

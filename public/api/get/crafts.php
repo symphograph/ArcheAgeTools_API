@@ -19,4 +19,5 @@ if(!empty($craftCounter->lost)){
 
 $Pool = CraftPool::getPool($itemId);
 $Pool->initMatPrices();
+$Pool->initMatPools();
 echo Api::resultData($Pool);

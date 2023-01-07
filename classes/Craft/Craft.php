@@ -23,6 +23,10 @@ class Craft
     public ?int          $laborNeed;
     public ?Prof         $Prof;
     public ?AccountCraft $countData;
+    /**
+     * @var array<Mat>|null
+     */
+    public ?array $matPool;
 
     public function __set(string $name, $value): void{}
 

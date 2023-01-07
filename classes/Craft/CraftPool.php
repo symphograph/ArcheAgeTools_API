@@ -89,4 +89,21 @@ class CraftPool
         }
         $this->otherCrafts = $crafts;
     }
+
+    public function initMatPools(): void
+    {
+        $this->mainCraft = self::initMatPool($this->mainCraft);
+        $crafts = [];
+        foreach ($this->otherCrafts as $craft){
+            $craft = self::initMatPool($craft);
+            $crafts[] = $craft;
+        }
+        $this->otherCrafts = $crafts;
+    }
+
+    private static function initMatPool(Craft $craft): Craft
+    {
+        $craft->matPool = MatPool::getMatPool($craft->resultItemId);
+        return $craft;
+    }
 }
