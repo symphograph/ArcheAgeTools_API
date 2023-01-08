@@ -1,7 +1,9 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
 
+use Craft\AccountCraft;
 use User\Account;
+
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
 
@@ -10,5 +12,7 @@ or die(Api::errorMsg('Ой!'));
 
 $Account->AccSets->putToDB()
 or die(Api::errorMsg('Ошибка при сохранении'));
+
+AccountCraft::clearAllCrafts();
 
 echo Api::resultMsg();

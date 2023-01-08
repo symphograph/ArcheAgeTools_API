@@ -1,6 +1,7 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/config.php';
 
+use Craft\AccountCraft;
 use User\Account;
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
@@ -21,5 +22,7 @@ $qwe = qwe($sql,
     'itemId'      => $itemId,
 ]
 ) or die(Api::errorMsg());
+
+AccountCraft::clearAllCrafts();
 
 echo Api::resultMsg();

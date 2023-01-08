@@ -2,6 +2,7 @@
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
 
 use User\{Account, Member, Server};
+use Craft\AccountCraft;
 
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
@@ -17,11 +18,13 @@ or die(Api::errorMsg('server not found'));
 
 if(($_POST['isFollow'] ?? null) === true){
     Member::setFollow($Account->id, $master, $Server->group);
+    AccountCraft::clearAllCrafts();
     die(Api::resultMsg());
 }
 
 if(($_POST['isFollow'] ?? null) === false){
     Member::unsetFollow($Account->id, $master, $Server->group);
+    AccountCraft::clearAllCrafts();
     die(Api::resultMsg());
 }
 
