@@ -7,22 +7,24 @@ use Symphograph\Bicycle\DB;
 
 class AccountCraft
 {
-    public ?int           $accountId;
-    public ?int           $serverGroup;
-    public ?int           $craftId;
-    public ?int           $itemId;
-    public ?bool          $isBest;
-    public ?bool $isUBest;
-    public ?int           $craftCost;
-    public ?string        $datetime;
-    public float|int|null $laborTotal;
-    public ?int           $spmu;
-    public ?string        $allMats;
+    public ?int    $accountId;
+    public ?int    $serverGroup;
+    public ?int    $craftId;
+    public ?int    $itemId;
+    public ?bool   $isBest;
+    public ?bool   $isUBest;
+    public ?int    $craftCost;
+    public ?string $datetime;
+    public ?int    $spmu;
+    public ?string $allMats;
     public ?LaborData $LaborData;
+    public float|int|null $laborTotal;
 
     public function __set(string $name, $value): void
     {
     }
+
+
 
     public static function byID(int $craftId): self|false
     {

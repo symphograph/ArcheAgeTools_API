@@ -20,7 +20,7 @@ if (!OAuthMailRu::getToken($_GET['code'],$secret)) {
     die('Error - no token by code');
 }
 /*
- * На данном этапе можно проверить зарегистрирован ли у вас MailRu-юзер с id = OAuthMailRu::$userId
+ * На данном этапе можно проверить зарегистрирован ли у вас MailRu-юзер с id = OAuthMailRu::$user_id
  * Если да, то можно просто авторизовать его и не запрашивать его данные.
  */
 

@@ -12,7 +12,7 @@ class OAuthMailRu
     const URL_API       = 'https://oauth.mail.ru/userinfo';
 
     private static $token;
-    public static  $userId;
+    public static  $user_id;
     public static  $userData;
 
     #[NoReturn] public static function goToAuth($secret): void
@@ -30,36 +30,32 @@ class OAuthMailRu
     public static function getToken($code, $secret): bool
     {
         $uri_callback = 'https://' . $_SERVER['SERVER_NAME'] . '/auth/mailru.php';
-        $data = array(
+        $data = [
             'client_id'     => $secret->app_id,
             'client_secret' => $secret->app_secret,
             'grant_type'    => 'authorization_code',
             'code'          => trim($code),
             'redirect_uri'  => $uri_callback
-        );
+        ];
 
         // формируем post-запрос
-        $opts = array('http' =>
-                          array(
+        $opts = ['http' =>
+                          [
                               'method'  => 'POST',
                               'header'  => "Content-Type: application/x-www-form-urlencodedrn" .
                                   "Accept: */*rn",
                               'content' => http_build_query($data)
-                          )
-        );
+                          ]
+        ];
         $response = self::curl(self::URL_GET_TOKEN, $data);
-       /*
-        if (!($response = @file_get_contents(filename: self::URL_GET_TOKEN, context:  stream_context_create($opts)))) {
-            return false;
-        }
-*/
+
         $result = @json_decode($response);
         if (empty($result)) {
             return false;
         }
-        //printr($result);
+
         self::$token = $result->access_token;
-        //self::$userId = $result->x_mailru_vid;
+        //self::$user_id = $result->x_mailru_vid;
         return true;
     }
 
