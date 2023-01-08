@@ -66,10 +66,13 @@ class Member
             if(flwt.flws, flwt.flws, 0) as followersCount
             from
             (
-                select accountId, COUNT(*) as pricesCount, max(datetime) as lastPriceTime
+                select accountId, 
+                       COUNT(*) as pricesCount, 
+                       max(datetime) as lastPriceTime
                 from uacc_prices
                 where serverGroup = :serverGroup1
-                  and itemId not in ( $privateItemsStr )
+                    and itemId not in ( $privateItemsStr )
+                    and price > 0
                 group by accountId
                 order by lastPriceTime desc
             ) as tmp

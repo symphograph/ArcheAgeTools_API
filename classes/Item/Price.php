@@ -255,12 +255,14 @@ class Price
     {
         $privateItems = Item::privateItems();
         $privateItemsStr = '(' . implode(',', $privateItems) . ')';
-        $qwe = qwe("            select * from uacc_prices 
-             where accountId = :accountId
-             and serverGroup = :serverGroup
-             and itemId NOT IN " . $privateItemsStr . "
-             order by datetime desc 
-             limit 1",
+        $qwe = qwe("            
+                    select * from uacc_prices 
+                    where accountId = :accountId
+                    and serverGroup = :serverGroup
+                    and price > 0
+                    and itemId NOT IN " . $privateItemsStr . "
+                    order by datetime desc 
+                    limit 1",
             ['accountId'=> $accountId, 'serverGroup'=> $serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){
