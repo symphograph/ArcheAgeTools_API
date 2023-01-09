@@ -12,7 +12,7 @@ class ItemFixer
             update items 
             set craftable = 1 
             where id in 
-                  (select resultItemId from crafts where onOff)"
+                  (select distinct resultItemId from crafts where onOff)"
         ) or die('craftableCol err');
     }
 }

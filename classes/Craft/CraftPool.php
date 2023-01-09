@@ -72,6 +72,10 @@ class CraftPool
     {
         $mats = [];
         foreach ($craft->Mats as $mat){
+            if(!$mat->initPrice()){
+                printr($mat);
+                die();
+            }
             $mat->initPrice();
             $mat->Price->initAuthor();
             $mats[] = $mat;
@@ -93,12 +97,12 @@ class CraftPool
     public function initMatPools(): void
     {
         $this->mainCraft = self::initMatPool($this->mainCraft);
-        $crafts = [];
+        /*$crafts = [];
         foreach ($this->otherCrafts as $craft){
             $craft = self::initMatPool($craft);
             $crafts[] = $craft;
         }
-        $this->otherCrafts = $crafts;
+        $this->otherCrafts = $crafts;*/
     }
 
     private static function initMatPool(Craft $craft): Craft
