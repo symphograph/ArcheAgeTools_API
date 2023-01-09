@@ -14,11 +14,9 @@ $List = Member::getList($Account->id,$ServerGroup)
 
 $Members = [];
 foreach ($List as $member){
-    $Acc = Account::byId($member->accountId);
-    $Acc->initAvatar();
-    $Acc->Member = $member;
-    $Acc->Member->initLastPricedItem($ServerGroup);
-    $Members[] = $Acc;
+    $member->initAccData();
+    $member->initLastPricedItem($ServerGroup);
+    $Members[] = $member;
 }
 
 echo Api::resultData($Members);

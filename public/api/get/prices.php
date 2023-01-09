@@ -10,7 +10,12 @@ or die(Api::errorMsg('Обновите страницу'));
 $ServerGroup = Server::getGroup(intval($_POST['serverId'] ?? 0))
 or die(Api::errorMsg('server not found'));
 
-$List = Price::memberPriceList($Account->id,$ServerGroup)
+$memberId = intval($_POST['accId'] ?? 0) ?: $Account->id;
+$List = Price::memberPriceList($memberId, $ServerGroup)
     or die(Api::errorMsg('Не найдено'));
 
-echo Api::resultData(['Prices' => $List]);
+$priceMember = new Member();
+$priceMember->accountId = $memberId;
+$priceMember->initAccData();
+$priceMember->initIsFollow();
+echo Api::resultData(['Prices' => $List, 'priceMember' => $priceMember]);

@@ -11,6 +11,9 @@ class Member
     public ?bool $isFollow;
     public ?int $pricesCount;
     public ?int $followersCount;
+    public ?string $publicNick;
+    public ?Avatar $Avatar;
+
 
     /**
      * @var array<int>
@@ -144,6 +147,35 @@ class Member
         $Item = Item::byId($Price->itemId);
         $Item->Price = $Price;
         $this->LastPricedItem = $Item;
+    }
+
+    public function initAccData(): void
+    {
+        $memberAccount = Account::byId($this->accountId);
+        $memberAccount->initAvatar();
+        $this->Avatar = $memberAccount->Avatar;
+        $this->publicNick = $memberAccount->AccSets->publicNick;
+    }
+
+    public function initIsFollow(): void
+    {
+        global $Account;
+        $qwe = qwe("
+            select * from uacc_follows 
+            where follower = :follower
+                and master = :master
+                and serverGroup = :serverGroup",
+            [
+                'follower'    => $Account->id,
+                'master'      => $this->accountId,
+                'serverGroup' => $Account->AccSets->serverGroup
+            ]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            $this->isFollow = false;
+            return;
+        }
+        $this->isFollow = true;
     }
 
 }

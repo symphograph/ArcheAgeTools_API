@@ -35,6 +35,7 @@ class Account
     {
         $qwe = qwe("select * from user_accounts where id = :id", ['id' => $id]);
         if (!$qwe || !$qwe->rowCount()) {
+            //var_dump($id);
             return false;
         }
         $Account = $qwe->fetchObject(self::class);
