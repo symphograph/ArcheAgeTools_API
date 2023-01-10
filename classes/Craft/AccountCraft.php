@@ -124,5 +124,28 @@ class AccountCraft
         );
     }
 
+    public static function setUBest(int $accountId, int $craftId): bool
+    {
+        $craft = Craft::byId($craftId);
+        $qwe = qwe("
+            replace into uacc_bestCrafts 
+                (accountId, itemId, craftId) 
+            VALUES 
+                (:accountId, :itemId, :craftId)",
+            ['accountId'=> $accountId, 'itemId' => $craft->resultItemId, 'craftId'=>$craftId]
+        );
+        return boolval($qwe);
+    }
 
+    public static function delUBest(int $accountId, int $craftId): bool
+    {
+        $craft = Craft::byId($craftId);
+        $qwe = qwe("
+            delete from uacc_bestCrafts
+            where accountId = :accountId
+                and itemId = :itemId",
+            ['accountId'=> $accountId, 'itemId' => $craft->resultItemId]
+        );
+        return boolval($qwe);
+    }
 }
