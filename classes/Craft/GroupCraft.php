@@ -6,7 +6,7 @@ class GroupCraft
 {
     public ?string $itemName;
     public ?int $amount;
-    public ?int $sum;
+    public ?int $groupAmount;
 
     public function __set(string $name, $value): void{}
 
@@ -15,7 +15,7 @@ class GroupCraft
         $qwe = qwe("
             select any_value(items.name) as itemName, 
                    any_value(cg.amount) as amount, 
-                   sum(amount) as sum
+                   sum(amount) as groupAmount
             from craftGroups cg
             inner join items 
                 on cg.itemId = items.id
@@ -27,7 +27,7 @@ class GroupCraft
             return false;
         }
         $result = $qwe->fetchObject(self::class);
-        if(!$result->sum){
+        if(!$result->groupAmount){
             return false;
         }
         return $result;

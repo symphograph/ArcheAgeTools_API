@@ -102,7 +102,7 @@ class CraftCounter
         if(!$groupCraft){
             return false;
         }
-        if(!$groupCraft->sum){
+        if(!$groupCraft->groupAmount){
             return false;
         }
         $sum = $sumSPM = 0;
@@ -121,7 +121,8 @@ class CraftCounter
 
             $sum += $mat->Price->price * $mat->need;
         }
-        return MatSum::getSum($sum, $sumSPM, $craft);
+
+        return MatSum::getGroupSum($sum, $groupCraft->groupAmount, $sumSPM, $craft);
     }
 
     private function addToLost(int $itemId): void
