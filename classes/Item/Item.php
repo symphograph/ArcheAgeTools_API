@@ -12,8 +12,10 @@ class Item
     public bool     $craftable  = false;
     public bool     $personal   = false;
     public bool     $isTradeNPC = false;
-    public ?int $priceFromNPC;
-    public ?int $priceToNPC;
+    public bool     $isMat      = false;
+    public bool    $isBuyOnly  = false;
+    public ?int     $priceFromNPC;
+    public ?int     $priceToNPC;
     public ?int     $currencyId;
     public ?string  $icon;
     public ?int     $grade;
@@ -122,6 +124,26 @@ class Item
         }
         $privateItems = $qwe->fetchAll(PDO::FETCH_COLUMN);
         return $privateItems;
+    }
+
+    public function initIsBuyOnly(): void
+    {
+        $this->isBuyOnly = self::isBuyOnly();
+    }
+
+    private function isBuyOnly(): bool
+    {
+        if(!$this->craftable || $this->personal){
+            return false;
+        }
+        global $Account;
+        $qwe = qwe("
+            select * from uacc_buyOnly 
+            where itemId = :itemId 
+            and accountId = :accountId",
+            ['itemId' => $this->id, 'accountId' => $Account->id]
+        );
+        return $qwe && $qwe->rowCount();
     }
 
 }

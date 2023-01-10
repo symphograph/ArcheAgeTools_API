@@ -44,22 +44,8 @@ class Mat
 
     private function initIsByOnly(): void
     {
-        $this->isBuyOnly = self::isBuyOnly();
-    }
-
-    private function isBuyOnly(): bool
-    {
-        if(!$this->Item->craftable || $this->Item->personal){
-            return false;
-        }
-        global $Account;
-        $qwe = qwe("
-            select * from uacc_buyOnly 
-            where itemId = :itemId 
-            and accountId = :accountId",
-        ['itemId' => $this->id, 'accountId' => $Account->id]
-        );
-        return $qwe && $qwe->rowCount();
+        $this->Item->initIsBuyOnly();
+        $this->isBuyOnly = $this->Item->isBuyOnly;
     }
 
     /**

@@ -15,4 +15,5 @@ $Item = Item::byId($id) or die(Api::errorMsg('Предмет не найден')
 $Item->initInfo();
 $Item->Info->initCategory($Item->categId);
 $Item->initPricing();
+$Item->initIsBuyOnly();
 echo Api::resultData($Item);
