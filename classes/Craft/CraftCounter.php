@@ -78,9 +78,11 @@ class CraftCounter
             if (!$mat->need) {
                 continue;
             }
-            if(!$mat->initPrice() && !$mat->Item->craftable){
-                self::addToLost($mat->id);
-                continue;
+            if(!$mat->initPrice()){
+                if(!$mat->Item->craftable || $mat->isBuyOnly){
+                    self::addToLost($mat->id);
+                    continue;
+                }
             }
             if ($mat->need > 0) {
                 $spm = 0;
