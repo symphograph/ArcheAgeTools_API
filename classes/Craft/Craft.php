@@ -157,7 +157,7 @@ class Craft
                             resultItemId in ($allMatsImpl) 
                             or crafts.id in ($craftIDsImpl)
                         )
-                 left join doods on doods.id = crafts.doodId          
+                 left join doods on doods.id = crafts.doodId
             order by deep desc, resultItemId"
         );
         if(!$qwe || !$qwe->rowCount()){

@@ -104,21 +104,33 @@ class Mat
      */
     public static function allPotentialMats(int $itemId, array $matIDsArr = []): array
     {
+        global $Account;
         $qwe = qwe("
             select i.id,
                    cm.craftId,
                    cm.resultItemId,
                    cm.matGrade as grade, 
                    cm.need,
-                   i.craftable
+                   i.craftable,
+                    if(uCP.itemId, 1, 0) as isCounted
                    from craftMaterials cm
                 inner join items i 
                     on cm.itemId = i.id
-                where resultItemId = :itemId",
-        ['itemId'=>$itemId]
+                   left join uacc_CraftPool uCP 
+                       on i.id = uCP.itemId
+                        and uCP.accountId = :accountId
+                        and uCP.serverGroup = :serverGroup
+                where resultItemId = :itemId
+                and uCP.itemId is null",
+            [
+                'accountId'=> $Account->id,
+                'serverGroup'=>$Account->AccSets->serverGroup,
+                'itemId'=>$itemId
+            ]
+
         );
         $mats = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
-
+        //printr($mats);
         foreach ($mats as $mat){
             if(in_array($mat->id, $matIDsArr)){
                 continue;
