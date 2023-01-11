@@ -34,33 +34,10 @@ class CraftPool
      */
     private static function findMainCraft(array $Crafts): Craft|false
     {
-        if($craft = self::findUBestCraft($Crafts)){
-            return $craft;
-        }
-        return self::findAutoBestCraft($Crafts);
-    }
-
-    /**
-     * @param array<Craft> $Crafts
-     * @return false|Craft
-     */
-    private static function findUBestCraft(array $Crafts): Craft|false
-    {
         foreach ($Crafts as $craft){
             if($craft->countData->isUBest){
                 return $craft;
             }
-        }
-        return false;
-    }
-
-    /**
-     * @param array<Craft> $Crafts
-     * @return false|Craft
-     */
-    private static function findAutoBestCraft(array $Crafts): Craft|false
-    {
-        foreach ($Crafts as $craft){
             if($craft->countData->isBest){
                 return $craft;
             }
@@ -97,12 +74,6 @@ class CraftPool
     public function initMatPools(): void
     {
         $this->mainCraft = self::initMatPool($this->mainCraft);
-        /*$crafts = [];
-        foreach ($this->otherCrafts as $craft){
-            $craft = self::initMatPool($craft);
-            $crafts[] = $craft;
-        }
-        $this->otherCrafts = $crafts;*/
     }
 
     private static function initMatPool(Craft $craft): Craft
