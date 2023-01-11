@@ -338,10 +338,17 @@ class Price
     {
         global $Account;
         $qwe = qwe("
-        select * from uacc_crafts 
-         where itemId = :itemId 
-           and accountId = :accountId
-           and serverGroup = :serverGroup",
+        select uc.*,
+               if(ubC.craftId, 1, 0) as isUBest
+        from uacc_crafts uc
+                 left join uacc_bestCrafts ubC 
+                     on uc.craftId = ubC.craftId
+                     and uc.accountId = ubC.accountId
+         where uc.itemId = :itemId 
+           and uc.accountId = :accountId
+           and serverGroup = :serverGroup
+           order by isUBest desc, isBest desc, spmu, craftCost
+            limit 1",
         ['itemId'=>$itemId, 'accountId'=>$Account->id, 'serverGroup' => $Account->AccSets->serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){

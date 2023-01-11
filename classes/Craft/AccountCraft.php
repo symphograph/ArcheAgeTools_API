@@ -122,6 +122,12 @@ class AccountCraft
             and serverGroup = :serverGroup",
         ['accountId'=>$Account->id, 'serverGroup'=>$Account->AccSets->serverGroup]
         );
+        qwe("
+            delete from uacc_CraftPool
+            where accountId = :accountId
+                and serverGroup = :serverGroup",
+            ['accountId'=>$Account->id, 'serverGroup'=>$Account->AccSets->serverGroup]
+        );
     }
 
     public static function setUBest(int $accountId, int $craftId): bool

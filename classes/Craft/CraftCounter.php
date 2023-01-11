@@ -22,7 +22,7 @@ class CraftCounter
 
     public static function recountList(array $itemIds): self
     {
-        AccountCraft::clearAllCrafts();
+        //AccountCraft::clearAllCrafts();
         CraftCounter::clearBuff();
         $craftCounter = new self();
         foreach ($itemIds as $itemId){
@@ -31,6 +31,9 @@ class CraftCounter
         CraftCounter::clearBuff();
         if (empty($craftCounter->lost)){
             LaborCounter::recountInList($craftCounter->countedCrafts);
+            foreach ($craftCounter->countedItems as $resultItemId){
+                $CraftPool = CraftPool::getPoolWithAllData($resultItemId);
+            }
         }
         return $craftCounter;
     }
@@ -105,24 +108,9 @@ class CraftCounter
         if(!$groupCraft->groupAmount){
             return false;
         }
-        $sum = $sumSPM = 0;
-        foreach ($craft->Mats as $mat){
-            if(!($mat->need > 0)){
-                continue;
-            }
-            if(!$mat->initPrice() && !$mat->Item->craftable){
-                self::addToLost($mat->id);
-                continue;
-            }
-
-            if($Buffer = BufferSecond::byItemId($mat->id)){
-                $sumSPM += $Buffer->spm;
-            }
-
-            $sum += $mat->Price->price * $mat->need;
-        }
-
-        return MatSum::getGroupSum($sum, $groupCraft->groupAmount, $sumSPM, $craft);
+        $matSum = $groupCraft->getMatSum($craft, $this->lost);
+        $this->lost = $matSum->lost;
+        return $matSum;
     }
 
     private function addToLost(int $itemId): void

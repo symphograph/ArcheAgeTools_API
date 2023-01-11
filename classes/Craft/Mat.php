@@ -138,13 +138,18 @@ class Mat
             return true;
         }
         self::initIsByOnly();
-        if($this->isBuyOnly || $this->need < 0){
-            $Price = Price::bySaved($this->id);
-            if($Price){
-                $this->Price = $Price;
-                return true;
+
+        if($this->isBuyOnly){
+            return self::initPriceBySaved();
+        }
+
+        if($this->need < 0){
+            if(GroupCraft::byCraftId($this->craftId)){
+                $craft = Craft::byId($this->craftId);
+
+                return self::initPriceByCraft();
             }
-            return false;
+            return self::initPriceBySaved();
         }
 
         if($this->Item->isTradeNPC && !$this->Item->craftable){
@@ -152,17 +157,14 @@ class Mat
         }
 
         if($this->Item->craftable){
-            if($Price = Price::byCraft($this->id)){
-                $this->Price = $Price;
-                return true;
-            }
-            if($Price = Price::byBuffer($this->id)){
-                $this->Price = $Price;
-                return true;
-            }
-            return false;
+            return self::initPriceByCraft();
         }
 
+        return self::initPriceBySaved();
+    }
+
+    private function initPriceBySaved(): bool
+    {
         if($Price = Price::bySaved($this->id)){
             $this->Price = $Price;
             return true;
@@ -171,7 +173,18 @@ class Mat
         return false;
     }
 
-
+    private function initPriceByCraft(): bool
+    {
+        if($Price = Price::byCraft($this->id)){
+            $this->Price = $Price;
+            return true;
+        }
+        if($Price = Price::byBuffer($this->id)){
+            $this->Price = $Price;
+            return true;
+        }
+        return false;
+    }
 
     private function initPriceFromNPC(): bool
     {

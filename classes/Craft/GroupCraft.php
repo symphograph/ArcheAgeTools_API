@@ -32,4 +32,27 @@ class GroupCraft
         }
         return $result;
     }
+
+    public function getMatSum(Craft $craft, $lost = []): MatSum
+    {
+        $sum = $sumSPM = 0;
+        foreach ($craft->Mats as $mat){
+            if(!($mat->need > 0)){
+                continue;
+            }
+            if(!$mat->initPrice() && !$mat->Item->craftable){
+                //self::addToLost($mat->id);
+                $lost[] = $mat->id;
+                continue;
+            }
+
+            if($Buffer = BufferSecond::byItemId($mat->id)){
+                $sumSPM += $Buffer->spm;
+            }
+
+            $sum += $mat->Price->price * $mat->need;
+        }
+
+        return MatSum::getGroupSum($sum, $this->groupAmount, $sumSPM, $craft, $lost);
+    }
 }

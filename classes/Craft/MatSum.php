@@ -6,7 +6,8 @@ class MatSum
 {
     public function __construct(
         public int $craftCost,
-        public int $sumSPM
+        public int $sumSPM,
+        public array $lost = []
     )
     {
     }
@@ -27,13 +28,14 @@ class MatSum
         int|float $craftCost,
         int $groupAmount,
         int $sumSPM,
-        Craft $craft
+        Craft $craft,
+        array $lost = []
     ): self
     {
         $craftCost = self::addLaborCost($craftCost,$craft);
         $craftCost = round($craftCost / $groupAmount);
         $sumSPM = round($sumSPM / $craft->resultAmount);
-        return new self($craftCost, $sumSPM);
+        return new self($craftCost, $sumSPM, $lost);
     }
 
     private static function addLaborCost(int|float $craftCost, Craft $craft): int|float

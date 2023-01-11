@@ -20,9 +20,9 @@ use User\{MailruOldUser, Account};
 $Account = Account::bySess();
 $Account->initMember();
 $Account->AccSets->initProfs();
-//Test::countPackCrafts();
-$craft = \Craft\GroupCraft::byCraftId(1000161);
-printr($craft);
+Test::countPackCrafts();
+//$pool = \Craft\CraftPool::getByCache(3711);
+//printr($pool);
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';
 ?>
 </body>
