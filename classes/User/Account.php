@@ -13,7 +13,6 @@ class Account
     public int     $user_id;
     public int     $authTypeId;
     public ?string $created;
-
     public ?string $nickName;
     public ?string $externalAvaUrl;
     public ?string $avaFileName;
@@ -22,8 +21,9 @@ class Account
     public ?TeleUser    $TeleUser;
     public ?MailruUser  $MailruUser;
     public ?AccSettings $AccSets;
-    public ?Member      $Member;
     public ?Avatar $Avatar;
+    public ?Member $Member;
+
 
     /*public function __set(string $name, $value): void
     {
@@ -249,6 +249,10 @@ class Account
     public function initAvatar(): void
     {
         $Avatar = false;
+        if(!($this->authTypeId > 1)){
+            $this->Avatar = new Avatar();
+            return;
+        }
         if(empty($this->avaFileName)){
             self::initOAuthUserData();
             $Avatar = Avatar::byExternalUrl($this->externalAvaUrl);
