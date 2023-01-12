@@ -76,7 +76,7 @@ class Craft
         }
     }
 
-    private function initAllData(): void
+    public function initAllData(): void
     {
         self::initMats();
         self::initProf();
@@ -143,6 +143,9 @@ class Craft
         $craftIDs = self::getCraftIDs($itemId);
         $craftIDsImpl = implode(',', $craftIDs);
         $allMats = Mat::allPotentialMats($itemId);
+        if (empty($allMats)){
+            $allMats[] = 0;
+        }
         $allMatsImpl = implode(',', $allMats);
 
         $qwe = qwe("
@@ -196,5 +199,22 @@ class Craft
         }
         $this->Mats = $mats;
     }
+
+    public static function getAllResultItems(): false|array
+    {
+        $qwe = qwe("
+            select distinct resultItemId 
+            from crafts
+            inner join items i 
+                on crafts.resultItemId = i.id
+                and i.onOff
+            where crafts.onOff"
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return [];
+        }
+        return $qwe->fetchAll(PDO::FETCH_COLUMN);
+    }
+
 
 }

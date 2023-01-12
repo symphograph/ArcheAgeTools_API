@@ -24,13 +24,17 @@ class LaborCounter
     private function countChainLabor(Craft $craft, float|int $need = 1): void
     {
         $LaborData = LaborData::byCraft($craft);
-        //printr($craft);
+        $buyOnlyItems = CraftCounter::getBuyOnlyItems();
         $this->laborSum += $LaborData->forOneUnitOfThisCraft * $need;
         foreach ($craft->Mats as $mat){
             if(!$mat->craftable)
                 continue;
             if(!($mat->need > 0))
                 continue;
+
+            if(in_array($mat->id, $buyOnlyItems)){
+                continue;
+            }
             $matCrafts = CraftPool::getPool($mat->id);
             $matMainCraft = $matCrafts->mainCraft;
             self::countChainLabor($matMainCraft, $mat->need/$craft->resultAmount);

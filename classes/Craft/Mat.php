@@ -71,11 +71,14 @@ class Mat
     public static function getCraftMats(int $craftId) : array|bool
     {
         $qwe = qwe("
-            select *, 
+            select cm.*, 
                    itemId as id, 
                    /*if(matGrade, matGrade, 1) as grade */
                     matGrade as grade
-            from craftMaterials 
+            from craftMaterials cm 
+            inner join items i 
+                on cm.itemId = i.id
+                and i.onOff
             where craftId = :craftId",
             ['craftId' => $craftId]
         );

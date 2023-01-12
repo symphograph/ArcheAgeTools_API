@@ -129,4 +129,22 @@ class CraftCounter
         $this->groupCrafts = $qwe->fetchAll(PDO::FETCH_COLUMN);
         return $this->groupCrafts;
     }
+
+    /**
+     * @return array<int>
+     */
+    public static function getBuyOnlyItems(): array
+    {
+        global $Account;
+        $qwe = qwe("
+            select itemId 
+            from uacc_buyOnly
+            where accountId = :accountId",
+            ['accountId' => $Account->id]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return [];
+        }
+        return $qwe->fetchAll(PDO::FETCH_COLUMN);
+    }
 }

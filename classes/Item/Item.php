@@ -9,11 +9,6 @@ class Item
 {
     public ?int     $id;
     public ?string  $name;
-    public bool     $craftable  = false;
-    public bool     $personal   = false;
-    public bool     $isTradeNPC = false;
-    public bool     $isMat      = false;
-    public bool    $isBuyOnly  = false;
     public ?int     $priceFromNPC;
     public ?int     $priceToNPC;
     public ?int     $currencyId;
@@ -23,6 +18,12 @@ class Item
     public ?Info    $Info;
     public ?Price   $Price;
     public ?Pricing $Pricing;
+
+    public bool $craftable  = false;
+    public bool $personal   = false;
+    public bool $isTradeNPC = false;
+    public bool $isMat      = false;
+    public bool $isBuyOnly  = false;
 
     public function __set(string $name, $value): void{}
 

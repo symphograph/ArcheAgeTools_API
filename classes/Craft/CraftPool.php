@@ -83,6 +83,7 @@ class CraftPool
      */
     private static function findMainCraft(array $Crafts): Craft|false
     {
+
         foreach ($Crafts as $craft){
             if($craft->countData->isUBest){
                 return $craft;
@@ -98,11 +99,13 @@ class CraftPool
     {
         $mats = [];
         foreach ($craft->Mats as $mat){
+            /*
             if(!$mat->initPrice()){
                 printr($craft);
                 die();
             }
-            //$mat->initPrice();
+            */
+            $mat->initPrice();
             $mat->Price->initAuthor();
             $mats[] = $mat;
         }

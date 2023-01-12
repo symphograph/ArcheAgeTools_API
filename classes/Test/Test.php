@@ -3,7 +3,7 @@
 namespace Test;
 
 use Api;
-use Craft\{CraftCounter, LaborCounter};
+use Craft\{AccountCraft, Craft, CraftCounter, LaborCounter};
 use Item\{Item, Pack, Price};
 use User\Account;
 
@@ -45,6 +45,17 @@ class Test
         $packIds = Pack::getPackIds();
         $start = self::startTime('CraftCounter');
         $craftCounter = CraftCounter::recountList($packIds);
+
+        echo self::scriptTime($start, 'CraftCounter');
+        printr($craftCounter->lost);
+    }
+
+    public static function countAllCrafts(): void
+    {
+        //AccountCraft::clearAllCrafts();
+        $allIds = Craft::getAllResultItems();
+        $start = self::startTime('CraftCounter');
+        $craftCounter = CraftCounter::recountList($allIds);
 
         echo self::scriptTime($start, 'CraftCounter');
         printr($craftCounter->lost);
