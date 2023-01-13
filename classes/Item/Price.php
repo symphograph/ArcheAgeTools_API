@@ -397,7 +397,7 @@ class Price
 
     private static function isCurrency(int $itemId): bool
     {
-        $qwe = qwe("select * from valutas where id = :itemId", ['itemId'=>$itemId]);
+        $qwe = qwe("select * from currency where id = :itemId", ['itemId'=>$itemId]);
         return ($qwe && $qwe->rowCount());
     }
 

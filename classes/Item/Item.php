@@ -116,7 +116,7 @@ class Item
                     AND onOff
                     AND personal
                 )
-                OR id IN (SELECT id FROM valutas)
+                OR id IN (SELECT id FROM currency)
             )
             AND id != 500
 	    ");
