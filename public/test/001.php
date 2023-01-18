@@ -2,8 +2,10 @@
 $start = microtime(true);
 
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/config.php';
-use Item\{Category, Item, Pack};
+
+use Item\{Category, Currency, Item};
 use Craft\{Craft, CraftCounter};
+use Packs\Pack;
 use Symphograph\Bicycle\DB;
 use Test\Test;
 use User\{MailruOldUser, Account};
@@ -21,9 +23,11 @@ $Account = Account::bySess();
 $Account->initMember();
 $Account->AccSets->initProfs();
 //Test::countPackCrafts();
-Test::countAllCrafts();
-//$pool = \Craft\CraftPool::getByCache(3711);
-//printr($pool);
+//Test::countAllCrafts();
+
+$list = \Packs\PackIds::getUncounted();
+printr($list);
+
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';
 ?>
 </body>

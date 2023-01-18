@@ -3,8 +3,9 @@
 namespace Test;
 
 use Api;
-use Craft\{AccountCraft, Craft, CraftCounter, LaborCounter};
-use Item\{Item, Pack, Price};
+use Craft\{Craft, CraftCounter};
+use Item\{Item, Price};
+use Packs\{Pack, PackIds};
 use User\Account;
 
 class Test
@@ -42,7 +43,7 @@ class Test
     public static function countPackCrafts(): void
     {
         //CraftCounter::clearBuff();
-        $packIds = Pack::getPackIds();
+        $packIds = PackIds::getAll();
         $start = self::startTime('CraftCounter');
         $craftCounter = CraftCounter::recountList($packIds);
 

@@ -378,8 +378,11 @@ class Price
         return $Price;
     }
 
-    private function initItemProps(): void
+    public function initItemProps(): void
     {
+        if($this->method === 'empty'){
+            return;
+        }
         $item = Item::byId($this->itemId);
         $this->name = $item->name;
         $this->grade = $item->grade;

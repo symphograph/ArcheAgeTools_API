@@ -2,6 +2,7 @@
 
 namespace Craft;
 
+use Item\Item;
 use Item\Price;
 use PDO;
 
@@ -44,12 +45,18 @@ class CraftCounter
         if(empty($CraftCounter)){
             $CraftCounter = new self();
         }
+        if(in_array($itemId, $CraftCounter->countedItems)){
+            return $CraftCounter;
+        }
+
         $List = Craft::allPotentialCrafts($itemId);
 
         foreach ($List as $resultItemId => $crafts){
             if(in_array($resultItemId, $CraftCounter->countedItems)){
                 continue;
             }
+            $Item = Item::byId($resultItemId);
+            printr($Item->id. ': ' . $Item->name);
             foreach ($crafts as $craft){
                 //printr($craft->itemName);
                 $matSum = $CraftCounter->matSumCost($craft);
