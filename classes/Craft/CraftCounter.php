@@ -5,6 +5,7 @@ namespace Craft;
 use Item\Item;
 use Item\Price;
 use PDO;
+use Test\Test;
 
 class CraftCounter
 {
@@ -26,15 +27,15 @@ class CraftCounter
         //AccountCraft::clearAllCrafts();
         CraftCounter::clearBuff();
         $craftCounter = new self();
+        //$start = Test::startTime('recountItem');
         foreach ($itemIds as $itemId){
             $craftCounter = CraftCounter::recountItem($itemId, $craftCounter);
         }
+        //echo Test::scriptTime($start, 'recountItem');
         CraftCounter::clearBuff();
+
         if (empty($craftCounter->lost)){
             LaborCounter::recountInList($craftCounter->countedCrafts);
-            foreach ($craftCounter->countedItems as $resultItemId){
-                $CraftPool = CraftPool::getPoolWithAllData($resultItemId);
-            }
         }
         return $craftCounter;
     }

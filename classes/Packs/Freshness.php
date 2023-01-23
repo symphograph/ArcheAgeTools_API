@@ -7,6 +7,8 @@ class Freshness
     public int    $id       = 0;
     public string $name     = '';
     public ?int   $condType;
+    public ?int   $bestLvl;
+    public ?int   $worstLvl;
     public string $implodedPercents;
     public array  $Percents = [];
     /**
@@ -31,6 +33,7 @@ class Freshness
         if(!$freshness->initPercents()){
             return false;
         }
+        $freshness->initFreshLvls();
         return $freshness;
     }
 
@@ -47,16 +50,25 @@ class Freshness
         return !empty($this->Percents);
     }
 
-    public function initFreshLvls(): void
+    private function initBestLvl(): void
     {
-        $this->FreshLvls[] = self::getLvlByPercent(max($this->Percents));
-        $this->FreshLvls[] = self::getLvlByPercent(min($this->Percents));
+        //printr($this->Percents);
+        $bestPercent = max($this->Percents);
+        $this->bestLvl = array_search($bestPercent, $this->Percents);
     }
 
-    private function getLvlByPercent(int $percent): FreshLvl
+    private function initWorstLvl(): void
     {
-        $lvl = array_search($percent, $this->Percents);
-        return new FreshLvl($this->condType, $lvl, $percent);
+        $this->worstLvl = array_search(min($this->Percents), $this->Percents);
+    }
+
+    public function initFreshLvls(): void
+    {
+        foreach ($this->Percents as $lvl => $percent){
+            $this->FreshLvls[] = FreshLvl::byConstruct($this->condType, $lvl, $percent);
+        }
+        self::initBestLvl();
+        self::initWorstLvl();
     }
 
 }

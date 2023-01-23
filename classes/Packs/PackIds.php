@@ -35,7 +35,7 @@ class PackIds
             from 
             (select 
                     distinct i.id,
-                    uCP.itemId                
+                    uC.itemId                
                 from items i
                 inner join packs p 
                     on i.id = p.itemId
@@ -43,10 +43,11 @@ class PackIds
                 inner join zones z 
                     on p.zoneFromId = z.id
                     and z.side = :side
-                left join uacc_CraftPool uCP 
-                    on i.id = uCP.itemId
-                    and uCP.accountId = :accountId
-                    and uCP.serverGroup = :serverGroup
+                left join uacc_crafts uC 
+                    on i.id = uC.itemId
+                    and uC.accountId = :accountId
+                    and uC.serverGroup = :serverGroup
+                    and isBest
             ) as tmp
             where itemId is null",
             ['side'=>$side, 'accountId'=> $Account->id, 'serverGroup' => $Account->AccSets->serverGroup]

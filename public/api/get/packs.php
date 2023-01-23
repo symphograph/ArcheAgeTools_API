@@ -29,7 +29,9 @@ if(!empty($lostSolutions)){
 if(!empty($_POST['addProfit'])){
     $uncounted = PackIds::getUncounted($side);
     if(!empty($uncounted)){
+
         $CraftCounter = CraftCounter::recountList($uncounted);
+
         if(!empty($CraftCounter->lost)){
             $Lost = Price::lostList($CraftCounter->lost);
             die(Api::resultData(['Packs' => [], 'Lost' => $Lost]));

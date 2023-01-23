@@ -78,7 +78,6 @@ class PackRoute
     private function initFreshness(): void
     {
         $Freshness = Freshness::byId($this->Pack->freshId);
-        $Freshness->initFreshLvls();
         $this->Freshness = $Freshness;
     }
 

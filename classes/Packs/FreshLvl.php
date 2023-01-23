@@ -28,18 +28,30 @@ class FreshLvl
         4 => ['не портится']
     ];
 
+    public int    $condType;
+    public int    $lvl;
+    public int    $percent;
     public string $name;
-    public function __construct(
-        public int $condType,
-        public int $lvl,
-        public int $percent
-    )
+
+
+    public static function byConstruct(int $condType, int $lvl, int $percent): self
     {
-        $this->name = self::findName();
+        $Lvl = new self();
+        $Lvl->condType = $condType;
+        $Lvl->lvl = $lvl;
+        $Lvl->percent =$percent;
+        $Lvl->initName();
+        return $Lvl;
     }
 
-    private function findName(): string
+    public static function getList(array $percents)
     {
-        return self::conditions[$this->condType][$this->lvl];
+
+    }
+
+    private function initName(): void
+    {
+        //printr($this->condType);
+        $this->name = self::conditions[$this->condType][$this->lvl];
     }
 }

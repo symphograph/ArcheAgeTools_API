@@ -22,7 +22,10 @@ if(!empty($craftCounter->lost)){
     die( Api::resultData(['Lost' => $Lost]));
 }
 
-$Pool = CraftPool::getPoolWithAllData($itemId)
+foreach ($craftCounter->countedItems as $resultItemId){
+    $CraftPool = CraftPool::getPoolWithAllData($resultItemId);
+}
+$Pool = CraftPool::getByCache($itemId)
 or die(Api::errorMsg('Рецепты не найдены'));
 
 echo Api::resultData($Pool);
