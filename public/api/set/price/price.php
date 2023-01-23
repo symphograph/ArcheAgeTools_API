@@ -12,9 +12,13 @@ $itemId = intval($_POST['itemId'] ?? 0)
 or die(Api::errorMsg('id'));
 
 $price = preg_replace("/[^0-9]/", '', $_POST['price'] ?? 0);
+//printr($price);
 $price = intval($price);
 //or die(Api::errorMsg('price'));
 
+if (!$Account->AccSets->serverGroup){
+    die(Api::errorMsg('Сервер не выбран'));
+}
 $Price = Price::byInput($Account->id, $itemId, $Account->AccSets->serverGroup, $price);
 $Price->putToDB()
 or die(Api::errorMsg('Ошибка при сохранении'));

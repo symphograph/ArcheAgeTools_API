@@ -9,6 +9,7 @@ use Packs\Pack;
 use Symphograph\Bicycle\DB;
 use Test\Test;
 use User\{MailruOldUser, Account};
+use Test\TryInterface;
 
 ?>
 <!doctype html>
@@ -22,11 +23,9 @@ use User\{MailruOldUser, Account};
 $Account = Account::bySess();
 $Account->initMember();
 $Account->AccSets->initProfs();
-//Test::countPackCrafts();
-//Test::countAllCrafts();
 
-$list = \Packs\PackIds::getUncounted();
-printr($list);
+$t = new \Test\TryClass1();
+
 
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';
 ?>

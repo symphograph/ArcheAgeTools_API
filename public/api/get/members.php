@@ -7,7 +7,7 @@ $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
 
 $ServerGroup = Server::getGroup(intval($_POST['serverId'] ?? 0))
-or die(Api::errorMsg('server not found'));
+or die(Api::errorMsg('Сервер не указан'));
 
 $List = Member::getList($Account->id,$ServerGroup)
     or die(Api::errorMsg('members not found'));

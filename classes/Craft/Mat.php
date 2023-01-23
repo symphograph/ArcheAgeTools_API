@@ -160,9 +160,10 @@ class Mat
 
         if($this->need < 0){
             if(GroupCraft::byCraftId($this->craftId)){
-                //$craft = Craft::byId($this->craftId);
-
                 return self::initPriceByCraft();
+            }
+            if($this->craftable && self::initPriceByCraft()){
+                return true;
             }
             return self::initPriceBySaved();
         }

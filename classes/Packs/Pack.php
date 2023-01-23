@@ -3,6 +3,7 @@
 namespace Packs;
 
 use Item\Item;
+use Item\Price;
 use PDO;
 
 class Pack
@@ -20,7 +21,8 @@ class Pack
     public ?int    $doodId;
     public string  $icon;
     public int     $grade;
-    public int $passLabor;
+    public int     $passLabor;
+    public ?int    $craftPrice;
 
 
     /**
@@ -40,10 +42,6 @@ class Pack
         return $qwe->fetchAll(PDO::FETCH_CLASS, Item::class);
 
     }
-
-
-
-
 
     /**
      * @return array<self>|false
@@ -79,6 +77,7 @@ class Pack
             select 
                 p.itemId,
                 p.zoneFromId,
+                p.freshId,
                 i.name,
                 z.name as zoneName,
                 z.side,
@@ -103,5 +102,14 @@ class Pack
             return false;
         }
         return $qwe->fetchObject(self::class);
+    }
+
+    public function initCraftPrice(): bool
+    {
+        if(!$Price = Price::byCraft($this->itemId)){
+            return false;
+        }
+        $this->craftPrice = $Price->price;
+        return true;
     }
 }

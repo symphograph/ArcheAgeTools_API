@@ -56,9 +56,9 @@ class CraftCounter
                 continue;
             }
             $Item = Item::byId($resultItemId);
-            printr($Item->id. ': ' . $Item->name);
+
             foreach ($crafts as $craft){
-                //printr($craft->itemName);
+
                 $matSum = $CraftCounter->matSumCost($craft);
                 $buff = BufferFirst::putToDB($craft->id,$matSum->craftCost, $matSum->sumSPM);
                 if(!$buff){
@@ -90,6 +90,7 @@ class CraftCounter
                     self::addToLost($mat->id);
                     continue;
                 }
+                printr($mat);
             }
             if ($mat->need > 0) {
                 $spm = 0;

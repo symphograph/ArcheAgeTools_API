@@ -9,17 +9,18 @@ class PackRoute
     public int  $itemId;
     public int  $zoneFromId;
     public int  $zoneToId;
-    public int  $packPrice;
+    public int  $dbPrice;
     public int  $currencyId;
     public int  $mul;
     public ?Pack $Pack;
     public ?Zone $ZoneFrom;
     public ?Zone $ZoneTo;
+    public ?Freshness $Freshness;
 
     /**
      * @return array<self>
      */
-    public static function getList(int $side): array
+    public static function getList(int $side, bool $initCraftPrice = false): array
     {
         $rotes = self::getRoutes($side);
         $arr = [];
@@ -27,6 +28,10 @@ class PackRoute
         {
             $route->initZones();
             $route->initPack();
+            if($initCraftPrice){
+                $route->Pack->initCraftPrice();
+            }
+            $route->initFreshness();
             $arr[] = $route;
         }
         return $arr;
@@ -68,6 +73,13 @@ class PackRoute
             die();
         }
 
+    }
+
+    private function initFreshness(): void
+    {
+        $Freshness = Freshness::byId($this->Pack->freshId);
+        $Freshness->initFreshLvls();
+        $this->Freshness = $Freshness;
     }
 
 }

@@ -66,6 +66,8 @@ class Pricing
         $Price = Price::bySaved($this->itemId);
         if(!$Price){
             $this->Price = new Price();
+            $this->Price->itemId = $this->itemId;
+            $this->Price->author = 'Не найдено';
             return;
         }
         $Price->initLabel();
