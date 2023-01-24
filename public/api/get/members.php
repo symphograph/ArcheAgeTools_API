@@ -15,7 +15,9 @@ $List = Member::getList($Account->id,$ServerGroup)
 $Members = [];
 foreach ($List as $member){
     $member->initAccData();
-    $member->initLastPricedItem($ServerGroup);
+    if(!$member->initLastPricedItem($ServerGroup)){
+        continue;
+    }
     $Members[] = $member;
 }
 

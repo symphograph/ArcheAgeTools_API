@@ -2,9 +2,13 @@
 
 namespace Packs;
 
+use Craft\AccountCraft;
+use Craft\LaborData;
 use Item\Item;
 use Item\Price;
 use PDO;
+use User\Account;
+use User\Prof;
 
 class Pack
 {
@@ -23,6 +27,9 @@ class Pack
     public int     $grade;
     public int     $passLabor;
     public ?int    $craftPrice;
+    public ?int    $laborNeed;
+
+    public const tradeProfId = 5;
 
 
     /**
@@ -104,12 +111,20 @@ class Pack
         return $qwe->fetchObject(self::class);
     }
 
-    public function initCraftPrice(): bool
+    public function initCraftData(): bool
     {
-        if(!$Price = Price::byCraft($this->itemId)){
-            return false;
-        }
-        $this->craftPrice = $Price->price;
+        global $Account;
+        $CraftData = AccountCraft::byResultItemId($this->itemId);
+        self::initPassLabor();
+        $this->laborNeed = round($this->passLabor + $CraftData->laborTotal);
+        $laborCost = $Account->AccSets->getLaborCost();
+        $this->craftPrice = $CraftData->craftCost + $this->passLabor * $laborCost;
         return true;
+    }
+
+    private function initPassLabor(): void
+    {
+        $Prof = Prof::getAccProfById(self::tradeProfId);
+        $this->passLabor = LaborData::getBonusedLabor($this->passLabor, $Prof->laborBonus);
     }
 }

@@ -36,6 +36,8 @@ class CraftCounter
 
         if (empty($craftCounter->lost)){
             LaborCounter::recountInList($craftCounter->countedCrafts);
+        }else{
+            AccountCraft::clearAllCrafts();
         }
         return $craftCounter;
     }

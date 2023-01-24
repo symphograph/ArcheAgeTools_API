@@ -1,8 +1,9 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
 
-use User\{Account, Member, Server};
 use Item\Price;
+use Transfer\PriceTransfer;
+use User\{Account, Member, Server};
 
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
@@ -17,8 +18,13 @@ $priceMember->accountId = $memberId;
 $priceMember->initAccData();
 $priceMember->initIsFollow();
 
+if(!empty($priceMember->oldId)){
+    PriceTransfer::importPrices($priceMember->oldId, $priceMember->accountId);
+}
+
 $List = Price::memberPriceList($memberId, $ServerGroup);
-if($List){
+
+if(!$List){
     die(Api::resultData(['Prices' => [], 'priceMember' => $priceMember]));
 }
 

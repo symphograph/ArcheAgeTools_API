@@ -216,5 +216,8 @@ class Craft
         return $qwe->fetchAll(PDO::FETCH_COLUMN);
     }
 
+    public static function getMain(int $resultItemId)
+    {
 
+    }
 }

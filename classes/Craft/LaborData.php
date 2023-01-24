@@ -20,7 +20,7 @@ class LaborData
         }
         $LaborData = new self();
         $LaborData->forThisCraftDefault= $craft->laborNeed;
-        $LaborData->forThisCraftBonused = round($craft->laborNeed * ((100 - $prof->laborBonus) / 100));
+        $LaborData->forThisCraftBonused = self::getBonusedLabor($craft->laborNeed, $prof->laborBonus);
         $LaborData->forOneUnitOfThisCraft = $LaborData->forThisCraftBonused / $craft->resultAmount;
 
         return $LaborData;
@@ -30,5 +30,10 @@ class LaborData
     {
         global $Account;
         return $Account->AccSets->getLaborCost();
+    }
+
+    public static function getBonusedLabor(int|float $laborNeed, int $laborBonus): int
+    {
+        return round($laborNeed * ((100 - $laborBonus) / 100));
     }
 }

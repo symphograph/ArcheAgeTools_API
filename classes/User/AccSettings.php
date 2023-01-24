@@ -60,7 +60,6 @@ class AccSettings
         if(!empty($Account->AccSets->old_id)){
             //Его данные уже брали. Переписывать не нужно.
             return false;
-
         }
         if(!($OldUser = MailruOldUser::byEmail($Account->MailruUser->email ?? ''))){
            return false;
@@ -70,7 +69,6 @@ class AccSettings
         $Account->AccSets->publicNick = $OldUser->user_nick;
         $Account->AccSets->old_id = $OldUser->mail_id;
         return $Account->AccSets;
-
     }
 
 

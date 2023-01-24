@@ -154,4 +154,28 @@ class AccountCraft
         );
         return boolval($qwe);
     }
+
+    public static function byResultItemId(int $resultItemId)
+    {
+        global $Account;
+        $qwe = qwe("
+            select 
+                uc.*,
+                if(ubC.craftId, 1, 0) as isUBest
+            from uacc_crafts uc
+            left join uacc_bestCrafts ubC 
+                on uc.craftId = ubC.craftId
+                and uc.accountId = ubC.accountId
+            where uc.itemId = :itemId 
+                and uc.accountId = :accountId
+                and serverGroup = :serverGroup
+            order by isUBest desc, isBest desc, spmu, craftCost
+            limit 1",
+            ['itemId'=>$resultItemId, 'accountId'=>$Account->id, 'serverGroup' => $Account->AccSets->serverGroup]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return false;
+        }
+        return $qwe->fetchObject(self::class);
+    }
 }

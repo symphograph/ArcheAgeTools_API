@@ -13,6 +13,7 @@ class Member
     public ?int $followersCount;
     public ?string $publicNick;
     public ?Avatar $Avatar;
+    public ?int $oldId;
 
 
     /**
@@ -59,7 +60,7 @@ class Member
      */
     public static function getList(int $accountId, int $serverGroup): array
     {
-        $privateItemsStr = implode(',', Item::privateItems());
+        //$privateItemsStr = implode(',', Item::privateItems());
         $qwe = qwe("
             select
             uAcc.id as accountId,
@@ -74,8 +75,6 @@ class Member
                        max(datetime) as lastPriceTime
                 from uacc_prices
                 where serverGroup = :serverGroup1
-                    and itemId not in ( $privateItemsStr )
-                    and price > 0
                 group by accountId
                 order by lastPriceTime desc
             ) as tmp
@@ -138,15 +137,19 @@ class Member
         return boolval($qwe);
     }
 
-    public function initLastPricedItem(int $serverGroup): void
+    public function initLastPricedItem(int $serverGroup): bool
     {
         $Price = Price::getLastMemberPrice($this->accountId, $serverGroup);
         if(!$Price){
-            return;
+            return false;
         }
-        $Item = Item::byId($Price->itemId);
+        if(!$Item = Item::byId($Price->itemId)){
+            return false;
+        }
+
         $Item->Price = $Price;
         $this->LastPricedItem = $Item;
+        return true;
     }
 
     public function initAccData(): void
@@ -155,6 +158,9 @@ class Member
         $memberAccount->initAvatar();
         $this->Avatar = $memberAccount->Avatar;
         $this->publicNick = $memberAccount->AccSets->publicNick;
+        if(!empty($memberAccount->AccSets->old_id)){
+            $this->oldId = $memberAccount->AccSets->old_id;
+        }
     }
 
     public function initIsFollow(): void

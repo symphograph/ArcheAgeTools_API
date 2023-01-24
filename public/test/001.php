@@ -3,13 +3,8 @@ $start = microtime(true);
 
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/config.php';
 
-use Item\{Category, Currency, Item};
-use Craft\{Craft, CraftCounter};
-use Packs\Pack;
-use Symphograph\Bicycle\DB;
-use Test\Test;
-use User\{MailruOldUser, Account};
-use Test\TryInterface;
+use User\{Account};
+use Transfer\MailRuUserTransfer;
 
 ?>
 <!doctype html>
@@ -24,7 +19,8 @@ $Account = Account::bySess();
 $Account->initMember();
 $Account->AccSets->initProfs();
 
-$t = new \Test\TryClass1();
+
+MailRuUserTransfer::importUsers();
 
 
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';

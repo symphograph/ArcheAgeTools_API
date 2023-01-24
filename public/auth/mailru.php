@@ -1,7 +1,8 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
 use Auth\Mailru\{OAuthMailRu, MailruUser};
-use User\{Account, MailruOldUser, User, Sess};
+use User\{Account, AccSettings, MailruOldUser, User, Sess};
+use Transfer\PriceTransfer;
 
 $secret = $env->mailru_secrets->{$_SERVER['SERVER_NAME']};
 
@@ -46,8 +47,9 @@ $Sess = Sess::newSess($Account->id)
 or die('Ошибка создания сессии');
 
 //----------------------------------------------------------
-if($AccSets = \User\AccSettings::byOld($Account->id)){
+if($AccSets = AccSettings::byOld($Account->id)){
     $AccSets->putToDB();
+    PriceTransfer::importPrices($AccSets->old_id,$Account->id);
 }
 
 

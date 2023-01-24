@@ -252,20 +252,24 @@ class Price
         return $Price;
     }
 
-    public static function getLastMemberPrice(int $accountId, int $serverGroup): self|false
+    public static function getLastMemberPrice(int $accountId, int $serverGroup = 0): self|false
     {
-        $privateItems = Item::privateItems();
-        $privateItemsStr = '(' . implode(',', $privateItems) . ')';
-        $qwe = qwe("            
-                    select * from uacc_prices 
+        if($serverGroup){
+            $sql = "select * from uacc_prices 
                     where accountId = :accountId
                     and serverGroup = :serverGroup
-                    and price > 0
-                    and itemId NOT IN " . $privateItemsStr . "
                     order by datetime desc 
-                    limit 1",
-            ['accountId'=> $accountId, 'serverGroup'=> $serverGroup]
-        );
+                    limit 1";
+            $params = ['accountId'=> $accountId, 'serverGroup'=> $serverGroup];
+        }else{
+            $sql = "select * from uacc_prices 
+                    where accountId = :accountId
+                    order by datetime desc 
+                    limit 1";
+            $params = ['accountId'=> $accountId];
+        }
+        $qwe = qwe($sql, $params);
+
         if(!$qwe || !$qwe->rowCount()){
             return false;
         }
@@ -338,25 +342,7 @@ class Price
     public static function byCraft(int $itemId): self|false
     {
         global $Account;
-        $qwe = qwe("
-            select 
-                uc.*,
-                if(ubC.craftId, 1, 0) as isUBest
-            from uacc_crafts uc
-            left join uacc_bestCrafts ubC 
-                on uc.craftId = ubC.craftId
-                and uc.accountId = ubC.accountId
-            where uc.itemId = :itemId 
-                and uc.accountId = :accountId
-                and serverGroup = :serverGroup
-            order by isUBest desc, isBest desc, spmu, craftCost
-            limit 1",
-        ['itemId'=>$itemId, 'accountId'=>$Account->id, 'serverGroup' => $Account->AccSets->serverGroup]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
-        $CraftData = $qwe->fetchObject(AccountCraft::class);
+        $CraftData = AccountCraft::byResultItemId($itemId);
         $Price = new self();
         $Price->itemId = $itemId;
         $Price->price = $CraftData->craftCost;
@@ -412,7 +398,7 @@ class Price
     public static function getOldList(int $oldUserId): array
     {
         $qwe = qwe("
-            select  item_id, 
+            select  item_id as itemId, 
                     auc_price as price, 
                     server_group as serverGroup,
                     time as datetime
@@ -464,6 +450,24 @@ class Price
     {
         $Author = Account::byId($this->accountId);
         $this->author = $Author->AccSets->publicNick;
+    }
+
+    public function isExistNewerInDB(): bool
+    {
+        $qwe = qwe("
+            select * 
+            from uacc_prices 
+            where accountId = :accountId
+            and serverGroup = :serverGroup
+            and itemId = :itemId
+            and datetime >= :datetime", [
+                'accountId'   => $this->accountId,
+                'serverGroup' => $this->serverGroup,
+                'itemId'      => $this->itemId,
+                'datetime'    => $this->datetime
+            ]
+        );
+        return $qwe && $qwe->rowCount();
     }
 
 }
