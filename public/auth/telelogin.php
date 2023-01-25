@@ -1,7 +1,7 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
-use Auth\Telegram\{Telegram, TeleUser};
-use User\User;
+use App\Auth\Telegram\{Telegram, TeleUser};
+use App\User\User;
 
 
 $User = new User();

@@ -1,9 +1,10 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/config.php';
 
-use Craft\AccountCraft;
-use Item\Item;
-use User\Account;
+use App\Api;
+use App\Craft\AccountCraft;
+use App\Item\Item;
+use App\User\Account;
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
 

@@ -1,7 +1,8 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/config.php';
 
-use User\{ProfLvls, Server};
+use App\Api;
+use App\User\{ProfLvls, Server};
 
 $Servers = Server::getList() or die(Api::errorMsg('Серверы не найдены'));
 $ProfLvls = ProfLvls::getList();

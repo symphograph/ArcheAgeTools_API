@@ -1,6 +1,7 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
-use User\{Account, Sess};
+use App\User\{Account, Sess};
+use App\Api;
 
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('badToken'));

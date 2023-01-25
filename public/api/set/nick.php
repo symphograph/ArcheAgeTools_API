@@ -1,9 +1,11 @@
 <?php
 
+use App\Api;
 use Symphograph\Bicycle\Helpers;
+use App\User\Account;
 
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
-$Account = \User\Account::byToken($_POST['token'] ?? '') or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken($_POST['token'] ?? '') or die(Api::errorMsg('Обновите страницу'));
 if (empty($_POST['nick'])){
     die(Api::errorMsg('Ой!'));
 }

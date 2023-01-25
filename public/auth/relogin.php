@@ -1,6 +1,6 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
-use User\{Account, Sess};
+use App\User\{Account, Sess};
 $id = intval($_GET['accountId'] ?? 0) or die();
 
 $Account = Account::bySess() or die('Ошибка аутентификации');

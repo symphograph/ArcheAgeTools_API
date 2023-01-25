@@ -1,8 +1,8 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
-use Auth\Mailru\{OAuthMailRu, MailruUser};
-use User\{Account, AccSettings, MailruOldUser, User, Sess};
-use Transfer\PriceTransfer;
+use App\Auth\Mailru\{OAuthMailRu};
+use App\User\{Account, AccSettings, Sess};
+use App\Transfer\PriceTransfer;
 
 $secret = $env->mailru_secrets->{$_SERVER['SERVER_NAME']};
 

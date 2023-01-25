@@ -3,8 +3,9 @@ $start = microtime(true);
 
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/config.php';
 
-use User\{Account};
-use Transfer\MailRuUserTransfer;
+use App\User\{Account};
+use App\Test\Try\TryClass1;
+use App\Transfer\MailRuUserTransfer;
 
 ?>
 <!doctype html>
@@ -15,12 +16,13 @@ use Transfer\MailRuUserTransfer;
 </head>
 <body style="color: white; background-color: #262525">
 <?php
-$Account = Account::bySess();
-$Account->initMember();
-$Account->AccSets->initProfs();
+//$Account = Account::bySess();
+//$Account->initMember();
+//$Account->AccSets->initProfs();
 
-
-MailRuUserTransfer::importUsers();
+$Try = new TryClass1();
+printr($Try);
+//MailRuUserTransfer::importUsers();
 
 
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';

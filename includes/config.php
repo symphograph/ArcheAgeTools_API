@@ -9,6 +9,7 @@ if(preg_match('/www./',$_SERVER['SERVER_NAME']))
 	exit();
 }
 use Symphograph\Bicycle\DB;
+use App\User\Sess;
 
 $env = require dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/env.php';
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/functions.php';
@@ -22,6 +23,7 @@ if($env->myip)
 
 }
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/vendor/autoload.php';
+/*
 spl_autoload_register(function ($className) {
     $fileName = str_replace('\\', '/', $className) . '.php';
     $file = dirname($_SERVER['DOCUMENT_ROOT']) . '/classes/' . $fileName;
@@ -29,14 +31,14 @@ spl_autoload_register(function ($className) {
         require_once $file;
     }
 });
-
+*/
 
 if(str_starts_with($_SERVER['SCRIPT_NAME'], '/api/')) {
 
     if(!in_array($_SERVER['REQUEST_METHOD'], ['POST', 'OPTIONS']))
         die();
 
-    \User\Sess::checkOrigin();
+    Sess::checkOrigin();
 
     if(empty($_POST)) {
         $_POST = json_decode(file_get_contents('php://input'), true)['params'] ?? [];
@@ -54,6 +56,8 @@ if(
     str_starts_with($_SERVER['SCRIPT_NAME'],'/api/')
     ||
     str_starts_with($_SERVER['SCRIPT_NAME'],'/services/')
+    ||
+    str_starts_with($_SERVER['SCRIPT_NAME'],'/transfer/')
 ){
     if(!$env->myip){
         die('permis');

@@ -1,10 +1,11 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
 
-use Craft\CraftCounter;
-use Item\{Item, Price};
-use Packs\{PackIds, PackRoute};
-use User\Account;
+use App\Api;
+use App\Craft\CraftCounter;
+use App\Item\{Item, Price};
+use App\Packs\{PackIds, PackRoute};
+use App\User\Account;
 
 $Account = Account::byToken($_POST['token'] ?? '')
 or die(Api::errorMsg('Обновите страницу'));
