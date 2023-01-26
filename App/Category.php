@@ -2,6 +2,8 @@
 
 namespace App;
 
+use PDO;
+
 class Category
 {
     public int|null $id;

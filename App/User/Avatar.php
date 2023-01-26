@@ -2,6 +2,7 @@
 
 namespace App\User;
 
+use App\ImgHelper;
 use Symphograph\Bicycle\FileHelper;
 
 
@@ -37,7 +38,7 @@ class Avatar
         $fileName = md5($fileData);
         $filePath = dirname($_SERVER['DOCUMENT_ROOT']) . '/uploadtmp/' . $fileName;
         FileHelper::fileForceContents($filePath, $fileData);
-        $ext = \ImgHelper::getExtension($filePath);
+        $ext = ImgHelper::getExtension($filePath);
         FileHelper::delete($filePath);
         if(!$ext){
             return false;

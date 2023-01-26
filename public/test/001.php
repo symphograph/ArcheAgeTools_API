@@ -20,8 +20,7 @@ use App\Transfer\MailRuUserTransfer;
 //$Account->initMember();
 //$Account->AccSets->initProfs();
 
-$Try = new TryClass1();
-printr($Try);
+
 //MailRuUserTransfer::importUsers();
 
 

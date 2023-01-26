@@ -4,7 +4,7 @@ namespace App\Test;
 
 use App\Api;
 use App\Craft\{Craft, CraftCounter};
-use App\Item\{Item, Price};
+use App\Item\{Item, Price, Pricing};
 use App\Packs\{Pack, PackIds};
 use App\User\Account;
 
@@ -19,7 +19,7 @@ class Test
     {
         $List = Item::searchList() or die(Api::errorMsg('pricingByItemId err'));
         foreach ($List as $item){
-            if (!($Pricing = \Item\Pricing::byItemId($item->id))) {
+            if (!($Pricing = Pricing::byItemId($item->id))) {
                 echo "<br>item_id: $item->id. err";
             }
         }
@@ -70,7 +70,7 @@ class Test
 
     public static function startTime(string $funcName = '$funcName'): float
     {
-        echo "<p>Старт: $funcName</p>";
+        //echo "<p>Старт: $funcName</p>";
         return microtime(true);
     }
 }

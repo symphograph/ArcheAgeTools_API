@@ -7,19 +7,18 @@ use Symphograph\Bicycle\Helpers;
 
 class Category
 {
-    public int|null $id;
-    public int|null $index;
-    public string|null $name;
-    public int|null $deep;
-    public string|null $description;
-    public bool $selectable = true;
-
+    public ?int    $id;
+    public ?int    $index;
+    public ?string $name;
+    public ?int    $deep;
+    public ?string $description;
+    public bool    $selectable = true;
     /**
      * @var array<self>|null
      */
-    public array|null  $children;
-    public int|null    $parent;
-    public string|null $icon;
+    public ?array  $children;
+    public ?int    $parent;
+    public ?string $icon;
 
     public function __set(string $name, $value): void{}
 
@@ -59,7 +58,7 @@ class Category
     }
 
     /**
-     * @param array<self> $categories
+     * @param array<self> $List
      * @return array<self>
      */
     private static function treeFromList(array $List) {
@@ -110,6 +109,23 @@ class Category
             $arr[] = $node;
         }
         return $arr;
+    }
+
+    /**
+     * @return array<self>|false
+     */
+    public static function byName(string $categoryName): array|false
+    {
+        $qwe = qwe("
+            select * from Categories 
+            where name = :name 
+            and deep = 3",
+            ['name'=>$categoryName]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return false;
+        }
+        return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
 }
