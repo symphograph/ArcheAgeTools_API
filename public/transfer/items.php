@@ -14,8 +14,15 @@ $startTestTime = Test::startTime();
 </head>
 <body style="color: white; background-color: #262525">
 <?php
-ItemList::transferList(2);
-//ItemList::transferItem(3885);
+$ItemList = new ItemList(
+    limit: 1,
+    itemId: 1,
+    readOnly: true,
+    random: true,
+    onlyNew: false
+);
+
+$ItemList->transferList();
 
 echo Test::scriptTime($startTestTime);
 ?>

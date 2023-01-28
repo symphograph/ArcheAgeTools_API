@@ -21,6 +21,7 @@ class Item
 
     public bool $craftable  = false;
     public bool $personal   = false;
+    public bool $isGradable = false;
     public bool $isTradeNPC = false;
     public bool $isMat      = false;
     public bool $isBuyOnly  = false;

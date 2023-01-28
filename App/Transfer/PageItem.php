@@ -3,20 +3,20 @@
 namespace App\Transfer;
 
 use App\Item\Category;
-use App\Test\Test;
-use function Symfony\Component\String\s;
 
 class PageItem extends Page
 {
     public ItemDTO|false $ItemDB;
     public ?ItemDTO $ItemDTO;
-    public string $targetArea;
+    public ItemTargetArea $TargetArea;
+    public ?GradeArea $GradeArea;
 
     public function __construct(public int $itemId)
     {
+        self::saveLast();
     }
 
-    public function executeTransfer(): bool
+    public function executeTransfer(bool $readOnly = true): bool
     {
         if(!$this->ItemDB = ItemDTO::byDB($this->itemId)){
             $this->error = 'Item does not exist in DB';
@@ -26,6 +26,11 @@ class PageItem extends Page
 
         if(!self::parseData()){
             return false;
+        }
+        if(empty($this->error) && !$readOnly){
+            if(!self::updateDB()){
+                $this->error = 'updateDB error';
+            }
         }
         return true;
     }
@@ -37,6 +42,8 @@ class PageItem extends Page
             self::initTargetArea() => false,
             self::initItemId() => false,
             self::initItemName() => false,
+            self::isNecessary() => false,
+            self::initItemLvl() => false,
             self::initIsPersonal() => false,
             self::initGrade() => false,
             self::initCategory() => false,
@@ -44,15 +51,22 @@ class PageItem extends Page
             self::initPrices() => false,
             default => true
         };
+        if(!$result){
+            return false;
+        }
 
         self::initIsTradeNPC();
+        self::initIsGradable();
+        self::initIconFileName();
 
-        return $result;
+        return true;
     }
 
-    private function initContent(): string|false
+    private function initContent(?int $grade = null): string|false
     {
-        $result = self::curl(self::site . 'item/' . $this->itemId . '/', self::options);
+        $query = $grade ? 'grade=' . $grade : '';
+        $url = self::site . 'item/' . $this->itemId . '/' . $query;
+        $result = self::curl($url, self::options);
         if($result->err || $result->http_code !== 200 || empty($result->content)){
             $this->error = 'content not received';
             return false;
@@ -68,65 +82,85 @@ class PageItem extends Page
             $this->error = 'ItemPage is empty';
             return false;
         }
-
-        $this->targetArea = $arr[0][0];
+        $this->TargetArea = new ItemTargetArea($arr[0][0]);
         return true;
     }
 
     private function initItemId(): bool
     {
-        if(!ItemTargetArea::checkItemId($this->targetArea, $this->itemId)){
+        if(!$this->TargetArea->checkItemId($this->itemId)){
             $this->error = 'Invalid Item Id';
             return false;
         }
+        $this->ItemDTO->id = $this->itemId;
         return true;
     }
 
     private function initItemName(): bool
     {
-        $name = ItemTargetArea::extractItemName($this->targetArea);
+        $name = $this->TargetArea->extractItemName();
         if(empty($name)){
             $this->error = 'ItemName is empty';
             return false;
         }
-        if(ItemTargetArea::isUnnecessary($name)){
+
+        $this->ItemDTO->name = $name;
+        return true;
+    }
+
+    private function isNecessary(): bool
+    {
+        if($this->TargetArea->isUnnecessary($this->ItemDTO->name)){
             $this->error = 'Item is unnecessary';
             return false;
         }
-        $this->ItemDTO->name = $name;
         return true;
     }
 
     private function initIsPersonal(): bool
     {
-        $this->ItemDTO->personal = str_contains($this->targetArea, 'Персональный предмет');
+        $this->ItemDTO->personal = str_contains($this->TargetArea->content, 'Персональный предмет');
+        return true;
+    }
+
+    private function initItemLvl(): bool
+    {
+        $lvl = $this->TargetArea->extractItemLvl();
+        if($lvl === false){
+            $lvl = $this->ItemDB->lvl ?? 0;
+        }
+        $this->ItemDTO->lvl = $lvl;
         return true;
     }
 
     private function initGrade(): bool
     {
-        $this->ItemDTO->basicGrade = ItemTargetArea::extractGrade($this->targetArea);
+        $this->ItemDTO->basicGrade = $this->TargetArea->extractGrade();
         return true;
     }
 
     private function initCategory(): bool
     {
+
+        /*
         if ($this->ItemDB->categId > 1){
             $this->ItemDTO->categId = $this->ItemDB->categId;
             return true;
         }
-        $categoryName = ItemTargetArea::extractCategoryName($this->targetArea);
+        */
+        $categoryName = $this->TargetArea->extractCategoryName();
 
         $error = match (true){
             empty($categoryName) => 'Category is empty',
-            preg_match(
-                '/deprecated|test|тестовый|NO_NAME|Не используется/ui',
+            !!preg_match(
+                '/deprecated|test|TEST|тестовый|NO_NAME|Не используется/ui',
                 $categoryName
             ) => 'Category is unnecessary',
             empty($Categories = Category::byName($categoryName)) => 'Category does not exist in DB',
             count($Categories) > 1 => 'Category having variants',
             default => ''
         };
+
         if(!empty($error)){
             $this->error = $error;
             return false;
@@ -139,7 +173,7 @@ class PageItem extends Page
 
     private function initDescription(): bool
     {
-        $description = DescriptionExtract::extract($this->targetArea);
+        $description = DescriptionExtract::extract($this->TargetArea->content);
         if(empty($description)){
             $this->error = 'Description is empty';
             return false;
@@ -165,10 +199,21 @@ class PageItem extends Page
         };
     }
 
+    private function initIsGradable(): void
+    {
+        $this->ItemDTO->isGradable = self::initGradeArea();
+    }
+
+    private function initIconFileName(): void
+    {
+        $iconFileName = $this->TargetArea->extractIconFileName();
+        printr($iconFileName);
+    }
+
     //----------------------------------------------------------------------
     private function initPriceFromNPC(): void
     {
-        $price = ItemTargetArea::extractPrice($this->targetArea, '#Цена покупки:(.+?)</tr>#is');
+        $price = $this->TargetArea->extractPrice('#Цена покупки:(.+?)</tr>#is');
         if(!$price){
             return;
         }
@@ -177,10 +222,10 @@ class PageItem extends Page
 
     private function initPriceToNPC(): void
     {
-        if(str_contains($this->targetArea, 'не нужен торговцам')) {
+        if(str_contains($this->TargetArea->content, 'не нужен торговцам')) {
             return;
         }
-        $price = ItemTargetArea::extractPrice($this->targetArea, '#Цена продажи:(.+?)</tr>#is');
+        $price = $this->TargetArea->extractPrice('#Цена продажи:(.+?)</tr>#is');
         if(!$price){
             return;
         }
@@ -189,7 +234,7 @@ class PageItem extends Page
 
     private function initCurrencyId(): bool
     {
-        $currencyId = ItemTargetArea::extractCurrencyId($this->targetArea);
+        $currencyId = $this->TargetArea->extractCurrencyId();
         if (!$currencyId){
             if(str_contains($this->content, 'Можно приобрести') || str_contains($this->content, 'Продаётся у NPC')){
                 $this->error = 'Currency not defined';
@@ -201,5 +246,30 @@ class PageItem extends Page
         }
         $this->ItemDTO->currencyId = $currencyId;
         return true;
+    }
+
+    private function initGradeArea(): bool
+    {
+        if(!$GradeArea = GradeArea::extractSelf($this->content)){
+            return false;
+        }
+        $this->GradeArea = $GradeArea;
+        return true;
+    }
+
+    //------------------------------------------------------------------------
+
+    private function saveLast()
+    {
+        qwe("update transfer_Last set id = :itemId where lastRec = 'item'", ['itemId' => $this->itemId]);
+    }
+
+    private function updateDB(): bool
+    {
+        return match (false){
+            $this->ItemDB->update($this->ItemDTO) => false,
+            $this->TargetArea->putSectionsToDB($this->itemId) => false,
+            default => true
+        };
     }
 }
