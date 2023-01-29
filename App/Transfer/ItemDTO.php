@@ -26,7 +26,7 @@ class ItemDTO
     public bool $isGradable = false;
     public ?int    $forUpGrade;
     public ?string $icon;
-    public ?string $iconMd5;
+    public ?string $iconMD5;
 
     public static function byDB(int $id): self|false
     {
@@ -72,7 +72,7 @@ class ItemDTO
             'isGradable'   => intval($this->isGradable),
             'forUpGrade'   => $this->forUpGrade,
             'icon'         => $this->icon,
-            'iconMd5'      => $this->iconMd5,
+            'iconMD5'      => $this->iconMD5,
             'lvl'          => $this->lvl
         ];
         return DB::replace('items', $params);

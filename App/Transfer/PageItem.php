@@ -49,6 +49,7 @@ class PageItem extends Page
             self::initCategory() => false,
             self::initDescription() => false,
             self::initPrices() => false,
+            self::loadIcon() => false,
             default => true
         };
         if(!$result){
@@ -57,7 +58,6 @@ class PageItem extends Page
 
         self::initIsTradeNPC();
         self::initIsGradable();
-        self::initIconFileName();
 
         return true;
     }
@@ -65,14 +65,8 @@ class PageItem extends Page
     private function initContent(?int $grade = null): string|false
     {
         $query = $grade ? 'grade=' . $grade : '';
-        $url = self::site . 'item/' . $this->itemId . '/' . $query;
-        $result = self::curl($url, self::options);
-        if($result->err || $result->http_code !== 200 || empty($result->content)){
-            $this->error = 'content not received';
-            return false;
-        }
-        $this->content = $result->content;
-        return true;
+        $url = self::site . '/ru/item/' . $this->itemId . '/' . $query;
+        return self::getContent($url);
     }
 
     private function initTargetArea(): bool
@@ -149,15 +143,14 @@ class PageItem extends Page
         }
         */
         $categoryName = $this->TargetArea->extractCategoryName();
-
         $error = match (true){
             empty($categoryName) => 'Category is empty',
             !!preg_match(
                 '/deprecated|test|TEST|тестовый|NO_NAME|Не используется/ui',
                 $categoryName
             ) => 'Category is unnecessary',
-            empty($Categories = Category::byName($categoryName)) => 'Category does not exist in DB',
-            count($Categories) > 1 => 'Category having variants',
+            empty($Categories = Category::byName($categoryName)) => 'Category does not exist in DB: ' . $categoryName,
+            count($Categories) > 1 => 'Category having variants: ' . $categoryName,
             default => ''
         };
 
@@ -204,13 +197,21 @@ class PageItem extends Page
         $this->ItemDTO->isGradable = self::initGradeArea();
     }
 
-    private function initIconFileName(): void
+    private function loadIcon(): bool
     {
-        $iconFileName = $this->TargetArea->extractIconFileName();
-        printr($iconFileName);
+        $iconFileName = $this->TargetArea->extractIconSRC();
+        $IconPage = new PageIcon($iconFileName, $this->itemId);
+        if(!$IconPage->executeTransfer()){
+            $this->error = 'Icon: ' . $IconPage->error;
+            return false;
+        }
+        $this->ItemDTO->icon = $IconPage->newSRC;
+        $this->ItemDTO->iconMD5 = $IconPage->iconMD5;
+        return true;
     }
 
     //----------------------------------------------------------------------
+
     private function initPriceFromNPC(): void
     {
         $price = $this->TargetArea->extractPrice('#Цена покупки:(.+?)</tr>#is');
@@ -256,6 +257,7 @@ class PageItem extends Page
         $this->GradeArea = $GradeArea;
         return true;
     }
+
 
     //------------------------------------------------------------------------
 

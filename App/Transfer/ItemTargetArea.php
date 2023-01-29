@@ -71,7 +71,7 @@ class ItemTargetArea extends TargetArea
         if(!preg_match_all($regExp, $this->content, $arr)){
             return false;
         }
-        return self::lettersOnly($arr[1][0] ?? '');
+        return self::sanitizeItemName($arr[1][0] ?? '');
     }
 
     public function extractPrice(string $regExp): false|int
@@ -154,7 +154,7 @@ class ItemTargetArea extends TargetArea
         return $beforeTime < date('Y-m-d H:i:s');
     }
 
-    public function extractIconFileName(): false|string
+    public function extractIconSRC(): false|string
     {
         $regExp = '#<td class="item-icon"><div style="position: relative; left: 0; top: 0;"><img src="//archeagecodex.com/items/(.+?)\.png" style#is';
 
@@ -164,7 +164,7 @@ class ItemTargetArea extends TargetArea
         if(empty($arr[1][0])){
             return false;
         }
-        return str_replace("\\",'/', $arr[1][0]);
+        return str_replace("\\",'/', $arr[1][0]) . '.png';
     }
 
 

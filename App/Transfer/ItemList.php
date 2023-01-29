@@ -61,9 +61,10 @@ class ItemList
         $PageItem = new PageItem($itemId);
         $PageItem->executeTransfer($this->readOnly);
         echo "<p>ID: $itemId - {$PageItem->ItemDB->name}</p>";
-        self::putToLog($itemId, $PageItem->ItemDTO->name, $PageItem->error);
-        $PageItem->TargetArea->printSections(['top']);
-        //printr($PageItem->ItemDB);
+        //$PageItem->TargetArea->printSections([/*'top'*/]);
+        self::putToLog($itemId, $PageItem->ItemDTO->name ?? $PageItem->ItemDB->name, $PageItem->error);
+
+
         //printr($PageItem->ItemDTO);
         //echo $PageItem->ItemDTO->description . '<br>';
         //echo $PageItem->targetArea;

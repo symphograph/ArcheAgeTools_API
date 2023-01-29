@@ -8,9 +8,9 @@ class Page
     public string $error = '';
     public array $warnings = [];
 
-    const site = 'https://archeagecodex.com/ru/';
+    const site = 'https://archeagecodex.com';
     const options = [
-        CURLOPT_HEADER => 1,
+        CURLOPT_HEADER => 0,
         CURLOPT_FAILONERROR => 1,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_TIMEOUT => 10,
@@ -18,15 +18,14 @@ class Page
         CURLOPT_USERAGENT => "Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.9.1.5) Gecko/20091102 Firefox/3.5.5 GTB6",
     ];
 
-    public static function curl(string $url, $options = []): object
+    public static function curl(string $url, array $options = []): object
     {
+        if(empty($options)){
+            $options = self::options;
+        }
         $options[CURLOPT_URL] = $url;
         $ch = curl_init();
         curl_setopt_array($ch, $options);
-        /*
-            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-        */
 
         $content = curl_exec($ch);
         $err     = curl_errno($ch);
@@ -39,5 +38,17 @@ class Page
 
         curl_close($ch);
         return $result;
+    }
+
+    protected function getContent(string $url, array $options = []): bool
+    {
+        $result = self::curl($url, $options);
+        if($result->err || $result->http_code !== 200 || empty($result->content)){
+            printr($result);
+            $this->error = 'content not received';
+            return false;
+        }
+        $this->content = $result->content;
+        return true;
     }
 }

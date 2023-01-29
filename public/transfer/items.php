@@ -14,11 +14,12 @@ $startTestTime = Test::startTime();
 </head>
 <body style="color: white; background-color: #262525">
 <?php
+set_time_limit(0);
 $ItemList = new ItemList(
-    limit: 1,
-    itemId: 1,
-    readOnly: true,
-    random: true,
+    limit: 100000,
+    itemId: 0,
+    readOnly: false,
+    random: false,
     onlyNew: false
 );
 
