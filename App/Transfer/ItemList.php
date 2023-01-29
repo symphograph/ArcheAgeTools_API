@@ -25,7 +25,8 @@ class ItemList
         private readonly int  $itemId = 0,
         private readonly bool $readOnly = true,
         private readonly bool $random = false,
-        private readonly bool $onlyNew = false
+        private readonly bool $onlyNew = false,
+        private readonly bool $onlyErrors = false
     )
     {
     }
@@ -62,7 +63,10 @@ class ItemList
         $PageItem->executeTransfer($this->readOnly);
         echo "<p>ID: $itemId - {$PageItem->ItemDB->name}</p>";
         //$PageItem->TargetArea->printSections([/*'top'*/]);
-        self::putToLog($itemId, $PageItem->ItemDTO->name ?? $PageItem->ItemDB->name, $PageItem->error);
+        if(!$this->readOnly){
+            self::putToLog($PageItem);
+        }
+
 
 
         //printr($PageItem->ItemDTO);
@@ -100,9 +104,27 @@ class ItemList
         $rand = $this->random ? 'order by rand()' : '';
         $andOnlyNew = $this->onlyNew ? "and id in (select id from $newItemTable)" : '';
 
+        $andOnlyErrors = $this->onlyErrors ? "            and id in (
+                        select id from transfer_Items 
+                        where status != '' 
+                          and status not in (
+                          'ItemPage is empty', 
+                          'Item is overdue', 
+                          'Item is unnecessary', 
+                          'Category is unnecessary'
+                          )
+                      )" : '';
+
+        /*
+        $andOnlyErrors = $this->onlyErrors ? "            and id in (
+                        select id from transfer_Items 
+                        where datetime > '2023-01-29 13:00:00'
+                      )" : '';
+        */
         $qwe = qwe("
             select id from items 
             where id >= (select id from transfer_Last where lastRec = 'item')
+            $andOnlyErrors
             $andOnlyNew
             $rand
             limit :limit",
@@ -114,12 +136,12 @@ class ItemList
         return $qwe->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    private static function putToLog(int $itemId, string $itemName, string $status): void
+    private static function putToLog(PageItem $PageItem): void
     {
         $params = [
-            'id' => $itemId,
-            'name' => $itemName,
-            'status' => $status,
+            'id' => $PageItem->ItemDB->id,
+            'name' => $PageItem->ItemDTO->name ?? $PageItem->ItemDB->name,
+            'status' => $PageItem->error,
             'datetime' => date('Y-m-d H:i:s')
         ];
         DB::replace('transfer_Items', $params);

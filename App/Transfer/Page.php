@@ -44,7 +44,6 @@ class Page
     {
         $result = self::curl($url, $options);
         if($result->err || $result->http_code !== 200 || empty($result->content)){
-            printr($result);
             $this->error = 'content not received';
             return false;
         }

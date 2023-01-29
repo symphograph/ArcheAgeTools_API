@@ -37,9 +37,23 @@ class ItemTargetArea extends TargetArea
 
     public function isUnnecessary(string $itemName): bool
     {
-       return !!preg_match('/deprecated|test|Тест: |тестовый|NO_NAME|Не используется/ui', $itemName)
-           ||
-           self::isBeforeTimeOut($this->content);
+       return !!preg_match('/deprecated|test|Тест: |тестовый|NO_NAME|Не используется/ui', $itemName);
+    }
+
+    public function isBeforeTimeOut(): bool
+    {
+        $regExp = '#Действует до:(.+?)</td>#is';
+        if(!preg_match_all($regExp, $this->content, $arr)){
+            return false;
+        }
+        if (empty($arr[1][0])){
+            return false;
+        }
+        $beforeTime = self::sanitizeDateTime($arr[1][0]);
+        if(empty($beforeTime)){
+            return false;
+        }
+        return $beforeTime < date('Y-m-d H:i:s');
     }
 
     public function extractItemLvl(): int|false
@@ -93,14 +107,19 @@ class ItemTargetArea extends TargetArea
         }
         $priceTypeArea = $arr[1][0];
         return match (true){
-            str_contains($priceTypeArea, 'alt="bronze"') => 500, //gold
-            str_contains($priceTypeArea, 'alt="lp"') => 3, //Ремесленная репутация
-            str_contains($priceTypeArea, 'alt="honor_point') => 4, //Честь
-            str_contains($priceTypeArea, 'item--23633') => 23633, //Дельфийская звезда
-            str_contains($priceTypeArea, 'item--25816') => 25816, //Коллекционная монета «Джин»
-            str_contains($priceTypeArea, 'item--26921') => 26921, //Звездный ролл
-            str_contains($priceTypeArea, 'item--8001661') => 8001661, //Арткоин
-            str_contains($priceTypeArea, 'item--41138') => 41138, //Монета ArcheAge
+            str_contains($priceTypeArea, 'alt="bronze"') => 500,        // gold
+            str_contains($priceTypeArea, 'alt="lp"') => 3,              // Ремесленная репутация
+            str_contains($priceTypeArea, 'alt="honor_point') => 4,      // Честь
+            str_contains($priceTypeArea, 'item--23633') => 23633,       // Дельфийская звезда
+            str_contains($priceTypeArea, 'item--25816') => 25816,       // Коллекционная монета «Джин»
+            str_contains($priceTypeArea, 'item--26921') => 26921,       // Звездный ролл
+            str_contains($priceTypeArea, 'item--8001661') => 8001661,   // Арткоин
+            str_contains($priceTypeArea, 'item--41138') => 41138,       // Монета ArcheAge
+            str_contains($priceTypeArea, 'item--35817') => 35817,       // Сертификат претендента
+            str_contains($priceTypeArea, 'item--25960') => 25960,       // Сертификат на покупку минеральной воды
+            str_contains($priceTypeArea, 'item--26880') => 26880,       // Обрезанный соверен
+            str_contains($priceTypeArea, 'item--41017') => 41017,       // Рекомендательный жетон крепостной фермы
+            str_contains($priceTypeArea, 'item--36978') => 36978,       // Знак Нуи
             default => 0
         };
     }
@@ -136,22 +155,6 @@ class ItemTargetArea extends TargetArea
         return array_filter($this->sections,function($section, $type){
             return $section->type === $type;
         });
-    }
-
-    private static function isBeforeTimeOut(string $targetArea): bool
-    {
-        $regExp = '#Действует до:(.+?)</td>#is';
-        if(!preg_match_all($regExp, $targetArea, $arr)){
-            return false;
-        }
-        if (empty($arr[1][0])){
-            return false;
-        }
-        $beforeTime = self::sanitizeDateTime($arr[1][0]);
-        if(empty($beforeTime)){
-            return false;
-        }
-        return $beforeTime < date('Y-m-d H:i:s');
     }
 
     public function extractIconSRC(): false|string

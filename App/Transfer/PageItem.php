@@ -104,11 +104,13 @@ class PageItem extends Page
 
     private function isNecessary(): bool
     {
-        if($this->TargetArea->isUnnecessary($this->ItemDTO->name)){
-            $this->error = 'Item is unnecessary';
-            return false;
-        }
-        return true;
+
+        $this->error = match (true){
+            $this->TargetArea->isUnnecessary($this->ItemDTO->name) => 'Item is unnecessary',
+            $this->TargetArea->isBeforeTimeOut() => 'Item is overdue',
+            default => ''
+        };
+        return empty($this->error);
     }
 
     private function initIsPersonal(): bool
@@ -135,22 +137,16 @@ class PageItem extends Page
 
     private function initCategory(): bool
     {
-
-        /*
-        if ($this->ItemDB->categId > 1){
-            $this->ItemDTO->categId = $this->ItemDB->categId;
-            return true;
-        }
-        */
         $categoryName = $this->TargetArea->extractCategoryName();
         $error = match (true){
             empty($categoryName) => 'Category is empty',
+            $categoryName === 'тест',
             !!preg_match(
                 '/deprecated|test|TEST|тестовый|NO_NAME|Не используется/ui',
                 $categoryName
             ) => 'Category is unnecessary',
             empty($Categories = Category::byName($categoryName)) => 'Category does not exist in DB: ' . $categoryName,
-            count($Categories) > 1 => 'Category having variants: ' . $categoryName,
+            self::isVariableCategory($Categories) => 'Category having variants: ' . $categoryName,
             default => ''
         };
 
@@ -161,6 +157,22 @@ class PageItem extends Page
 
         $this->ItemDTO->categId = $Categories[0]->id;
 
+        return true;
+    }
+
+    /**
+     * @param array<Category> $Categories
+     * @return bool
+     */
+    private function isVariableCategory(array $Categories): bool
+    {
+        if(!(count($Categories) > 1)){
+            return false;
+        }
+        if(!empty($this->ItemDB->categId)){
+            $this->ItemDTO->categId = $this->ItemDB->categId;
+            return false;
+        }
         return true;
     }
 
@@ -235,17 +247,23 @@ class PageItem extends Page
 
     private function initCurrencyId(): bool
     {
-        $currencyId = $this->TargetArea->extractCurrencyId();
-        if (!$currencyId){
-            if(str_contains($this->content, 'Можно приобрести') || str_contains($this->content, 'Продаётся у NPC')){
-                $this->error = 'Currency not defined';
-                return false;
-            }
-            if(!$this->ItemDTO->personal){
-                $currencyId = 500;
-            }
+        if($currencyId = $this->TargetArea->extractCurrencyId()){
+            $this->ItemDTO->currencyId = $currencyId;
+            return true;
         }
-        $this->ItemDTO->currencyId = $currencyId;
+        if(!$this->ItemDTO->priceFromNPC && !$this->ItemDTO->priceToNPC){
+            if($this->ItemDTO->personal){
+                $this->ItemDTO->currencyId = 500;
+            }
+            return true;
+        }
+
+        if(str_contains($this->content, 'Можно приобрести') || str_contains($this->content, 'Продаётся у NPC')){
+            $this->error = 'Currency not defined';
+            printr($this->ItemDTO);
+            return false;
+        }
+
         return true;
     }
 

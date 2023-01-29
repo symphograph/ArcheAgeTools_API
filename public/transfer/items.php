@@ -16,11 +16,12 @@ $startTestTime = Test::startTime();
 <?php
 set_time_limit(0);
 $ItemList = new ItemList(
-    limit: 100000,
-    itemId: 0,
+    limit: 10000,
+    itemId: 1,
     readOnly: false,
     random: false,
-    onlyNew: false
+    onlyNew: false,
+    onlyErrors: true
 );
 
 $ItemList->transferList();
