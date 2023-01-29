@@ -87,7 +87,7 @@ class Category
     private function initData(): void
     {
         if(!empty($this->icon)){
-            $this->icon = 'img:https://' . $_SERVER['SERVER_NAME'] . '/img/icons/80/' . $this->icon;
+            $this->icon = 'img:/img/category/' . $this->icon;
         }
         if(!empty($this->children)){
             $this->selectable = false;

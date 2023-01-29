@@ -27,6 +27,7 @@ class ItemDTO
     public ?int    $forUpGrade;
     public ?string $icon;
     public ?string $iconMD5;
+    public ?string $expiresAt;
 
     public static function byDB(int $id): self|false
     {
@@ -73,7 +74,8 @@ class ItemDTO
             'forUpGrade'   => $this->forUpGrade,
             'icon'         => $this->icon,
             'iconMD5'      => $this->iconMD5,
-            'lvl'          => $this->lvl
+            'lvl'          => $this->lvl,
+            'expiresAt' => $this->expiresAt
         ];
         return DB::replace('items', $params);
     }

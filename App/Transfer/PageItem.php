@@ -58,6 +58,7 @@ class PageItem extends Page
 
         self::initIsTradeNPC();
         self::initIsGradable();
+        self::initExpiresDate();
 
         return true;
     }
@@ -104,13 +105,18 @@ class PageItem extends Page
 
     private function isNecessary(): bool
     {
+        if($this->TargetArea->isUnnecessary($this->ItemDTO->name)){
+            $this->error = 'Item is unnecessary';
+            return false;
+        }
+        return true;
+    }
 
-        $this->error = match (true){
-            $this->TargetArea->isUnnecessary($this->ItemDTO->name) => 'Item is unnecessary',
-            $this->TargetArea->isBeforeTimeOut() => 'Item is overdue',
-            default => ''
-        };
-        return empty($this->error);
+    private function initExpiresDate(): void
+    {
+        if($this->ItemDTO->expiresAt = $this->TargetArea->extractExpiresAt()){
+            $this->ItemDTO->onOff = 0;
+        }
     }
 
     private function initIsPersonal(): bool

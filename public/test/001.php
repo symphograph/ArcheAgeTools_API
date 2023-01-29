@@ -19,21 +19,9 @@ use App\Transfer\MailRuUserTransfer;
 //$Account = Account::bySess();
 //$Account->initMember();
 //$Account->AccSets->initProfs();
-$str = 'nu_f_bo_item_cloth177.png';
-$fileBaseName = pathinfo($str, PATHINFO_BASENAME);
-$dir = pathinfo($str, PATHINFO_DIRNAME);
-if(in_array($dir,['.','..'])){
-    $dir = '';
-}
-$arr = explode('_',$fileBaseName);
-$result = '';
-$i = 0;
-foreach ($arr as $pit){$i++;
-    $separator = mb_strlen($pit) > 2 ? '/' : '_';
-    $result .= $i > 1 ? $separator . $pit : $pit;
-}
-echo $dir . '/' . $result;
 
+$Craft = \App\Transfer\Crafts\CraftDTO::byDB(8001170);
+$Craft->putToDB();
 //MailRuUserTransfer::importUsers();
 
 

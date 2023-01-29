@@ -20,8 +20,7 @@ $ItemList = new ItemList(
     itemId: 1,
     readOnly: false,
     random: false,
-    onlyNew: false,
-    onlyErrors: true
+    onlyNew: false
 );
 
 $ItemList->transferList();

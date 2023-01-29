@@ -62,7 +62,7 @@ class Category
         foreach ($roots as $root){
             $index++;
             $root->initChilds($groups);
-            $root->icon = 'img:https://' . $_SERVER['SERVER_NAME'] . '/img/icons/80/' . $root->icon;
+            $root->icon = 'img:https://' . $_SERVER['SERVER_NAME'] . '/img/icons/90/' . $root->icon;
             $root->index = $index;
             $root->selectable = false;
             $arr[] = $root;

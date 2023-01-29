@@ -8,7 +8,13 @@ use Symphograph\Bicycle\DB;
 class ItemList
 {
     const newItemTable = '`NewItems_8.0.2.7_9.0.1.6`';
-
+    const errors = [
+      /*'ItemPage is empty',*/
+      "'Item is overdue'",
+      /*"'content not received'"*/
+      /*'Item is unnecessary',*/
+      /*'Category is unnecessary'*/
+    ];
 
     /**
      * @param int $limit
@@ -25,8 +31,7 @@ class ItemList
         private readonly int  $itemId = 0,
         private readonly bool $readOnly = true,
         private readonly bool $random = false,
-        private readonly bool $onlyNew = false,
-        private readonly bool $onlyErrors = false
+        private readonly bool $onlyNew = false
     )
     {
     }
@@ -103,15 +108,12 @@ class ItemList
         $newItemTable = self::newItemTable;
         $rand = $this->random ? 'order by rand()' : '';
         $andOnlyNew = $this->onlyNew ? "and id in (select id from $newItemTable)" : '';
-
-        $andOnlyErrors = $this->onlyErrors ? "            and id in (
+        $errors = implode(',', self::errors);
+        $andOnlyErrors = !empty($errors) ? "and id in (
                         select id from transfer_Items 
                         where status != '' 
-                          and status not in (
-                          'ItemPage is empty', 
-                          'Item is overdue', 
-                          'Item is unnecessary', 
-                          'Category is unnecessary'
+                          and status in (
+                          $errors
                           )
                       )" : '';
 

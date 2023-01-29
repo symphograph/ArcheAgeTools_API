@@ -54,16 +54,16 @@ class PackRoute
     public static function getFlatList(int $side): array|false
     {
 
-        if($rotes = self::getListByCache($side)){
-            return $rotes;
+        if($routes = self::getListByCache($side)){
+            return $routes;
         }
 
-        if(!$rotes = self::getRoutes($side)){
+        if(!$routes = self::getRoutes($side)){
             return false;
         }
 
         $arr = [];
-        foreach ($rotes as $route)
+        foreach ($routes as $route)
         {
             $route->initZones();
             $route->initPack();

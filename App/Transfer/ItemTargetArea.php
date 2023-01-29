@@ -40,20 +40,20 @@ class ItemTargetArea extends TargetArea
        return !!preg_match('/deprecated|test|Тест: |тестовый|NO_NAME|Не используется/ui', $itemName);
     }
 
-    public function isBeforeTimeOut(): bool
+    public function extractExpiresAt(): ?string
     {
         $regExp = '#Действует до:(.+?)</td>#is';
         if(!preg_match_all($regExp, $this->content, $arr)){
-            return false;
+            return null;
         }
         if (empty($arr[1][0])){
-            return false;
+            return null;
         }
-        $beforeTime = self::sanitizeDateTime($arr[1][0]);
-        if(empty($beforeTime)){
-            return false;
+        $expiresAt = self::sanitizeDateTime($arr[1][0]);
+        if(empty($expiresAt)){
+            return null;
         }
-        return $beforeTime < date('Y-m-d H:i:s');
+        return $expiresAt;
     }
 
     public function extractItemLvl(): int|false
