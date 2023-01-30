@@ -10,6 +10,7 @@ class PageItem extends Page
     public ?ItemDTO $ItemDTO;
     public ItemTargetArea $TargetArea;
     public ?GradeArea $GradeArea;
+    private $readOnly = true;
 
     public function __construct(public int $itemId)
     {
@@ -18,6 +19,7 @@ class PageItem extends Page
 
     public function executeTransfer(bool $readOnly = true): bool
     {
+        $this->readOnly = $readOnly;
         if(!$this->ItemDB = ItemDTO::byDB($this->itemId)){
             $this->error = 'Item does not exist in DB';
             return false;
@@ -219,7 +221,7 @@ class PageItem extends Page
     {
         $iconFileName = $this->TargetArea->extractIconSRC();
         $IconPage = new PageIcon($iconFileName, $this->itemId);
-        if(!$IconPage->executeTransfer()){
+        if(!$IconPage->executeTransfer($this->readOnly)){
             $this->error = 'Icon: ' . $IconPage->error;
             return false;
         }

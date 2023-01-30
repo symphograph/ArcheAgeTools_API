@@ -8,13 +8,11 @@ use Symphograph\Bicycle\DB;
 class ItemList
 {
     const newItemTable = '`NewItems_8.0.2.7_9.0.1.6`';
-    const errors = [
-      /*'ItemPage is empty',*/
-      "'Item is overdue'",
-      /*"'content not received'"*/
-      /*'Item is unnecessary',*/
-      /*'Category is unnecessary'*/
-    ];
+
+    private string $randQString;
+    private string $typeOfList = 'getList';
+    private array  $errorFilter = [];
+    private string $onlyNewQString;
 
     /**
      * @param int $limit
@@ -34,31 +32,42 @@ class ItemList
         private readonly bool $onlyNew = false
     )
     {
+        $this->randQString = $this->random ? 'order by rand()' : '';
+        $newItemTable = self::newItemTable;
+        $this->onlyNewQString = $this->onlyNew ? "and id in (select id from $newItemTable)" : '';
+
+    }
+
+    public function transferItems(): bool
+    {
+        $this->typeOfList = '';
+        return self::transferList();
+    }
+
+    public function transferErrorItems(array $errorFilter = []): bool
+    {
+        $this->typeOfList = 'errorList';
+        $this->errorFilter = $errorFilter;
+        return self::transferList();
     }
 
 
-    public function transferList(): void
+    private function transferList(): bool
     {
         if($this->itemId){
             self::resetLast();
         }
-        $List = self::getList();
-
-        /*
-        $List = match (true){
-            $typeOfList === 'getNewList' => self::getNewList(),
-            default => self::getList()
-        };
-        */
+        if(empty($List = self::getList())){
+            return false;
+        }
         foreach ($List as $itemId){
             if($this->limit > 1){
                 usleep(500);
             }
-            if(!self::transferItem($itemId)){
-                //break;
-            }
+            self::transferItem($itemId);
             echo '<hr>';
         }
+        return true;
     }
 
     public function transferItem(int $itemId): bool
@@ -85,17 +94,9 @@ class ItemList
         return true;
     }
 
-    private function getNewList(): array
+    private function getList(): array
     {
-        $newItemTable = self::newItemTable;
-        $rand = $this->random ? 'order by rand()' : '';
-
-        $qwe = qwe("
-            select id from $newItemTable 
-            where id >= (select id from transfer_Last where lastRec = 'item')
-            $rand
-            limit :limit",
-            ['limit' => $this->limit]
+        $qwe = qwe(self::buildSQL(), ['limit' => $this->limit]
         );
         if(!$qwe || !$qwe->rowCount()){
             return [];
@@ -103,39 +104,40 @@ class ItemList
         return $qwe->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    private function getList(): array
+    private function buildSQL(): string
     {
-        $newItemTable = self::newItemTable;
-        $rand = $this->random ? 'order by rand()' : '';
-        $andOnlyNew = $this->onlyNew ? "and id in (select id from $newItemTable)" : '';
-        $errors = implode(',', self::errors);
-        $andOnlyErrors = !empty($errors) ? "and id in (
-                        select id from transfer_Items 
-                        where status != '' 
-                          and status in (
-                          $errors
-                          )
-                      )" : '';
+        return match ($this->typeOfList){
+            'errorList' => self::errorListSql(),
+            default => self::listSQL()
+        };
+    }
 
-        /*
-        $andOnlyErrors = $this->onlyErrors ? "            and id in (
-                        select id from transfer_Items 
-                        where datetime > '2023-01-29 13:00:00'
-                      )" : '';
-        */
-        $qwe = qwe("
+    private function errorListSql(): string
+    {
+        $errFilterQString =
+            !empty($this->errorFilter)
+                ? "and status in ('" . implode("','", $this->errorFilter) . "') "
+                : '';
+        return "
             select id from items 
             where id >= (select id from transfer_Last where lastRec = 'item')
-            $andOnlyErrors
-            $andOnlyNew
-            $rand
-            limit :limit",
-        ['limit' => $this->limit]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN);
+                and id in (
+                            select id from transfer_Items 
+                            where status != '' 
+                              {$errFilterQString}
+                {$this->onlyNewQString}                
+                {$this->randQString}
+            limit :limit";
+    }
+
+    private function listSQL(): string
+    {
+        return "
+            select id from items 
+            where id >= (select id from transfer_Last where lastRec = 'item')
+                {$this->onlyNewQString}
+                {$this->randQString}
+            limit :limit";
     }
 
     private static function putToLog(PageItem $PageItem): void
@@ -148,8 +150,6 @@ class ItemList
         ];
         DB::replace('transfer_Items', $params);
     }
-
-
 
     private function resetLast(): void
     {

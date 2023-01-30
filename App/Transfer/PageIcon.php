@@ -15,7 +15,7 @@ class PageIcon extends Page
     public string  $iconMD5;
     private string $tmpDir;
     private string $tmpFullPath;
-    private string $newFullPath;
+    private bool   $readOnly;
 
     public function __construct(public string $src, public int $itemId)
     {
@@ -24,6 +24,7 @@ class PageIcon extends Page
 
     public function executeTransfer(bool $readOnly = true): bool
     {
+        $this->readOnly = $readOnly;
         return match (false){
             self::initContent() => false,
             self::isIconPNG() => false,
@@ -54,8 +55,11 @@ class PageIcon extends Page
 
     private function saveIconFile(): bool
     {
-        $this->newFullPath = $_SERVER['DOCUMENT_ROOT'] . self::iconDir . $this->newSRC;
-        if(!FileHelper::fileForceContents($this->newFullPath, $this->content)){
+        if($this->readOnly){
+            return true;
+        }
+        $newFullPath = $_SERVER['DOCUMENT_ROOT'] . self::iconDir . $this->newSRC;
+        if(!FileHelper::fileForceContents($newFullPath, $this->content)){
             $this->error = 'error on file save';
             return false;
         }
@@ -64,7 +68,7 @@ class PageIcon extends Page
 
     private function initMD5(): bool
     {
-        if(!$md5 = md5_file($this->newFullPath)){
+        if(!$md5 = md5_file($this->tmpFullPath)){
             $this->error = 'error md5';
             return false;
         }

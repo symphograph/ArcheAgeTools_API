@@ -16,15 +16,22 @@ $startTestTime = Test::startTime();
 <?php
 set_time_limit(0);
 $ItemList = new ItemList(
-    limit: 10000,
+    limit: 10,
     itemId: 1,
-    readOnly: false,
-    random: false,
+    readOnly: true,
+    random: true,
     onlyNew: false
 );
 
-$ItemList->transferList();
-
+$ItemList->transferItems();
+$errorFilter = [
+    /*'ItemPage is empty',*/
+    'Item is overdue',
+    /*'content not received'*/
+    /*'Item is unnecessary',*/
+    /*'Category is unnecessary'*/
+];
+//$ItemList->transferErrorItems();
 echo Test::scriptTime($startTestTime);
 ?>
 </body>
