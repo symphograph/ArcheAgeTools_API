@@ -121,6 +121,7 @@ class ItemList
         return "
             select id from items 
             where id >= (select id from transfer_Last where lastRec = 'item')
+                and !lock
                 and id in (
                             select id from transfer_Items 
                             where status != '' 
@@ -135,6 +136,7 @@ class ItemList
         return "
             select id from items 
             where id >= (select id from transfer_Last where lastRec = 'item')
+            and !lock
                 {$this->onlyNewQString}
                 {$this->randQString}
             limit :limit";

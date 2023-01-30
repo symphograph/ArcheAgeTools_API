@@ -23,11 +23,12 @@ class ItemDTO
     public ?int    $equipLvl;
     public int     $lvl          = 0;
     public int     $basicGrade   = 1;
-    public bool $isGradable = false;
+    public bool    $isGradable   = false;
     public ?int    $forUpGrade;
     public ?string $icon;
     public ?string $iconMD5;
     public ?string $expiresAt;
+    public ?bool   $lock;
 
     public static function byDB(int $id): self|false
     {
@@ -75,7 +76,8 @@ class ItemDTO
             'icon'         => $this->icon,
             'iconMD5'      => $this->iconMD5,
             'lvl'          => $this->lvl,
-            'expiresAt' => $this->expiresAt
+            'expiresAt'    => $this->expiresAt,
+            'lock'         => intval($this->lock)
         ];
         return DB::replace('items', $params);
     }
