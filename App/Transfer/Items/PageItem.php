@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Transfer;
+namespace App\Transfer\Items;
 
 use App\Item\Category;
+use App\Transfer\Page;
 
 class PageItem extends Page
 {
@@ -10,7 +11,7 @@ class PageItem extends Page
     public ?ItemDTO $ItemDTO;
     public ItemTargetArea $TargetArea;
     public ?GradeArea $GradeArea;
-    private $readOnly = true;
+    private bool $readOnly = true;
 
     public function __construct(public int $itemId)
     {

@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Transfer;
+namespace App\Transfer\Items;
+
+use App\Transfer\TargetArea;
 
 class ItemTargetSection extends TargetArea
 {

@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Transfer;
+namespace App\Transfer\Items;
 
 
 
 use App\DBServices\ItemFixer;
+use App\Transfer\Page;
 use Symphograph\Bicycle\FileHelper;
 
 class PageIcon extends Page

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Transfer;
+namespace App\Transfer\Items;
 
+use App\Transfer\NewItem;
 use Symphograph\Bicycle\DB;
 
 class ItemDTO

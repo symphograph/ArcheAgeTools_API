@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Transfer;
+namespace App\Transfer\Items;
 
 use PDO;
 use Symphograph\Bicycle\DB;
@@ -121,13 +121,13 @@ class ItemList
         return "
             select id from items 
             where id >= (select id from transfer_Last where lastRec = 'item')
-                and !lock
+                and !items.lock
                 and id in (
                             select id from transfer_Items 
                             where status != '' 
-                              {$errFilterQString}
-                {$this->onlyNewQString}                
-                {$this->randQString}
+                              $errFilterQString
+                $this->onlyNewQString                
+                $this->randQString
             limit :limit";
     }
 
@@ -136,9 +136,9 @@ class ItemList
         return "
             select id from items 
             where id >= (select id from transfer_Last where lastRec = 'item')
-            and !lock
-                {$this->onlyNewQString}
-                {$this->randQString}
+            and !items.lock
+            $this->onlyNewQString
+            $this->randQString
             limit :limit";
     }
 

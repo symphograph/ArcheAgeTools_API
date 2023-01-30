@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Transfer;
+namespace App\Transfer\Items;
 
 class DescriptionExtract
 {

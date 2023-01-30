@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Transfer;
+namespace App\Transfer\Items;
 
+use App\Transfer\TargetArea;
 use Symphograph\Bicycle\Helpers;
 
 class ItemTargetArea extends TargetArea

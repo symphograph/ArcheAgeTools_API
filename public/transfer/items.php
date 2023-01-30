@@ -2,7 +2,7 @@
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/config.php';
 
 use App\Test\Test;
-use App\Transfer\ItemList;
+use App\Transfer\Items\ItemList;
 
 $startTestTime = Test::startTime();
 ?>
