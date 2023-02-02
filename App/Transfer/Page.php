@@ -50,4 +50,15 @@ class Page
         $this->content = $result->content;
         return true;
     }
+
+    protected static function saveLast(int $id, string $subject): bool
+    {
+        return
+            !!qwe("
+                update transfer_Last 
+                set id = :id 
+                where lastRec = :lastRec",
+                    ['id' => $id, 'lastRec' => $subject]
+            );
+    }
 }

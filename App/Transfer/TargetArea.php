@@ -6,6 +6,7 @@ use Symphograph\Bicycle\Helpers;
 
 class TargetArea
 {
+    public string $error = '';
 
     public function __construct(public string $content)
     {

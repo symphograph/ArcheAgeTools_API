@@ -15,7 +15,7 @@ class PageItem extends Page
 
     public function __construct(public int $itemId)
     {
-        self::saveLast();
+        self::saveLast($itemId, 'item');
     }
 
     public function executeTransfer(bool $readOnly = true): bool
@@ -288,10 +288,7 @@ class PageItem extends Page
 
     //------------------------------------------------------------------------
 
-    private function saveLast()
-    {
-        qwe("update transfer_Last set id = :itemId where lastRec = 'item'", ['itemId' => $this->itemId]);
-    }
+
 
     private function updateDB(): bool
     {

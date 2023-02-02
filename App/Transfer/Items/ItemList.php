@@ -2,40 +2,35 @@
 
 namespace App\Transfer\Items;
 
+use App\Transfer\TransferList;
 use PDO;
 use Symphograph\Bicycle\DB;
 
-class ItemList
+class ItemList extends TransferList
 {
     const newItemTable = '`NewItems_8.0.2.7_9.0.1.6`';
 
-    private string $randQString;
-    private string $typeOfList = 'getList';
-    private array  $errorFilter = [];
     private string $onlyNewQString;
 
     /**
-     * @param int $limit
      * @param int $itemId [optional]
      * <p>Sets first itemId in list</p>
      * <p>If 0 List will be started from last imported item</p>
      * <p>If you want get allList, set to 1</p>
-     * @param bool $readOnly [optional] <p>Set false for saving results to DB</p>
-     * @param bool $random
      * @param bool $onlyNew
      */
     public function __construct(
-        private readonly int  $limit = 1,
         private readonly int  $itemId = 0,
-        private readonly bool $readOnly = true,
-        private readonly bool $random = false,
-        private readonly bool $onlyNew = false
+        private readonly bool $onlyNew = false,
+        int                   $limit = 1,
+        bool                  $readOnly = true,
+        bool                  $random = false
     )
     {
-        $this->randQString = $this->random ? 'order by rand()' : '';
+
+        parent::__construct($limit, $readOnly, $random);
         $newItemTable = self::newItemTable;
         $this->onlyNewQString = $this->onlyNew ? "and id in (select id from $newItemTable)" : '';
-
     }
 
     public function transferItems(): bool
@@ -54,10 +49,11 @@ class ItemList
 
     private function transferList(): bool
     {
+        $this->random = true;
         if($this->itemId){
-            self::resetLast();
+            self::resetLast($this->itemId, 'item');
         }
-        if(empty($List = self::getList())){
+        if(empty($List = self::getList(self::buildSQL()))){
             return false;
         }
         foreach ($List as $itemId){
@@ -94,16 +90,6 @@ class ItemList
         return true;
     }
 
-    private function getList(): array
-    {
-        $qwe = qwe(self::buildSQL(), ['limit' => $this->limit]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN);
-    }
-
     private function buildSQL(): string
     {
         return match ($this->typeOfList){
@@ -121,7 +107,7 @@ class ItemList
         return "
             select id from items 
             where id >= (select id from transfer_Last where lastRec = 'item')
-                and !items.lock
+                and !items.isLock
                 and id in (
                             select id from transfer_Items 
                             where status != '' 
@@ -136,7 +122,7 @@ class ItemList
         return "
             select id from items 
             where id >= (select id from transfer_Last where lastRec = 'item')
-            and !items.lock
+            and !items.isLock
             $this->onlyNewQString
             $this->randQString
             limit :limit";
@@ -152,11 +138,4 @@ class ItemList
         ];
         DB::replace('transfer_Items', $params);
     }
-
-    private function resetLast(): void
-    {
-        qwe("update transfer_Last set id = :itemId where lastRec = 'item'", ['itemId' => $this->itemId]);
-    }
-
-
 }

@@ -1,15 +1,16 @@
 <?php
 namespace App;
+
 use PDO;
 use PDOException;
 use PDOStatement;
 
 class DB
 {
-    public PDO|null $pdo;
-    private array   $opt;
-    public string|null $pHolders;
-    public array|null $parArr;
+    public ?PDO $pdo;
+    private ?array    $opt;
+    public ?string $pHolders;
+    public ?array  $parArr;
 
     public function __construct(
         string $connectName = '',
@@ -38,7 +39,6 @@ class DB
         try {
             $this->pdo = new PDO($dsn, $con->User, $con->Pass, $this->opt);
         } catch (PDOException $ex) {
-            printr($ex);
             die('dbError');
         }
 
@@ -59,7 +59,8 @@ class DB
             $stmt->execute($args);
 
         } catch (PDOException $ex) {
-
+            printr($args);
+            printr($ex);
             $log_text = self::prepLog($ex->getTraceAsString(), $sql, $ex->getMessage());
             self::writelog('sql_error', $log_text);
             return false;
@@ -235,7 +236,7 @@ class DB
     public static function createNewID(string $tableName, string $keyColName) : int
     {
 
-        $sql = "SELECT max(id) + 1 as id FROM $tableName where $keyColName";
+        $sql = "select max(id) + 1 as id from $tableName where $keyColName";
         global $DB;
         self::connect();
 
@@ -243,7 +244,7 @@ class DB
         if(!$qwe or !$qwe->rowCount()){
             return 1;
         }
-        $q = $qwe->fetchObject(self::class);
+        $q = $qwe->fetchObject();
 
         return $q->id ?? 1;
     }

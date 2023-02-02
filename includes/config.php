@@ -9,6 +9,7 @@ if(preg_match('/www./',$_SERVER['SERVER_NAME']))
 	exit();
 }
 use Symphograph\Bicycle\DB;
+//use App\DB;
 use App\User\Sess;
 
 $env = require dirname($_SERVER['DOCUMENT_ROOT']) . '/includes/env.php';

@@ -28,7 +28,7 @@ class ItemDTO
     public ?string $icon;
     public ?string $iconMD5;
     public ?string $expiresAt;
-    public ?bool   $lock;
+    public ?bool   $isLock;
 
     public static function byDB(int $id): self|false
     {
@@ -77,7 +77,7 @@ class ItemDTO
             'iconMD5'      => $this->iconMD5,
             'lvl'          => $this->lvl,
             'expiresAt'    => $this->expiresAt,
-            'lock'         => intval($this->lock)
+            'isLock'         => intval($this->isLock)
         ];
         return DB::replace('items', $params);
     }
