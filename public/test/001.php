@@ -20,8 +20,7 @@ use App\Transfer\MailRuUserTransfer;
 //$Account->initMember();
 //$Account->AccSets->initProfs();
 
-$Craft = \App\Transfer\Crafts\CraftDTO::byDB(8001170);
-$Craft->putToDB();
+
 //MailRuUserTransfer::importUsers();
 
 

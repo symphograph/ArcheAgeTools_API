@@ -2,7 +2,7 @@
 
 namespace App\Item;
 
-use App\Category;
+use App\Item\Category;
 use App\Craft\Craft;
 use PDO;
 
@@ -28,14 +28,16 @@ class Info
     private function getResults() : array
     {
         $qwe = qwe("
-        SELECT any_value(craftMaterials.resultItemId) as resultItemId 
-        FROM craftMaterials  
-        INNER JOIN items ON items.id = craftMaterials.resultItemId
-        AND items.onOff
-        AND craftMaterials.itemId = :itemId
-        INNER JOIN crafts on craftMaterials.craftId = crafts.id
-        AND crafts.onOff
-        GROUP BY crafts.resultItemId
+        select any_value(crafts.resultItemId) as resultItemId 
+        from craftMaterials  
+        inner join crafts 
+            on craftMaterials.craftId = crafts.id
+            and crafts.onOff
+        inner join items 
+            on items.id = crafts.resultItemId
+            and items.onOff
+            and craftMaterials.itemId = :itemId
+        group by crafts.resultItemId
         ",
             ['itemId' => $this->id]
         );

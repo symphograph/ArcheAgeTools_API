@@ -23,15 +23,18 @@ class Mat
         $qwe = qwe("
             select i.id,
                    cm.craftId,
-                   cm.resultItemId,
+                   c.resultItemId,
                    cm.matGrade as grade, 
                    cm.need,
                    i.craftable
-                   from craftMaterials cm
-                inner join items i 
-                    on cm.itemId = i.id
-                    where craftId = :craftId and id = :matId",
-        [ 'craftId'=>$craftId, 'matId'=>$matId]
+            from craftMaterials cm
+            inner join items i 
+                on cm.itemId = i.id
+            inner join crafts c 
+                on cm.craftId = c.id
+                and c.onOff
+            where craftId = :craftId and i.id = :matId",
+            ['craftId' => $craftId, 'matId' => $matId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -108,18 +111,22 @@ class Mat
     {
         global $Account;
         $qwe = qwe("
-            select i.id,
+            select items.id,
                    cm.craftId,
-                   cm.resultItemId,
+                   crafts.resultItemId,
                    cm.matGrade as grade, 
                    cm.need,
-                   i.craftable,
+                   items.craftable,
                     if(uCP.itemId, 1, 0) as isCounted
                    from craftMaterials cm
-                inner join items i 
-                    on cm.itemId = i.id
+                inner join items 
+                    on cm.itemId = items.id
+                    and items.onOff
+                inner join crafts 
+                    on cm.craftId = crafts.id
+                    and crafts.onOff
                    left join uacc_CraftPool uCP 
-                       on i.id = uCP.itemId
+                       on items.id = uCP.itemId
                         and uCP.accountId = :accountId
                         and uCP.serverGroup = :serverGroup
                 where resultItemId = :itemId

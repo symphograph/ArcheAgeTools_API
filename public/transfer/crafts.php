@@ -9,7 +9,7 @@ $startTestTime = Test::startTime();
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <title>test</title>
+    <title>craftTransfer</title>
 </head>
 <body style="color: white; background-color: #262525; font-family: Arial,serif; font-size: 12px">
 <?php
