@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\Api;
 use App\Item\{Item, Price};
 use PDO;
 use App\Test\Test;
@@ -57,7 +58,7 @@ class CraftCounter
             if(in_array($resultItemId, $CraftCounter->countedItems)){
                 continue;
             }
-            $Item = Item::byId($resultItemId);
+            //$Item = Item::byId($resultItemId);
 
             foreach ($crafts as $craft){
 
@@ -83,7 +84,14 @@ class CraftCounter
         }
 
         $sum = $sumSPM = 0;
+
+        if(!empty($craft->error)){
+            //die(Api::errorMsg($craft->error . ': ' . $craft->id));
+            //printr($craft);
+        }
+
         foreach ($craft->Mats as $mat) {
+
             if (!$mat->need) {
                 continue;
             }
@@ -104,7 +112,6 @@ class CraftCounter
 
             $sum += $mat->Price->price * $mat->need;
         }
-
         return MatSum::getSum($sum, $sumSPM, $craft);
     }
 

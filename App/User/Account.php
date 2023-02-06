@@ -9,20 +9,20 @@ use Symphograph\Bicycle\DB;
 
 class Account
 {
-    public int     $id;
-    public int     $user_id;
-    public int     $authTypeId;
-    public ?string $created;
-    public ?string $nickName;
-    public ?string $externalAvaUrl;
-    public ?string $avaFileName;
-    public ?string $label;
+    public int          $id;
+    public int          $user_id;
+    public int          $authTypeId;
+    public ?string      $created;
+    public ?string      $nickName;
+    public ?string      $externalAvaUrl;
+    public ?string      $avaFileName;
+    public ?string      $label;
     public ?Sess        $Sess;
     public ?TeleUser    $TeleUser;
     public ?MailruUser  $MailruUser;
     public ?AccSettings $AccSets;
-    public ?Avatar $Avatar;
-    public ?Member $Member;
+    public ?Avatar      $Avatar;
+    public ?Member      $Member;
 
 
     /*public function __set(string $name, $value): void
@@ -163,6 +163,12 @@ class Account
         }
         $Accounts = $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
         return self::initDataInList($Accounts);
+    }
+
+    public static function getSelf(): bool|Account
+    {
+        global $Account;
+        return $Account;
     }
 
 

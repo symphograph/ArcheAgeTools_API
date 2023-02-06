@@ -1,4 +1,8 @@
 <?php
+
+use App\Env\Env;
+use Symphograph\Bicycle\DB;
+
 function cors() {
 
     if (isset($_SERVER['HTTP_ORIGIN'])) {
@@ -21,10 +25,31 @@ function cors() {
 
 function printr($var): void
 {
-    global $env;
-    if(!$env->myip)
+    if(!Env::isDebugMode())
         return;
     echo '<pre>';
     print_r($var);
     echo '</pre>';
+}
+
+function qwe(string $sql, array $args = null): bool|PDOStatement
+{
+    global $DB;
+
+    if(!isset($DB)){
+        $DB = new DB('DL8t');
+    }
+
+    return $DB->qwe($sql,$args);
+}
+
+function qwe2(string $sql, array $args = null) : bool|PDOStatement
+{
+    global $DB2;
+
+    if(!isset($DB2)){
+        $DB2 = new DB(1);
+    }
+
+    return $DB2->qwe($sql,$args);
 }

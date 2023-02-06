@@ -1,10 +1,12 @@
 <?php
-require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
+require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
+
+use App\Env\Env;
 use App\Auth\Mailru\{OAuthMailRu};
 use App\User\{Account, AccSettings, Sess};
 use App\Transfer\PriceTransfer;
 
-$secret = $env->mailru_secrets->{$_SERVER['SERVER_NAME']};
+$secret = Env::getMailruSecrets();
 
 
 if (!empty($_GET['error'])) {

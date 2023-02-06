@@ -2,6 +2,7 @@
 
 namespace App\User;
 
+use App\Env\Env;
 use Symphograph\Bicycle\DB;
 
 class Sess
@@ -161,14 +162,12 @@ class Sess
 
     public function setCook(): bool
     {
-        global $env;
-        return setcookie('sessId', $this->id, self::cookOpts(debug: $env->debug));
+        return setcookie('sessId', $this->id, self::cookOpts(debug: Env::isDebugMode()));
     }
 
     public function goToClient(): void
     {
-        global $env;
-        $spaUrl = $env->sites[$_SERVER['SERVER_NAME']];
+        $spaUrl = Env::getFrontendDomain();
         header("Location: https://$spaUrl/auth?#{$this->token}");
     }
 
@@ -184,17 +183,6 @@ class Sess
         return self::setCook();
     }
 
-    public static function checkOrigin(): void
-    {
-        if (empty($_SERVER['HTTP_ORIGIN'])){
-            die(http_response_code(401));
-        }
-        global $env;
-        $adr = 'https://' . $env->sites[$_SERVER['SERVER_NAME']];
-        if($_SERVER['HTTP_ORIGIN'] !== $adr){
-            echo $env->sites[$_SERVER['SERVER_NAME']];
-            die(http_response_code(403));
-        }
-    }
+
 
 }

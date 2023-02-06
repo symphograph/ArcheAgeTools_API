@@ -3,6 +3,7 @@
 namespace App\Item;
 
 use App\Craft\{AccountCraft, BufferSecond};
+use App\Env\Env;
 use PDO;
 use Symphograph\Bicycle\DB;
 use App\User\Account;
@@ -164,10 +165,10 @@ class Price
 
     private static function byWellKnown(int $itemId)
     {
-        global $env, $Account;
+        $Account = Account::getSelf();
         $serverGroup = $Account->AccSets->serverGroup;
 
-        $adminAccount = Account::byId($env->adminAccountId);
+        $adminAccount = Account::byId(Env::getAdminAccountId());
         $adminAccount->AccSets->serverGroup = $serverGroup;
         $adminAccount->initMember();
         $members = $adminAccount->Member->getFollowMasters();

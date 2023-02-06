@@ -1,5 +1,5 @@
 <?php
-require_once dirname($_SERVER['DOCUMENT_ROOT']).'/includes/config.php';
+require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 use App\Auth\Telegram\{Telegram, TeleUser};
 use App\User\User;
 
@@ -21,7 +21,7 @@ if(isset($_GET['logout'])) {
 
 
 
-$Telegram = new Telegram($env);
+$Telegram = new Telegram();
 echo <<<HTML
     <!DOCTYPE html>
     <html lang="ru">

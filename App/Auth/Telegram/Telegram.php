@@ -1,5 +1,7 @@
 <?php
 namespace App\Auth\Telegram;
+use App\Env\Env;
+
 class Telegram
 {
 
@@ -8,15 +10,16 @@ class Telegram
     public string $err = '';
     public TeleUser $TeleUser;
 
-    public function __construct(object $env)
+    public function __construct()
     {
-        $this->token = $env->telegram->{$_SERVER['SERVER_NAME']}->token ?? '';
-        $this->bot_name = $env->telegram->{$_SERVER['SERVER_NAME']}->bot_name ?? '';
+        $Secrets = Env::getTelegramSecrets();
+        $this->token = $Secrets->token ?? '';
+        $this->bot_name = $Secrets->bot_name ?? '';
     }
 
-    public static function auth(object $env) : TeleUser|bool
+    public static function auth() : TeleUser|bool
     {
-        $Login = new Telegram($env);
+        $Login = new Telegram();
         $auth_data = $Login->checkTelegramAuthorization();
         if(!$auth_data){
             return false;

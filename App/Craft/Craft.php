@@ -27,6 +27,11 @@ class Craft
      * @var array<Mat>|null
      */
     public ?array $matPool;
+    /**
+     * @var array<Mat>|null
+     */
+    public ?array $trashPool;
+    public string $error = '';
 
     public function __set(string $name, $value): void{}
 
@@ -53,34 +58,42 @@ class Craft
         return $Craft;
     }
 
-    private function initMats(): void
+    private function initMats(): bool
     {
-        if($Mats = Mat::getCraftMats($this->id)){
-            $this->Mats = $Mats;
-        }
+        $Mats = Mat::getCraftMats($this->id);
+        if(empty($Mats))
+            return false;
+
+        $this->Mats = $Mats;
+        return true;
     }
 
-    private function initProf(): void
+    private function initProf(): bool
     {
-        $Prof = Prof::byNeed($this->profId, $this->profNeed);
-        if($Prof){
-            $this->Prof = $Prof;
-        }
+        if(!$Prof = Prof::byNeed($this->profId, $this->profNeed))
+            return false;
+        return !!$this->Prof = $Prof;
     }
 
-    private function initCountData(): void
+    private function initCountData(): bool
     {
-        if($countData = AccountCraft::byID($this->id)){
-            $this->countData = $countData;
-            $this->countData->LaborData = LaborData::byCraft($this);
+        if(!$countData = AccountCraft::byID($this->id)){
+            return false;
         }
+        $this->countData = $countData;
+        $this->countData->LaborData = LaborData::byCraft($this);
+        return true;
     }
 
-    public function initAllData(): void
+    public function initAllData(): bool
     {
-        self::initMats();
-        self::initProf();
-        self::initCountData();
+        $this->error = match (false){
+            self::initMats() => 'Mats is empty',
+            self::initProf() => 'Prof data is empty',
+            self::initCountData() => '',
+            default => ''
+        };
+        return empty($this->error);
     }
 
     /**

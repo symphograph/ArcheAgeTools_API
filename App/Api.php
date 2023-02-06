@@ -1,11 +1,16 @@
 <?php
 
 namespace App;
+use Error;
+
 class Api
 {
     const Monthes = ['', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    public static function errorMsg(string $msg='Неизвестная ошибка') : string|bool
+    public static function errorMsg(string $msg='Неизвестная ошибка', Error $error = null) : string|bool
     {
+        if($error){
+            self::writeLog('errors', self::prepLog($error) . "\r\n");
+        }
         return json_encode(['error'=>$msg],JSON_UNESCAPED_UNICODE);
     }
 
@@ -46,6 +51,18 @@ class Api
         $somePage = curl_exec($curl);
         curl_close($curl);
         return $somePage;
+    }
+
+    private static function writeLog(string $typeLog, string $logText): void
+    {
+        $log = fopen(dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/' . $typeLog . '.txt', 'a+');
+        fwrite($log, "$logText\r\n");
+        fclose($log);
+    }
+
+    private static function prepLog(Error $error): string
+    {
+        return date('Y-m-d H:i:s') . "\t {$error->getMessage()}\r\n{$error->getTraceAsString()}\r\n";
     }
 
 }

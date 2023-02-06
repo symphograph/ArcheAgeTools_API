@@ -130,7 +130,9 @@ class CraftPool
 
     private static function initMatPool(Craft $craft): Craft
     {
-        $craft->matPool = MatPool::getMatPool($craft->resultItemId);
+        $pool = MatPool::getMatPool($craft->resultItemId);
+        $craft->matPool = $pool->matPool;
+        $craft->trashPool = $pool->trashPool;
         return $craft;
     }
 }
