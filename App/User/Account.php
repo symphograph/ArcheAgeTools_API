@@ -2,6 +2,8 @@
 
 namespace App\User;
 
+use App\Api;
+use App\Errors\AccountErr;
 use App\Auth\{Mailru\MailruUser, Telegram\TeleUser};
 use App\Item\Item;
 use PDO;
@@ -165,9 +167,17 @@ class Account
         return self::initDataInList($Accounts);
     }
 
-    public static function getSelf(): bool|Account
+    public static function getSelf(): self
     {
         global $Account;
+        try {
+            if(!isset($Account)){
+                throw new AccountErr('Account is not defined');
+            }
+        } catch (AccountErr $error){
+            die(Api::errorMsg($error->getMessage()));
+        }
+
         return $Account;
     }
 

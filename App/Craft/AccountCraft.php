@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\User\Account;
 use PDO;
 use Symphograph\Bicycle\DB;
 
@@ -28,7 +29,7 @@ class AccountCraft
 
     public static function byID(int $craftId): self|false
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select uc.*,
                    if(ubC.craftId, 1, 0) as isUBest
@@ -98,7 +99,7 @@ class AccountCraft
 
     public static function getCompletedArr(): array
     {
-        global $Account;
+        $Account = Account::getSelf();;
 
         $qwe = qwe("
             select itemId
@@ -115,7 +116,7 @@ class AccountCraft
 
     public static function clearAllCrafts(): void
     {
-        global $Account;
+        $Account = Account::getSelf();;
         qwe("
             delete from uacc_crafts 
             where accountId = :accountId 
@@ -157,7 +158,7 @@ class AccountCraft
 
     public static function byResultItemId(int $resultItemId)
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select 
                 uc.*,

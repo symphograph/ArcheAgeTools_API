@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\User\Account;
 use Symphograph\Bicycle\DB;
 use Symphograph\Bicycle\JsonDecoder;
 
@@ -26,7 +27,7 @@ class CraftPool
 
     public static function getByCache(int $resultItemId)
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select pool 
             from uacc_CraftPool
@@ -50,7 +51,7 @@ class CraftPool
 
     private function putToDB(): bool
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $params = [
             'accountId' => $Account->id,
             'serverGroup' => $Account->AccSets->serverGroup,

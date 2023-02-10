@@ -3,6 +3,7 @@
 namespace App\Craft;
 
 use App\Item\Item;
+use App\User\Account;
 
 class BufferSecond
 {
@@ -14,7 +15,7 @@ class BufferSecond
 
     public static function clearDB(): void
     {
-        global $Account;
+        $Account = Account::getSelf();;
         qwe("
             delete from craftBuffer2 
                    where accountId = :accountId",
@@ -24,7 +25,7 @@ class BufferSecond
 
     public static function byCraftId(int $craftId): self|false
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select * from craftBuffer2 
             where accountId = :accountId 
@@ -39,7 +40,7 @@ class BufferSecond
 
     public static function byItemId(int $resultItemId): self|false
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select * from craftBuffer2 
             where accountId = :accountId 
@@ -54,7 +55,7 @@ class BufferSecond
 
     public static function putToDB(int $craftId, int $resultItemId, int $craftCost, int $spm): bool
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             replace into craftBuffer2 
                 (accountId, craftId, resultItemId, craftCost, spm) 
@@ -72,7 +73,7 @@ class BufferSecond
 
     public static function saveCrafts(int $resultItemId): void
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $firstBuffer = BufferFirst::getCounted($resultItemId);
         $i = 0;
         foreach ($firstBuffer as $buffCraft){

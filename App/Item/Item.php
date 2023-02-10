@@ -2,6 +2,7 @@
 
 namespace App\Item;
 
+use App\User\Account;
 use PDO;
 use Symphograph\Bicycle\Helpers;
 
@@ -82,7 +83,7 @@ class Item
 
     public function initPrice(): bool
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $Price = Price::bySaved($this->id);
         if($Price){
             $this->Price = $Price;
@@ -138,7 +139,7 @@ class Item
         if(!$this->craftable || $this->personal){
             return false;
         }
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select * from uacc_buyOnly 
             where itemId = :itemId 

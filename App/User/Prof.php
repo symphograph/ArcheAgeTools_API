@@ -100,7 +100,7 @@ class Prof
         if($profId === 25){
             return new self();
         }
-        global $Account;
+        $Account = Account::getSelf();
         if(empty($Account->AccSets->Profs)){
             $Account->AccSets->initProfs();
         }

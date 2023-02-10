@@ -165,7 +165,7 @@ class Member
 
     public function initIsFollow(): void
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select * from uacc_follows 
             where follower = :follower

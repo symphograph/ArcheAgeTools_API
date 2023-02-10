@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\User\Account;
 use App\User\Prof;
 
 class LaborData
@@ -28,7 +29,7 @@ class LaborData
 
     public static function getLaborCost(): int
     {
-        global $Account;
+        $Account = Account::getSelf();;
         return $Account->AccSets->getLaborCost();
     }
 

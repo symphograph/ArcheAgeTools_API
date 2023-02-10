@@ -6,6 +6,7 @@ use App\Craft\{Craft, CraftCounter, CraftPool};
 use App\Item\{Item, Price};
 use App\Test\Test;
 use App\User\Account;
+use App\Errors\CraftCountErr;
 
 
 $Account = Account::byToken($_POST['token'] ?? '')
@@ -23,8 +24,8 @@ try {
         $Lost = Price::lostList($craftCounter->lost);
         die( Api::resultData(['Lost' => $Lost]));
     }
-}catch (Error $error){
-    die(Api::errorMsg('Почему-то не получается', $error));
+}catch (CraftCountErr $error){
+    die(Api::errorMsg($error->getMessage()));
 }
 
 

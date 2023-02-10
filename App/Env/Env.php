@@ -57,7 +57,7 @@ readonly class Env
         return $Env->adminAccountId;
     }
 
-    public static function getFrontendDomain(): int
+    public static function getFrontendDomain(): string
     {
         $Env = self::getMyEnv();
         return $Env->frontendDomain;

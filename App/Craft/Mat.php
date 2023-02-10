@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Craft;
+use App\User\Account;
 use App\Item\{Item, Price};
 use PDO;
 
@@ -109,7 +110,7 @@ class Mat
      */
     public static function allPotentialMats(int $itemId, array $matIDsArr = []): array
     {
-        global $Account;
+        $Account = Account::getSelf();
         $qwe = qwe("
             select items.id,
                    cm.craftId,

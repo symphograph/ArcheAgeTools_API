@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\User\Account;
 use PDO;
 
 class BufferFirst
@@ -27,7 +28,7 @@ class BufferFirst
 
     public static function clearDB(): void
     {
-        global $Account;
+        $Account = Account::getSelf();;
         qwe("
             delete from craftBuffer 
                    where accountId = :accountId",
@@ -37,7 +38,7 @@ class BufferFirst
 
     public static function putToDB(int $craftId, int $craftCost, int $matSPM): bool
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             replace into craftBuffer 
                 (accountId, craftId, craftCost, matSPM) 
@@ -57,7 +58,7 @@ class BufferFirst
      */
     public static function getCounted(int $resultItemId): array|false
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select  * , 
                     ROUND(if(tmp.kry>0,SQRT(tmp.kry),SQRT(tmp.kry*-1)*-1)) as spmu

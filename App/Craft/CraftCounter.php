@@ -3,6 +3,7 @@
 namespace App\Craft;
 
 use App\Api;
+use App\User\Account;
 use App\Item\{Item, Price};
 use PDO;
 use App\Test\Test;
@@ -152,7 +153,7 @@ class CraftCounter
      */
     public static function getBuyOnlyItems(): array
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select itemId 
             from uacc_buyOnly

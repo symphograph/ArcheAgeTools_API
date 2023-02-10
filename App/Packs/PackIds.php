@@ -2,6 +2,7 @@
 
 namespace App\Packs;
 
+use App\User\Account;
 use PDO;
 
 class PackIds
@@ -29,7 +30,7 @@ class PackIds
      */
     public static function getUncounted(int $side = 1): array
     {
-        global $Account;
+        $Account = Account::getSelf();
         $qwe = qwe("
             select tmp.id 
             from 

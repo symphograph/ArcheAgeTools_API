@@ -17,7 +17,8 @@ class Config
         }
         foreach (self::debugOnlyFolders as $folder){
             if(str_starts_with($_SERVER['SCRIPT_NAME'], '/' . $folder . '/')){
-                die('permis');
+                http_response_code(403);
+                die();
             }
         }
     }

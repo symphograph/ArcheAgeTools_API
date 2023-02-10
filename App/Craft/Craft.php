@@ -2,6 +2,8 @@
 
 namespace App\Craft;
 
+use App\Errors\CraftCountErr;
+use App\User\Account;
 use PDO;
 use App\User\Prof;
 
@@ -58,12 +60,15 @@ class Craft
         return $Craft;
     }
 
+    /**
+     * @throws CraftCountErr
+     */
     private function initMats(): bool
     {
         $Mats = Mat::getCraftMats($this->id);
-        if(empty($Mats))
-            return false;
-
+        if(empty($Mats)){
+            throw new CraftCountErr('Craft ' . $this->id . ' не нашел материалы');
+        }
         $this->Mats = $Mats;
         return true;
     }
@@ -190,7 +195,7 @@ class Craft
 
     public static function isCountedItem(int $resultItemId): bool
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("
             select * from uacc_crafts 
             where accountId = :accountId

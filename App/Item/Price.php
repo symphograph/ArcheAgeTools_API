@@ -61,7 +61,7 @@ class Price
 
     public static function bySaved(int $itemId): self|bool
     {
-        global $Account;
+        $Account = Account::getSelf();;
         return match ($Account->AccSets->mode) {
             1 => self::byMode1($itemId),
             2 => self::byMode2($itemId),
@@ -109,7 +109,7 @@ class Price
 
     private static function byAny(int $itemId)
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $qwe = qwe("select * from uacc_prices
             where itemId = :itemId
             and serverGroup = :serverGroup
@@ -127,7 +127,7 @@ class Price
 
     private static function bySolo(int $itemId): self|bool
     {
-        global $Account;
+        $Account = Account::getSelf();;
         if($Price = self::byAccount($itemId, $Account->id, $Account->AccSets->serverGroup)){
             $Price->method = 'bySolo';
             //$Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Ваша цена';
@@ -139,7 +139,7 @@ class Price
 
     private static function byFriends(int $itemId) : self|bool
     {
-        global $Account;
+        $Account = Account::getSelf();;
         if(empty($Account->Member)){
             $Account->initMember();
         }
@@ -342,7 +342,7 @@ class Price
 
     public static function byCraft(int $itemId): self|false
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $CraftData = AccountCraft::byResultItemId($itemId);
         $Price = new self();
         $Price->itemId = $itemId;
@@ -354,7 +354,7 @@ class Price
 
     public static function byBuffer(int $itemId): self|false
     {
-        global $Account;
+        $Account = Account::getSelf();;
         $bufferData = BufferSecond::byItemId($itemId);
         if(!$bufferData){
             return false;

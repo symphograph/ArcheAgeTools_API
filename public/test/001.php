@@ -2,7 +2,6 @@
 $start = microtime(true);
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-
 use App\User\{Account};
 use App\Item\Item;
 use App\Test\Try\TryClass1;
@@ -21,8 +20,8 @@ use App\Transfer\MailRuUserTransfer;
 //$Account->initMember();
 //$Account->AccSets->initProfs();
 
-$Item = Item::byId(1);
-printr($Item);
+
+
 //MailRuUserTransfer::importUsers();
 
 

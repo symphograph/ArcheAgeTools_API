@@ -2,6 +2,8 @@
 
 namespace App\Item;
 
+use App\User\Account;
+
 class Pricing
 {
     private int  $itemId;
@@ -62,7 +64,7 @@ class Pricing
 
     private function initPrice(): void
     {
-        global $Account;
+        $Account = Account::getSelf();
         $Price = Price::bySaved($this->itemId);
         if(!$Price){
             $this->Price = new Price();
