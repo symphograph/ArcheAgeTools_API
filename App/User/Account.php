@@ -3,8 +3,8 @@
 namespace App\User;
 
 use App\Api;
-use App\Errors\AccountErr;
-use App\Auth\{Mailru\MailruUser, Telegram\TeleUser};
+use App\Errors\{AccountErr, AuthErr};
+use App\Auth\{Discord\DiscordUser, Mailru\MailruUser, Telegram\TeleUser};
 use App\Item\Item;
 use PDO;
 use Symphograph\Bicycle\DB;
@@ -22,6 +22,7 @@ class Account
     public ?Sess        $Sess;
     public ?TeleUser    $TeleUser;
     public ?MailruUser  $MailruUser;
+    public ?DiscordUser $DiscordUser;
     public ?AccSettings $AccSets;
     public ?Avatar      $Avatar;
     public ?Member      $Member;
@@ -69,15 +70,28 @@ class Account
         return $Account;
     }
 
-    public static function byToken(string $token): self|bool
+    public static function byToken(): self|bool
     {
-        if(empty($token))
-            return false;
-        if(!($Sess = Sess::byToken($token))){
-            return false;
-        }
+        $token = $_POST['token'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        try
+        {
+            if(empty($token)){
+                throw new AuthErr('empty token', 'Обновите страницу');
+            }
 
-        return self::byId($Sess->accountId);
+            if(!$Sess = Sess::byToken($token)){
+                throw new AuthErr('invalid token', 'Обновите страницу');
+            }
+
+            if(!$Account = self::byId($Sess->accountId)){
+                throw new AccountErr("Account $Sess->accountId does not exist");
+            }
+        } catch (AuthErr $err) {
+            Api::errorResponse($err->getResponseMsg(), 401);
+        } catch (AccountErr $err) {
+            Api::errorResponse($err->getResponseMsg());
+        }
+        return $Account;
     }
 
     public static function byTelegram(int $tele_id): self|bool
@@ -104,6 +118,19 @@ class Account
         }
 
         $Account->MailruUser = $MailruUser;
+        return $Account;
+    }
+
+    public static function byDiscord(int $discordId): self|false
+    {
+        if(!$DiscordUser = DiscordUser::byId($discordId)){
+            return false;
+        }
+        if(!$Account = Account::byId($DiscordUser->accountId)){
+            return false;
+        }
+
+        $Account->DiscordUser = $DiscordUser;
         return $Account;
     }
 
@@ -204,13 +231,17 @@ class Account
 
     public function initOAuthUserData(): bool
     {
-        if($this->authTypeId === 2){
-            return self::initTeleUser();
+        $result = match ($this->authTypeId){
+            1 => true,
+            2 => self::initTeleUser(),
+            3 => self::initMailruUser(),
+            4 => self::initDiscordUser(),
+            default => false
+        };
+        if(!$result){
+            throw new AccountErr("err initOAuthUserData for user $this->user_id");
         }
-        if($this->authTypeId === 3){
-            return self::initMailruUser();
-        }
-        return false;
+        return $result;
     }
 
     private function initTeleUser(): bool
@@ -239,6 +270,19 @@ class Account
 
     }
 
+    private function initDiscordUser(): bool
+    {
+        if(!($DiscordUser = DiscordUser::byAccountId($this->id))){
+            return false;
+        }
+        $this->DiscordUser = $DiscordUser;
+        $this->externalAvaUrl = "https://cdn.discordapp.com/avatars/$DiscordUser->id/$DiscordUser->avatar.png";
+        $this->label = 'discord';
+        $this->nickName = $DiscordUser->username;
+        return true;
+
+    }
+
     private function unsetOAuthUserData(): void
     {
         unset($this->MailruUser);
@@ -255,7 +299,7 @@ class Account
     }
 
     public function initMember(): bool{
-        if(!($member = Member::byId($this->id, $this->AccSets->serverGroup))){
+        if(!$member = Member::byId($this->id, $this->AccSets->serverGroup)){
             return false;
         }
         $this->Member = $member;
@@ -357,5 +401,11 @@ class Account
         $MailruUser->user_id = $this->user_id;
         $MailruUser->accountId = $this->id;
         return $MailruUser->putToDB();
+    }
+
+    public function saveDiscordUser(DiscordUser $DiscordUser): bool
+    {
+        $DiscordUser->accountId = $this->id;
+        return $DiscordUser->putToDB();
     }
 }

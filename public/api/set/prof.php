@@ -5,8 +5,7 @@ use App\User\{Account, Prof};
 use App\Api;
 use App\Craft\AccountCraft;
 
-$Account = Account::byToken($_POST['token'] ?? '')
-    or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 
 $profId = intval($_POST['profId'] ?? 0)
     or die(Api::errorMsg('profId'));

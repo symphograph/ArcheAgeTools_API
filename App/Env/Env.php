@@ -2,6 +2,7 @@
 
 namespace App\Env;
 
+use App\Auth\Discord\DiscordSecrets;
 use App\Auth\Mailru\MailruSecrets;
 use App\Auth\Telegram\TelegramSecrets;
 
@@ -13,6 +14,7 @@ readonly class Env
     private string $frontendDomain;
     private object $telegram;
     private object $mailruSecrets;
+    private object $discordSecrets;
 
 
     public function __construct()
@@ -73,6 +75,12 @@ readonly class Env
     {
         $Env = self::getMyEnv();
         return new MailruSecrets($Env->mailruSecrets->app_id, $Env->telegram->app_secret);
+    }
+
+    public static function getDiscordSecrets(): DiscordSecrets
+    {
+        $Env = self::getMyEnv();
+        return new DiscordSecrets($Env->discordSecrets->clientId, $Env->discordSecrets->clientSecret);
     }
 
 

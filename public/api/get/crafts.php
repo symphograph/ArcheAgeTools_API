@@ -9,8 +9,7 @@ use App\User\Account;
 use App\Errors\CraftCountErr;
 
 
-$Account = Account::byToken($_POST['token'] ?? '')
-or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 $Account->initMember();
 $itemId = intval($_POST['itemId'] ?? 0) or die('item_id');
 

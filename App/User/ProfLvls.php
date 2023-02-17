@@ -14,9 +14,9 @@ class ProfLvls
     public string $label;
 
     /**
-     * @return array<self>|bool
+     * @return array<self>|false
      */
-    public static function getList(): array|bool
+    public static function getList(): array|false
     {
         $qwe = qwe("select *,
            concat(round(min/1000),'k - ',round(max/1000),'k') as label

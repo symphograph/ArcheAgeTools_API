@@ -5,8 +5,7 @@ use App\User\{Account, Member, Server};
 use App\Api;
 use App\Craft\AccountCraft;
 
-$Account = Account::byToken($_POST['token'] ?? '')
-or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 
 $master = intval($_POST['master'] ?? 0)
     or die(Api::errorMsg('master'));

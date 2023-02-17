@@ -5,7 +5,7 @@ use Symphograph\Bicycle\Helpers;
 use App\User\Account;
 
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
-$Account = Account::byToken($_POST['token'] ?? '') or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 if (empty($_POST['nick'])){
     die(Api::errorMsg('Ой!'));
 }

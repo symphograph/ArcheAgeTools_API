@@ -3,7 +3,7 @@ require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 use App\User\{Account, Sess};
 use App\Api;
 
-$Account = Account::byToken($_POST['token'] ?? '')
+$Account = Account::byToken()
 or die(Api::errorMsg('badToken'));
 $Account->initOAuthUserData();
 $Account->initAvatar();

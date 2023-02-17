@@ -5,8 +5,7 @@ use App\Api;
 use App\Item\Item;
 use App\User\Account;
 
-$Account = Account::byToken($_POST['token'] ?? '')
-or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 $Account->initMember();
 
 $id = intval($_POST['id'] ?? 0) or

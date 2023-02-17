@@ -5,8 +5,7 @@ use App\Api;
 use App\Craft\AccountCraft;
 use App\User\Account;
 
-$Account = Account::byToken($_POST['token'] ?? '')
-or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 
 $craftId = intval($_POST['craftId'] ?? 0)
 or die(Api::errorMsg('craftId'));

@@ -5,8 +5,7 @@ use App\Api;
 use App\Packs\Zone;
 use App\User\Account;
 
-$Account = Account::byToken($_POST['token'] ?? '')
-or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 
 $zonesFrom = Zone::getFromsGroupBySide()
 or die(Api::errorMsg('Локации не найдены'));

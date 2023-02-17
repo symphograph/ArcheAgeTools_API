@@ -37,7 +37,7 @@ function qwe(string $sql, array $args = null): bool|PDOStatement
     global $DB;
 
     if(!isset($DB)){
-        $DB = new DB('DL8t');
+        $DB = new DB();
     }
 
     return $DB->qwe($sql,$args);
@@ -48,7 +48,7 @@ function qwe2(string $sql, array $args = null) : bool|PDOStatement
     global $DB2;
 
     if(!isset($DB2)){
-        $DB2 = new DB(1);
+        $DB2 = new DB();
     }
 
     return $DB2->qwe($sql,$args);

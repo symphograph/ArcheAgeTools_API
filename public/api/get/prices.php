@@ -6,8 +6,7 @@ use App\Item\Price;
 use App\Transfer\PriceTransfer;
 use App\User\{Account, Member, Server};
 
-$Account = Account::byToken($_POST['token'] ?? '')
-or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 
 $ServerGroup = Server::getGroup(intval($_POST['serverId'] ?? 0))
 or die(Api::errorMsg('server not found'));

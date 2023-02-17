@@ -5,8 +5,7 @@ use App\Api;
 use App\Item\{Currency, Price};
 use App\User\Account;
 
-$Account = Account::byToken($_POST['token'] ?? '')
-or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 
 $id = intval($_POST['id'] ?? 0)
     or die(Api::errorMsg('id'));

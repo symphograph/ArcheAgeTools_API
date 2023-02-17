@@ -7,8 +7,7 @@ use App\Item\{Item, Price};
 use App\Packs\{PackIds, PackRoute};
 use App\User\Account;
 
-$Account = Account::byToken($_POST['token'] ?? '')
-or die(Api::errorMsg('Обновите страницу'));
+$Account = Account::byToken();
 
 $side = intval($_POST['side'] ?? 0);
 $condition = intval($_POST['condition'] ?? 0);

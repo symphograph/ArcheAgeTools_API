@@ -2,6 +2,8 @@
 
 namespace App\Env;
 
+use App\Api;
+
 class Config
 {
     public const debugOnlyFolders = [
@@ -43,16 +45,17 @@ class Config
             return;
         }
 
-        if (!in_array($_SERVER['REQUEST_METHOD'], ['POST', 'OPTIONS']))
-            die('invalid method');
+        if (!in_array($_SERVER['REQUEST_METHOD'], ['POST', 'OPTIONS'])){
+            Api::errorResponse('invalid method', 405);
+        }
 
         self::checkOrigin();
 
         if (empty($_POST)) {
             $_POST = json_decode(file_get_contents('php://input'), true)['params'] ?? [];
         }
-        if (empty($_POST['token'])) {
-            die('emptyToken');
+        if (empty($_POST['token'])  && empty($_SERVER['HTTP_AUTHORIZATION'])) {
+            Api::errorResponse('emptyToken', 401);
         }
 
     }
@@ -60,13 +63,12 @@ class Config
     public static function checkOrigin(): void
     {
         if (empty($_SERVER['HTTP_ORIGIN'])){
-            die(http_response_code(401));
+            Api::errorResponse('emptyOrigin', 401);
         }
 
         $adr = 'https://' . Env::getFrontendDomain();
         if($_SERVER['HTTP_ORIGIN'] !== $adr){
-            echo Env::getFrontendDomain();
-            die(http_response_code(403));
+            Api::errorResponse('Unknown domain', 401);
         }
     }
 

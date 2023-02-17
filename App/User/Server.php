@@ -34,13 +34,13 @@ class Server
     }
 
     /**
-     * @return array<self>
+     * @return array<self>|false
      */
-    public static function getList(): array
+    public static function getList(): array|false
     {
         $qwe = qwe("select * from servers order by `group`");
         if(!$qwe || !$qwe->rowCount()){
-            return [];
+            return false;
         }
         return $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
     }

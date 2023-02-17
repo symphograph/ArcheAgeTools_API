@@ -20,11 +20,14 @@ use App\Transfer\MailRuUserTransfer;
 //$Account->initMember();
 //$Account->AccSets->initProfs();
 
-
+$arr = getEmptyArr() or die('empty');
 
 //MailRuUserTransfer::importUsers();
 
-
+function getEmptyArr()
+{
+    return [];
+}
 echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';
 ?>
 </body>
