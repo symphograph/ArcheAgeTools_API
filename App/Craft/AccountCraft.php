@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\Errors\AppErr;
 use App\User\Account;
 use PDO;
 use Symphograph\Bicycle\DB;
@@ -153,7 +154,10 @@ class AccountCraft
                 and itemId = :itemId",
             ['accountId'=> $accountId, 'itemId' => $craft->resultItemId]
         );
-        return boolval($qwe);
+        if(!!!$qwe){
+            throw new AppErr("delUBest err - accountId: $accountId, craftId: $craftId");
+        }
+        return true;
     }
 
     public static function byResultItemId(int $resultItemId)

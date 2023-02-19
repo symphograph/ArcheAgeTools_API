@@ -1,6 +1,6 @@
 <?php
 namespace App\Auth\Telegram;
-use App\Env\Env;
+use Symphograph\Bicycle\Env\Env;
 
 class Telegram
 {

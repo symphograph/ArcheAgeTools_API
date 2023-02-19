@@ -201,8 +201,8 @@ class Account
             if(!isset($Account)){
                 throw new AccountErr('Account is not defined');
             }
-        } catch (AccountErr $error){
-            die(Api::errorMsg($error->getMessage()));
+        } catch (AccountErr $err){
+            Api::errorResponse($err->getResponseMsg());
         }
 
         return $Account;

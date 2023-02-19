@@ -7,15 +7,6 @@ use JetBrains\PhpStorm\NoReturn;
 class Api
 {
     const Monthes = ['', 'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-    public static function errorMsg(string $msg='Неизвестная ошибка', $statusCode = 500) : string|bool
-    {
-        return json_encode(['error'=>$msg],JSON_UNESCAPED_UNICODE);
-    }
-
-    public static function resultMsg(string|array $msg = 'Готово'): bool|string
-    {
-        return json_encode(['result'=>$msg],JSON_UNESCAPED_UNICODE);
-    }
 
     #[NoReturn] public static function errorResponse(string $msg, $statusCode = 500): void
     {
@@ -28,18 +19,19 @@ class Api
         self::jsonResponse($data);
     }
 
-    #[NoReturn] public static function jsonResponse(array|object $data, $statusCode = 200): void
+    #[NoReturn] public static function resultResponse(string $msg = 'Готово'): void
+    {
+        $data = ['result'=>$msg];
+        self::jsonResponse($data);
+    }
+
+    #[NoReturn] private static function jsonResponse(array|object $data, $statusCode = 200): void
     {
         header_remove();
         header("Content-Type: application/json");
         http_response_code($statusCode);
         echo json_encode($data,JSON_UNESCAPED_UNICODE);
         die();
-    }
-
-    public static function resultData(array|object $data, string|array $msg = 'Готово'): bool|string
-    {
-        return json_encode(['result'=>$msg,'data' => $data],JSON_UNESCAPED_UNICODE);
     }
 
     public static function monthNumByName(string $month): bool|int|string

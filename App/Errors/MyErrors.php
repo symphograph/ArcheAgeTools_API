@@ -2,33 +2,25 @@
 
 namespace App\Errors;
 
-use App\Env\Env;
-use Error;
 use Exception;
+use Symphograph\Bicycle\Env\Env;
+use Symphograph\Bicycle\FileHelper;
 
 class MyErrors extends Exception
 {
     protected string $type = 'Err';
     protected bool $loggable = true;
-    public function __construct(string $message, private string $pubMsg = '')
+
+    public function __construct(string $message, private string $pubMsg = '', protected int $httpStatus = 500)
     {
         parent::__construct($message);
-        //self::writeLog();
         if($this->loggable){
-            self::writeJsonLog();
+            self::writLog();
         }
 
     }
 
-    protected function writeLog(): void
-    {
-        $logText = self::prepLog();
-        $log = fopen(dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/errors.log', 'a+');
-        fwrite($log, "$logText\r\n");
-        fclose($log);
-    }
-
-    private function writeJsonLog(): void
+    private function writLog(): void
     {
         //$logText = self::prepLog();
         $data = [
@@ -36,10 +28,16 @@ class MyErrors extends Exception
             'type' => $this->type,
             'level' => 'error',
             'msg' => $this->getMessage(),
-            'trace' => self::prepTrace()
+            'trace' => self::prepTrace(),
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'agent' => get_browser()
         ];
         $data = json_encode($data);
-        $log = fopen(dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/errors.log', 'a+');
+        $file = self::getLogFilename();
+        if(!file_exists($file)){
+            FileHelper::fileForceContents($file, '');
+        }
+        $log = fopen($file, 'a+');
         fwrite($log, "$data\r\n");
         fclose($log);
     }
@@ -52,16 +50,6 @@ class MyErrors extends Exception
         return self::getTraceAsString();
     }
 
-    private function prepLog(): string
-    {
-        $trace = self::getTraceAsString();
-        if(!count(self::getTrace())){
-            $trace = $_SERVER['SCRIPT_NAME'] . "({$this->getLine()})";
-        }
-
-        return '[' . date('Y-m-d H:i:s') . '] [error]' . "\t {$this->getMessage()}\r\n$trace\r\n";
-    }
-
     public function getPubMsg(): string
     {
         return $this->pubMsg;
@@ -70,5 +58,15 @@ class MyErrors extends Exception
     public function getResponseMsg(): string
     {
         return Env::isDebugMode() ? $this->getMessage() : $this->getPubMsg();
+    }
+
+    public function getHttpStatus(): int
+    {
+        return $this->httpStatus ?? 500;
+    }
+
+    public static function getLogFilename(): string
+    {
+        return dirname($_SERVER['DOCUMENT_ROOT']). '/logs/errors/' . date('Y-m-d') . '.log';
     }
 }

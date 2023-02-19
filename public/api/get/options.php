@@ -7,9 +7,9 @@ use App\User\{ProfLvls, Server};
 
 try {
     $Servers = Server::getList()
-    or throw new AccountErr('servers is lost', 'Серверы не найдены');
+        or throw new AccountErr('servers is lost', 'Серверы не найдены');
     $ProfLvls = ProfLvls::getList()
-    or throw new AccountErr('ProfLvls is lost', 'Профессии не найдены');
+        or throw new AccountErr('ProfLvls is lost', 'Профессии не найдены');
 } catch (AccountErr $err){
     Api::errorResponse($err->getMessage());
 }

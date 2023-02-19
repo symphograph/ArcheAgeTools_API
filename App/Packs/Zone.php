@@ -2,6 +2,7 @@
 
 namespace App\Packs;
 
+use App\Errors\AppErr;
 use PDO;
 
 class Zone
@@ -51,7 +52,7 @@ class Zone
             on z.id = pzFI.zoneFromId"
         );
         if(!$qwe || !$qwe->rowCount()){
-            return false;
+            throw new AppErr('Zones err', 'Локации не найдены');
         }
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
@@ -96,7 +97,7 @@ class Zone
         ['zoneFromId' => $this->id]
         );
         if(!$qwe || !$qwe->rowCount()){
-            return;
+            throw new AppErr('initZonesTo err', 'Локации не найдены');
         }
         $this->ZonesTo = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }

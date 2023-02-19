@@ -2,6 +2,7 @@
 
 namespace App\User;
 
+use App\Errors\AppErr;
 use App\Item\{Item, Price};
 use PDO;
 
@@ -113,28 +114,26 @@ class Member
         return $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
     }
 
-    public static function setFollow(int $follower, int $master, int $serverGroup): bool
+    public static function setFollow(int $follower, int $master, int $serverGroup): void
     {
-        $qwe = qwe("
+        qwe("
             insert into uacc_follows 
                 (follower, master, serverGroup) 
             VALUES 
                 (:follower, :master, :serverGroup)",
             ['follower' => $follower, 'master' => $master, 'serverGroup'=> $serverGroup]
-        );
-        return boolval($qwe);
+        ) or throw new AppErr('setFollow err', 'Ошибка при сохранении');
     }
 
-    public static function unsetFollow(int $follower, int $master, int $serverGroup): bool
+    public static function unsetFollow(int $follower, int $master, int $serverGroup): void
     {
-        $qwe = qwe("
+        qwe("
             delete from uacc_follows 
             where follower = :follower
                 and master = :master
                 and serverGroup = :serverGroup",
             ['follower' => $follower, 'master' => $master, 'serverGroup'=> $serverGroup]
-        );
-        return boolval($qwe);
+        ) or throw new AppErr('unsetFollow err', 'Ошибка при сохранении');
     }
 
     public function initLastPricedItem(int $serverGroup): bool

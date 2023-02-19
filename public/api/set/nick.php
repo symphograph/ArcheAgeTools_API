@@ -1,38 +1,37 @@
 <?php
 
 use App\Api;
+use App\Errors\AppErr;
+use App\Errors\MyErrors;
+use App\Errors\ValidationErr;
+use App\User\PublicNick;
 use Symphograph\Bicycle\Helpers;
 use App\User\Account;
 
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 $Account = Account::byToken();
-if (empty($_POST['nick'])){
-    die(Api::errorMsg('Ой!'));
-}
 
-$nick = Helpers::sanitazeName($_POST['nick']);
+try {
 
-if ($nick === $Account->AccSets->publicNick) {
-    die(Api::resultMsg());
-}
-
-if (mb_strtolower($nick) !== mb_strtolower($Account->AccSets->publicNick)){
-    if ($Account->AccSets::isNickExist($nick)) {
-        die(Api::errorMsg('Ник занят'));
+    if (empty($_POST['nick'])){
+        throw new ValidationErr('nick', 'Ой!');
     }
+
+    $pubNick = new PublicNick($_POST['nick']);
+
+    if ($pubNick->nick === $Account->AccSets->publicNick) {
+        Api::resultResponse();
+    }
+
+    $pubNick->validation($Account);
+
+    if ($_POST['save'] ?? false) {
+        $Account->AccSets->publicNick = $pubNick->nick;
+        $Account->AccSets->putToDB()
+            or throw new AppErr('putToDB err', 'Ошибка при сохранении');
+    }
+} catch (MyErrors $err) {
+    Api::errorResponse($err->getResponseMsg(), $err->getHttpStatus());
 }
 
-if (mb_strlen($nick) > 20) {
-    die(Api::errorMsg('Не больше 20'));
-}
-
-if (mb_strlen($nick) < 3) {
-    die(Api::errorMsg('Не менее 3'));
-}
-
-if ($_POST['save'] ?? false) {
-    $Account->AccSets->publicNick = $nick;
-    $Account->AccSets->putToDB() or die(Api::errorMsg('Ошибка при сохранении'));
-}
-
-echo Api::resultMsg();
+Api::resultResponse();

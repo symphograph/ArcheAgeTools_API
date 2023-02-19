@@ -3,7 +3,9 @@
 namespace App\Item;
 
 use App\Craft\{AccountCraft, BufferSecond};
-use App\Env\Env;
+use Symphograph\Bicycle\Env\Env;
+use App\Errors\AppErr;
+use mysql_xdevapi\Exception;
 use PDO;
 use Symphograph\Bicycle\DB;
 use App\User\Account;
@@ -280,9 +282,9 @@ class Price
     }
 
     /**
-     * @return array<self>|false
+     * @return array<self>
      */
-    public static function memberPriceList(int $accountId, int $serverGroup): array|false
+    public static function memberPriceList(int $accountId, int $serverGroup): array
     {
         $qwe = qwe("
             select up.*, 
@@ -301,7 +303,7 @@ class Price
             ['accountId' => $accountId, 'serverGroup' => $serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){
-            return false;
+            return [];
         }
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
@@ -313,6 +315,9 @@ class Price
     {
 
         $qwe = qwe("select * from basedItems");
+        if(!$qwe || !$qwe->rowCount()){
+            throw new AppErr('basedItems broken');
+        }
         $qwe = $qwe->fetchAll(PDO::FETCH_COLUMN);
         $List = [];
         foreach ($qwe as $id){
@@ -469,6 +474,17 @@ class Price
             ]
         );
         return $qwe && $qwe->rowCount();
+    }
+
+    public static function delFromDB(int $accountId, int $itemId, int $serverGroup): void
+    {
+        qwe("
+            delete from uacc_prices 
+                   where accountId = :accountId 
+                     and itemId = :itemId 
+                     and serverGroup = :serverGroup",
+            ['accountId' => $accountId, 'itemId' => $itemId, 'serverGroup' => $serverGroup]
+        ) or throw new AppErr('delFromDB err', 'Ошибка при удалении');
     }
 
 }

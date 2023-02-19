@@ -164,7 +164,7 @@ class PageItem extends Page
             return false;
         }
 
-        $this->ItemDTO->categId = $Categories[0]->id;
+        $this->ItemDTO->categId = $Categories[0]->id ?? 0;
 
         return true;
     }

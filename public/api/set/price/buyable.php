@@ -3,36 +3,44 @@ require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
 use App\Api;
 use App\Craft\AccountCraft;
+use App\Errors\AppErr;
+use App\Errors\MyErrors;
+use App\Errors\ValidationErr;
 use App\Item\Item;
 use App\User\Account;
 $Account = Account::byToken();
 
-$itemId = intval($_POST['itemId'] ?? 0)
-or die(Api::errorMsg('id'));
+try {
+    $itemId = intval($_POST['itemId'] ?? 0)
+        or throw new ValidationErr('itemId', 'Ошибка данных');
 
-$buyable = intval($_POST['buyable'] ?? 0);
-$Item = Item::byId($itemId)
-or die(Api::errorMsg('Предмет не найден'));
+    $buyable = intval($_POST['buyable'] ?? 0);
+    $Item = Item::byId($itemId)
+        or throw new AppErr("Item::byId: $itemId does not exist", 'Предмет не найден');
 
-if (!$buyable){
-    $sql = "delete from uacc_buyOnly where accountId = :accountId and itemId = :itemId";
-}else{
-    if (!$Item->craftable)
-        die(Api::errorMsg('Предмет не крафтабельный'));
+    if (!$buyable){
+        $sql = "delete from uacc_buyOnly where accountId = :accountId and itemId = :itemId";
+    }else{
+        if (!$Item->craftable){
+            throw new AppErr("Item $Item->id must be craftable", 'Предмет не крафтабельный', 400);
+        }
 
-    if ($Item->personal)
-        die(Api::errorMsg('Персональный предмет'));
+        if ($Item->personal){
+            throw new AppErr("Item $Item->id must be not personal", 'Персональный предмет', 400);
+        }
 
-    $sql = "replace into uacc_buyOnly (accountId, itemId) VALUES (:accountId, :itemId)";
+        $sql = "replace into uacc_buyOnly (accountId, itemId) VALUES (:accountId, :itemId)";
+    }
+
+    $qwe = qwe($sql,
+        [
+            'accountId'   => $Account->id,
+            'itemId'      => $itemId,
+        ]
+    ) or throw new AppErr("set buyOnly err accountId: $Account->id, itemId: $itemId");
+    AccountCraft::clearAllCrafts();
+} catch (MyErrors $err) {
+    Api::errorResponse($err->getResponseMsg(), $err->getHttpStatus());
 }
 
-$qwe = qwe($sql,
-[
-    'accountId'   => $Account->id,
-    'itemId'      => $itemId,
-]
-) or die(Api::errorMsg());
-
-AccountCraft::clearAllCrafts();
-
-echo Api::resultMsg();
+Api::resultResponse();

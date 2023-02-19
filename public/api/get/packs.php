@@ -27,7 +27,7 @@ if(!empty($_POST['addProfit']) && !$laborPrice = Price::bySaved(2)){
 
 if(!empty($lostPrices)){
     $Lost = Price::lostList($lostPrices);
-    die(Api::resultData(['Packs' => [], 'Lost' => $Lost]));
+    Api::dataResponse(['Packs' => [], 'Lost' => $Lost]);
 }
 
 if(!empty($_POST['addProfit'])){
@@ -36,14 +36,15 @@ if(!empty($_POST['addProfit'])){
         $CraftCounter = CraftCounter::recountList($uncounted);
         if(!empty($CraftCounter->lost)){
             $Lost = Price::lostList($CraftCounter->lost);
-            die(Api::resultData(['Packs' => [], 'Lost' => $Lost]));
+            Api::dataResponse(['Packs' => [], 'Lost' => $Lost]);
         }
     }
 }
 
 
 $Packs = PackRoute::getList($side, !empty($_POST['addProfit']))
-or die(Api::errorMsg('Паки не найдены'));
+    or Api::errorResponse('Паки не найдены');
+
 
 $goldPrice = new Price();
 $goldPrice->itemId = 500;
@@ -57,4 +58,4 @@ $currencyPrices = [
 if(!empty($laborPrice)){
     $currencyPrices[] = $laborPrice;
 }
-echo Api::resultData(['Packs' => $Packs, 'Lost' => [], 'currencyPrices' => $currencyPrices]);
+Api::dataResponse(['Packs' => $Packs, 'Lost' => [], 'currencyPrices' => $currencyPrices]);

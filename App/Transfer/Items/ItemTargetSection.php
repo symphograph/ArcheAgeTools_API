@@ -78,7 +78,7 @@ class ItemTargetSection extends TargetArea
         foreach ($types as $type){
             if(empty($type)) continue;
             $combined = '<div>';
-
+            $section = (object) ['content' => ''];
             foreach ($type as $section){
                 $combined .= $section->content;
             }

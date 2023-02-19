@@ -7,7 +7,7 @@
     "ext-bcmath": "*",
     "ext-json": "*",
     "ext-pdo" : "*",
-    "symphograph/bicycle": "^2.0",
+    "symphograph/bicycle": "^3.0",
     "ext-mbstring": "*",
     "ext-exif": "*"
   },

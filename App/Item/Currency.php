@@ -2,6 +2,8 @@
 
 namespace App\Item;
 
+use App\Errors\AppErr;
+use mysql_xdevapi\Exception;
 use PDO;
 use Symphograph\Bicycle\Helpers;
 

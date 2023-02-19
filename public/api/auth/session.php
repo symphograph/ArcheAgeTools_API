@@ -3,7 +3,7 @@ require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
 use App\User\{Account};
 use App\Api;
-use App\Env\Env;
+use Symphograph\Bicycle\Env\Env;
 use App\Errors\AccountErr;
 use App\Errors\MyErrors;
 

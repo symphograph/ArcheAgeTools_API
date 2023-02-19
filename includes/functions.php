@@ -1,6 +1,6 @@
 <?php
 
-use App\Env\Env;
+use Symphograph\Bicycle\Env\Env;
 use Symphograph\Bicycle\DB;
 
 function cors() {

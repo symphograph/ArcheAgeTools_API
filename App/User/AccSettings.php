@@ -2,7 +2,9 @@
 
 namespace App\User;
 
+use App\Api;
 use App\Craft\LaborData;
+use App\Errors\AppErr;
 use App\Item\Price;
 use Symphograph\Bicycle\DB;
 
@@ -136,6 +138,13 @@ class AccSettings
             'siol'       => intval($this->siol),
             'old_id'     => $this->old_id ?? null
         ];
-        return DB::replace('uacc_settings', $params);
+        try {
+            $qwe = DB::replace('uacc_settings', $params)
+                or throw new AppErr('putToDB err', 'Ошибка при сохранении');
+        } catch (AppErr $err) {
+            Api::errorResponse($err->getResponseMsg());
+        }
+        return  !!$qwe;
+
     }
 }

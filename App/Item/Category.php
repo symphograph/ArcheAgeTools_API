@@ -2,6 +2,7 @@
 
 namespace App\Item;
 
+use App\Errors\AppErr;
 use PDO;
 use Symphograph\Bicycle\Helpers;
 
@@ -50,7 +51,7 @@ class Category
             ORDER BY deep"
         );
         if(!$qwe || !$qwe->rowCount()){
-            return [];
+            throw new AppErr('Categories is empty');
         }
 
         $List = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);

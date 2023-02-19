@@ -2,7 +2,8 @@
 
 namespace App\Env;
 
-use App\Api;
+use App\Errors\ConfigErr;
+use Symphograph\Bicycle\Env\Env;
 
 class Config
 {
@@ -19,8 +20,7 @@ class Config
         }
         foreach (self::debugOnlyFolders as $folder){
             if(str_starts_with($_SERVER['SCRIPT_NAME'], '/' . $folder . '/')){
-                http_response_code(403);
-                die();
+                throw new ConfigErr('debugOnlyFolders permits', 'permits', 403);
             }
         }
     }
@@ -46,7 +46,7 @@ class Config
         }
 
         if (!in_array($_SERVER['REQUEST_METHOD'], ['POST', 'OPTIONS'])){
-            Api::errorResponse('invalid method', 405);
+            throw new ConfigErr('invalid method', 'invalid method', 405);
         }
 
         self::checkOrigin();
@@ -55,7 +55,7 @@ class Config
             $_POST = json_decode(file_get_contents('php://input'), true)['params'] ?? [];
         }
         if (empty($_POST['token'])  && empty($_SERVER['HTTP_AUTHORIZATION'])) {
-            Api::errorResponse('emptyToken', 401);
+            throw new ConfigErr('emptyToken', 'emptyToken', 405);
         }
 
     }
@@ -63,12 +63,12 @@ class Config
     public static function checkOrigin(): void
     {
         if (empty($_SERVER['HTTP_ORIGIN'])){
-            Api::errorResponse('emptyOrigin', 401);
+            throw new ConfigErr('emptyOrigin', 'emptyOrigin', 401);
         }
 
         $adr = 'https://' . Env::getFrontendDomain();
         if($_SERVER['HTTP_ORIGIN'] !== $adr){
-            Api::errorResponse('Unknown domain', 401);
+            throw new ConfigErr('Unknown domain', 'Unknown domain', 401);
         }
     }
 

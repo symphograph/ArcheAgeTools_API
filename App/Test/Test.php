@@ -3,6 +3,7 @@
 namespace App\Test;
 
 use App\Api;
+use App\Errors\AppErr;
 use App\Craft\{Craft, CraftCounter};
 use App\Item\{Item, Price, Pricing};
 use App\Packs\{Pack, PackIds};
@@ -17,7 +18,8 @@ class Test
 
     public static function pricingByItemId(): void
     {
-        $List = Item::searchList() or die(Api::errorMsg('pricingByItemId err'));
+        $List = Item::searchList()
+            or throw new AppErr('pricingByItemId err');
         foreach ($List as $item){
             if (!($Pricing = Pricing::byItemId($item->id))) {
                 echo "<br>item_id: $item->id. err";

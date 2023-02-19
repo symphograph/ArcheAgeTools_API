@@ -3,7 +3,7 @@
 namespace App\Auth\Discord;
 
 use App\Api;
-use App\Env\Env;
+use Symphograph\Bicycle\Env\Env;
 use App\User\Sess;
 use JetBrains\PhpStorm\NoReturn;
 use Symphograph\Bicycle\JsonDecoder;

@@ -20,8 +20,8 @@ use App\Transfer\MailRuUserTransfer;
 //$Account->initMember();
 //$Account->AccSets->initProfs();
 
-$arr = getEmptyArr() or die('empty');
-
+//$arr = getEmptyArr() or die('empty');
+echo 'hghdfg';
 //MailRuUserTransfer::importUsers();
 
 function getEmptyArr()

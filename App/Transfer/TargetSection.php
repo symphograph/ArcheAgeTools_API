@@ -26,12 +26,12 @@ class TargetSection extends TargetArea
         foreach ($types as $type){
             if(empty($type)) continue;
             $combined = '<div>';
-
+            $section = (object) [];
             foreach ($type as $section){
                 $combined .= $section->content;
             }
             $combined .= '</div>';
-            $section->content = $combined;
+            $section->content = $combined ?? '';
             $sections[] = $section;
         }
         return $sections;

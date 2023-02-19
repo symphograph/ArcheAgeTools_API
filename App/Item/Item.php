@@ -2,6 +2,8 @@
 
 namespace App\Item;
 
+use App\Api;
+use App\Errors\{AppErr, MyErrors};
 use App\User\Account;
 use PDO;
 use Symphograph\Bicycle\Helpers;
@@ -70,10 +72,15 @@ class Item
                        and id = :id",
         ['id' => $id]
         );
-        if(!$qwe || !$qwe->rowCount()) {
-            return false;
+        try {
+            if(!$qwe || !$qwe->rowCount()) {
+                throw new AppErr("item $id does not exist in DB");
+            }
+        } catch (MyErrors $err) {
+            Api::errorResponse($err->getResponseMsg());
         }
-        return $qwe->fetchObject(get_class());
+
+        return $qwe->fetchObject(self::class);
     }
 
     public function initInfo(): void

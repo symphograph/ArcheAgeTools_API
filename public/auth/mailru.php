@@ -1,7 +1,7 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\Env\Env;
+use Symphograph\Bicycle\Env\Env;
 use App\Auth\Mailru\{OAuthMailRu};
 use App\User\{Account, AccSettings, Sess};
 use App\Transfer\PriceTransfer;

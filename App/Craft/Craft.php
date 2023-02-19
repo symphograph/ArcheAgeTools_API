@@ -2,7 +2,7 @@
 
 namespace App\Craft;
 
-use App\Errors\CraftCountErr;
+use App\Errors\AppErr;
 use App\User\Account;
 use PDO;
 use App\User\Prof;
@@ -61,13 +61,13 @@ class Craft
     }
 
     /**
-     * @throws CraftCountErr
+     * @throws AppErr
      */
     private function initMats(): bool
     {
         $Mats = Mat::getCraftMats($this->id);
         if(empty($Mats)){
-            throw new CraftCountErr('Craft ' . $this->id . ' не нашел материалы');
+            throw new AppErr('Craft ' . $this->id . ' не нашел материалы');
         }
         $this->Mats = $Mats;
         return true;

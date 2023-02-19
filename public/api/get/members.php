@@ -7,10 +7,11 @@ use App\Api;
 $Account = Account::byToken();
 
 $ServerGroup = Server::getGroup(intval($_POST['serverId'] ?? 0))
-or die(Api::errorMsg('Сервер не указан'));
+or Api::errorResponse('Сервер не указан', 400);
 
-$List = Member::getList($Account->id,$ServerGroup)
-    or die(Api::errorMsg('members not found'));
+
+$List = Member::getList($Account->id, $ServerGroup)
+or Api::errorResponse('members not found');
 
 $Members = [];
 foreach ($List as $member){
@@ -21,4 +22,4 @@ foreach ($List as $member){
     $Members[] = $member;
 }
 
-echo Api::resultData($Members);
+Api::dataResponse($Members);
