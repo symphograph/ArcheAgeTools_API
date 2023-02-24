@@ -5,12 +5,14 @@ use Symphograph\Bicycle\Env\Env;
 use App\Auth\Mailru\{OAuthMailRu};
 use App\User\{Account, AccSettings, Sess};
 use App\Transfer\PriceTransfer;
+use Symphograph\Bicycle\Errors\AccountErr;
+use Symphograph\Bicycle\Errors\AuthErr;
 
 $secret = Env::getMailruSecrets();
 
 
 if (!empty($_GET['error'])) {
-    die($_GET['error']);
+    throw new AuthErr($_GET['error']);
 }
 
 if (empty($_GET['code'])) {
@@ -19,8 +21,8 @@ if (empty($_GET['code'])) {
 }
 
 // Пришёл ответ без ошибок после запроса авторизации
-if (!OAuthMailRu::getToken($_GET['code'],$secret)) {
-    die('Error - no token by code');
+if (!OAuthMailRu::getToken($_GET['code'], $secret)) {
+    throw new AuthErr('Error - no token by code');
 }
 /*
  * На данном этапе можно проверить зарегистрирован ли у вас MailRu-юзер с id = OAuthMailRu::$user_id
@@ -30,28 +32,28 @@ if (!OAuthMailRu::getToken($_GET['code'],$secret)) {
 $nMailruUser = OAuthMailRu::getUser();
 $nMailruUser->first_time = date('Y-m-d H:i:s');
 
-if ($Account = Account::byMailRu($nMailruUser->email)){
+if ($Account = Account::byMailRu($nMailruUser->email)) {
     //Такой уже есть
     //printr($Account);
     $nMailruUser->first_time = $Account->MailruUser->first_time;
 
-}elseif($Account = Account::bySess()){
-    $Account = $Account::create($Account->user_id,3);
-}else{
+} elseif ($Account = Account::bySess()) {
+    $Account = $Account::create($Account->user_id, 3);
+} else {
     $Account = $Account::create(authTypeId: 3)
-    or die('Ошибка создания акаунта');
+        or throw new AccountErr('Account::create Err','Ошибка создания акаунта');
 }
 
 $Account->saveMailruUser($nMailruUser)
-or die('Ошибка при сохранении');
+    or throw new AccountErr('saveMailruUser Err','Ошибка при сохранении');
 
 $Sess = Sess::newSess($Account->id)
-or die('Ошибка создания сессии');
+    or throw new AuthErr('newSess Err','Ошибка создания сессии');
 
 //----------------------------------------------------------
-if($AccSets = AccSettings::byOld($Account->id)){
+if ($AccSets = AccSettings::byOld($Account->id)) {
     $AccSets->putToDB();
-    PriceTransfer::importPrices($AccSets->old_id,$Account->id);
+    PriceTransfer::importPrices($AccSets->old_id, $Account->id);
 }
 
 

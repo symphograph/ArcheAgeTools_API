@@ -2,7 +2,7 @@
 
 namespace App\Packs;
 
-use App\Errors\AppErr;
+use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
 
 class Zone

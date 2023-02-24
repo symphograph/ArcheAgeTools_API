@@ -1,14 +1,13 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
-use App\Api;
-use App\Errors\MyErrors;
+use Symphograph\Bicycle\Api\Response;
+use Symphograph\Bicycle\Errors\MyErrors;
 
 $file = MyErrors::getLogFilename();
 $rows = file($file);
 $arr = [];
 foreach ($rows as $row){
-    $row = json_decode($row, 4);
-    $arr[] = $row;
+    $row = json_decode($row);
+    $arr[] = (object) $row;
 }
-Api::dataResponse($arr);
-//echo json_encode(['result'=>'hgh', 'data'=>$arr]);
+Response::data($arr);

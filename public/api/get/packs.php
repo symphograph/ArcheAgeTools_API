@@ -1,11 +1,12 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\Api;
+use Symphograph\Bicycle\Api\Response;
 use App\Craft\CraftCounter;
 use App\Item\{Item, Price};
 use App\Packs\{PackIds, PackRoute};
 use App\User\Account;
+use Symphograph\Bicycle\Errors\AppErr;
 
 $Account = Account::byToken();
 
@@ -27,7 +28,7 @@ if(!empty($_POST['addProfit']) && !$laborPrice = Price::bySaved(2)){
 
 if(!empty($lostPrices)){
     $Lost = Price::lostList($lostPrices);
-    Api::dataResponse(['Packs' => [], 'Lost' => $Lost]);
+    Response::data(['Packs' => [], 'Lost' => $Lost]);
 }
 
 if(!empty($_POST['addProfit'])){
@@ -36,15 +37,14 @@ if(!empty($_POST['addProfit'])){
         $CraftCounter = CraftCounter::recountList($uncounted);
         if(!empty($CraftCounter->lost)){
             $Lost = Price::lostList($CraftCounter->lost);
-            Api::dataResponse(['Packs' => [], 'Lost' => $Lost]);
+            Response::data(['Packs' => [], 'Lost' => $Lost]);
         }
     }
 }
 
 
 $Packs = PackRoute::getList($side, !empty($_POST['addProfit']))
-    or Api::errorResponse('Паки не найдены');
-
+    or throw new AppErr('packs is empty','Паки не найдены');
 
 $goldPrice = new Price();
 $goldPrice->itemId = 500;
@@ -58,4 +58,4 @@ $currencyPrices = [
 if(!empty($laborPrice)){
     $currencyPrices[] = $laborPrice;
 }
-Api::dataResponse(['Packs' => $Packs, 'Lost' => [], 'currencyPrices' => $currencyPrices]);
+Response::data(['Packs' => $Packs, 'Lost' => [], 'currencyPrices' => $currencyPrices]);

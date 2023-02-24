@@ -2,8 +2,6 @@
 
 namespace App\Item;
 
-use App\Errors\AppErr;
-use mysql_xdevapi\Exception;
 use PDO;
 use Symphograph\Bicycle\Helpers;
 
@@ -11,7 +9,7 @@ class Currency
 {
     public int     $id;
     public string  $name;
-    public ?int $max;
+    public ?int    $max;
     public bool    $personal = false;
     public ?Price  $Price;
     public ?string $icon;

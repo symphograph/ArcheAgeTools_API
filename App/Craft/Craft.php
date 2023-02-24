@@ -2,7 +2,7 @@
 
 namespace App\Craft;
 
-use App\Errors\AppErr;
+use Symphograph\Bicycle\Errors\AppErr;
 use App\User\Account;
 use PDO;
 use App\User\Prof;

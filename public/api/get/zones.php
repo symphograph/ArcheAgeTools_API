@@ -1,17 +1,13 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\Api;
-use App\Errors\MyErrors;
+use Symphograph\Bicycle\Api\Response;
+use Symphograph\Bicycle\Errors\MyErrors;
 use App\Packs\Zone;
 use App\User\Account;
 
 $Account = Account::byToken();
-try {
-    $zonesFrom = Zone::getFromsGroupBySide();
-} catch (MyErrors $err) {
-    Api::errorResponse($err->getResponseMsg());
-}
+$zonesFrom = Zone::getFromsGroupBySide();
 
 
 $allZonesTo = [];
@@ -26,4 +22,4 @@ sort($allZonesTo[1]);
 sort($allZonesTo[2]);
 sort($allZonesTo[3]);
 
-Api::dataResponse(['zonesFrom' => $zonesFrom, 'allZonesTo' => $allZonesTo]);
+Response::data(['zonesFrom' => $zonesFrom, 'allZonesTo' => $allZonesTo]);

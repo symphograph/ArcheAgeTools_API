@@ -2,11 +2,14 @@
 
 namespace App\Item;
 
-use App\Api;
-use App\Errors\{AppErr, MyErrors};
-use App\User\Account;
 use PDO;
+use App\User\Account;
+use Symphograph\Bicycle\Api\Response;
+use Symphograph\Bicycle\Errors\{AppErr, MyErrors};
 use Symphograph\Bicycle\Helpers;
+
+
+
 
 class Item
 {
@@ -77,7 +80,7 @@ class Item
                 throw new AppErr("item $id does not exist in DB");
             }
         } catch (MyErrors $err) {
-            Api::errorResponse($err->getResponseMsg());
+            Response::error($err->getResponseMsg());
         }
 
         return $qwe->fetchObject(self::class);
@@ -129,7 +132,7 @@ class Item
             )
             AND id != 500
 	    ");
-        if(!$qwe or !$qwe->rowCount()){
+        if(!$qwe || !$qwe->rowCount()){
             return [];
         }
         $privateItems = $qwe->fetchAll(PDO::FETCH_COLUMN);

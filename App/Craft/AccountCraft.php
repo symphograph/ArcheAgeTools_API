@@ -2,7 +2,7 @@
 
 namespace App\Craft;
 
-use App\Errors\AppErr;
+use Symphograph\Bicycle\Errors\AppErr;
 use App\User\Account;
 use PDO;
 use Symphograph\Bicycle\DB;
@@ -155,7 +155,8 @@ class AccountCraft
             ['accountId'=> $accountId, 'itemId' => $craft->resultItemId]
         );
         if(!!!$qwe){
-            throw new AppErr("delUBest err - accountId: $accountId, craftId: $craftId");
+            $msg = "delUBest err - accountId: $accountId, craftId: $craftId";
+            throw new AppErr($msg, 'Не удалилось');
         }
         return true;
     }

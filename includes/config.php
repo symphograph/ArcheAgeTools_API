@@ -1,14 +1,11 @@
 <?php
 
-use App\Api;
-use App\Env\Config;
-use App\Errors\MyErrors;
+use Symphograph\Bicycle\Env\Config;
+use Symphograph\Bicycle\Logs\AccessLog;
 
-try {
-    Config::redirectFromWWW();
-    Config::initDisplayErrors();
-    Config::checkPermission();
-    Config::initApiSettings();
-} catch (MyErrors $err) {
-    Api::errorResponse($err->getResponseMsg(), $err->getHttpStatus());
-}
+Config::redirectFromWWW();
+Config::regHandlers();
+Config::initDisplayErrors();
+Config::checkPermission();
+Config::initApiSettings();
+AccessLog::writeToLog();

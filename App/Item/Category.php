@@ -2,7 +2,7 @@
 
 namespace App\Item;
 
-use App\Errors\AppErr;
+use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
 use Symphograph\Bicycle\Helpers;
 

@@ -1,6 +1,8 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
-use App\Auth\Telegram\{Telegram, TeleUser};
+
+use Symphograph\Bicycle\Errors\{AccountErr, AuthErr};
+use App\Auth\Telegram\{Telegram};
 use App\User\{Sess, Account};
 
 /**
@@ -19,12 +21,12 @@ if ($Account = Account::byTelegram($TeleUser->id)){
     $Account = $Account::create($Account->user_id,2);
 }else{
     $Account = $Account::create(authTypeId: 2)
-    or die('Ошибка создания акаунта');
+    or throw new AccountErr('Account::create Err','Ошибка создания акаунта');
 }
 $Account->saveTeleUser($TeleUser)
-or die('Ошибка при сохранении');
+    or throw new AccountErr('saveTeleUser Err','Ошибка при сохранении');
 
 $Sess = Sess::newSess($Account->id)
-or die('Ошибка создания сессии');
+or throw new AuthErr('newSess Err','Ошибка создания сессии');
 
 $Sess->goToClient();

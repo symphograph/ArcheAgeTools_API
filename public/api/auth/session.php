@@ -2,19 +2,12 @@
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
 use App\User\{Account};
-use App\Api;
-use Symphograph\Bicycle\Env\Env;
-use App\Errors\AccountErr;
-use App\Errors\MyErrors;
+use Symphograph\Bicycle\Api\Response;
+use Symphograph\Bicycle\Errors\MyErrors;
 
 $Account = Account::byToken();
+$Account->initOAuthUserData();
+$Account->initAvatar();
+$Accounts = Account::getList($Account->user_id);
 
-try {
-    $Account->initOAuthUserData();
-    $Account->initAvatar();
-    $Accounts = Account::getList($Account->user_id);
-} catch (MyErrors $err) {
-    Api::errorResponse($err->getResponseMsg());
-}
-
-Api::dataResponse(['curAccount'=>$Account,'Accounts' => $Accounts]);
+Response::data(['curAccount'=>$Account,'Accounts' => $Accounts]);

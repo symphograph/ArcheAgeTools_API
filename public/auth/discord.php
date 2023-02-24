@@ -3,7 +3,8 @@ require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 use App\Api;
 use App\Auth\Discord\DiscordApi;
 use Symphograph\Bicycle\Env\Env;
-use App\Errors\DiscordErr;
+use Symphograph\Bicycle\Errors\AppErr;
+use Symphograph\Bicycle\Errors\DiscordErr;
 use App\User\{Account, Sess};
 
 if(Api::get('action') == 'login'){
@@ -26,12 +27,12 @@ if ($Account = Account::byDiscord($DiscordUser->id)){
     $Account = $Account::create($Account->user_id,4);
 }else{
     $Account = $Account::create(authTypeId: 4)
-    or die('Ошибка создания акаунта');
+        or throw new AppErr('Ошибка создания акаунта', 'Ошибка создания акаунта');
 }
 $Account->saveDiscordUser($DiscordUser)
-or die('Ошибка при сохранении');
+or throw new AppErr('Ошибка при сохранении', 'Ошибка при сохранении');
 
 $Sess = Sess::newSess($Account->id)
-or die('Ошибка создания сессии');
+or throw new AppErr('Ошибка создания сессии', 'Ошибка создания сессии');
 
 $Sess->goToClient();

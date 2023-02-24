@@ -2,7 +2,7 @@
 
 namespace App\User;
 
-use App\Errors\AppErr;
+use Symphograph\Bicycle\Errors\AppErr;
 use App\Item\{Item, Price};
 use PDO;
 

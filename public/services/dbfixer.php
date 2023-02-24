@@ -10,9 +10,9 @@ use App\DBServices\ItemFixer;
 </head>
 <body style="color: white; background-color: #262525">
 <?php
-//ItemFixer::craftableCol();
+ItemFixer::craftableCol();
 //echo 'craftableCol fixed<br>';
-ItemFixer::renameIcons();
+//ItemFixer::renameIcons();
 
 ?>
 </body>

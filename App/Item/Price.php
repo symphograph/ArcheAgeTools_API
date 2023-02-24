@@ -4,8 +4,7 @@ namespace App\Item;
 
 use App\Craft\{AccountCraft, BufferSecond};
 use Symphograph\Bicycle\Env\Env;
-use App\Errors\AppErr;
-use mysql_xdevapi\Exception;
+use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
 use Symphograph\Bicycle\DB;
 use App\User\Account;
@@ -315,10 +314,8 @@ class Price
     {
 
         $qwe = qwe("select * from basedItems");
-        if(!$qwe || !$qwe->rowCount()){
-            throw new AppErr('basedItems broken');
-        }
-        $qwe = $qwe->fetchAll(PDO::FETCH_COLUMN);
+        $qwe = $qwe->fetchAll(PDO::FETCH_COLUMN)
+        or throw new AppErr('basedList is empty', 'Предметы не найдены');;
         $List = [];
         foreach ($qwe as $id){
             $price = self::bySaved($id);

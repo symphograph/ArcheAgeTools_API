@@ -2,11 +2,12 @@
 
 namespace App\User;
 
-use App\Api;
-use App\Craft\LaborData;
-use App\Errors\AppErr;
 use App\Item\Price;
+use App\Craft\LaborData;
 use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\Api\Response;
+use Symphograph\Bicycle\Errors\AppErr;
+
 
 class AccSettings
 {
@@ -142,7 +143,7 @@ class AccSettings
             $qwe = DB::replace('uacc_settings', $params)
                 or throw new AppErr('putToDB err', 'Ошибка при сохранении');
         } catch (AppErr $err) {
-            Api::errorResponse($err->getResponseMsg());
+            Response::error($err->getResponseMsg());
         }
         return  !!$qwe;
 

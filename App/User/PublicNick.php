@@ -2,7 +2,7 @@
 
 namespace App\User;
 
-use App\Errors\ValidationErr;
+use Symphograph\Bicycle\Errors\ValidationErr;
 use Symphograph\Bicycle\Helpers;
 
 class PublicNick

@@ -41,7 +41,7 @@ class Info
         ",
             ['itemId' => $this->id]
         );
-        if(!$qwe or !$qwe->rowCount()){
+        if(!$qwe || !$qwe->rowCount()){
             return [];
         }
         return $qwe->fetchAll(PDO::FETCH_COLUMN,0);

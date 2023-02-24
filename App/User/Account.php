@@ -1,13 +1,15 @@
 <?php
 
 namespace App\User;
-
-use App\Api;
-use App\Errors\{AccountErr, AuthErr};
-use App\Auth\{Discord\DiscordUser, Mailru\MailruUser, Telegram\TeleUser};
-use App\Item\Item;
 use PDO;
+use App\Item\Item;
 use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\Api\Response;
+use Symphograph\Bicycle\Errors\{AccountErr, AuthErr};
+use App\Auth\{Discord\DiscordUser, Mailru\MailruUser, Telegram\TeleUser};
+
+
+
 
 class Account
 {
@@ -73,23 +75,16 @@ class Account
     public static function byToken(): self|bool
     {
         $token = $_POST['token'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-        try
-        {
-            if(empty($token)){
-                throw new AuthErr('empty token', 'Обновите страницу');
-            }
+        if(empty($token)){
+            throw new AuthErr('empty token', 'Обновите страницу', 401);
+        }
 
-            if(!$Sess = Sess::byToken($token)){
-                throw new AuthErr('invalid token', 'Обновите страницу');
-            }
+        if(!$Sess = Sess::byToken($token)){
+            throw new AuthErr('invalid token', 'Обновите страницу', 401);
+        }
 
-            if(!$Account = self::byId($Sess->accountId)){
-                throw new AccountErr("Account $Sess->accountId does not exist");
-            }
-        } catch (AuthErr $err) {
-            Api::errorResponse($err->getResponseMsg(), 401);
-        } catch (AccountErr $err) {
-            Api::errorResponse($err->getResponseMsg());
+        if(!$Account = self::byId($Sess->accountId)){
+            throw new AccountErr("Account $Sess->accountId does not exist");
         }
         return $Account;
     }
@@ -202,7 +197,7 @@ class Account
                 throw new AccountErr('Account is not defined');
             }
         } catch (AccountErr $err){
-            Api::errorResponse($err->getResponseMsg());
+            Response::error($err->getResponseMsg());
         }
 
         return $Account;

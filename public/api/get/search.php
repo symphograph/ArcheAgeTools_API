@@ -1,10 +1,11 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\Api;
+use Symphograph\Bicycle\Api\Response;
 use App\Item\Item;
+use Symphograph\Bicycle\Errors\AppErr;
 
 $List = Item::searchList()
-    or Api::errorResponse('Предметы не найдены');
+    or throw new AppErr('searchList is empty', 'Предметы не найдены');
 
-Api::dataResponse($List);
+Response::data($List);

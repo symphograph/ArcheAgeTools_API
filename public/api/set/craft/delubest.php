@@ -1,20 +1,17 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\Api;
+use Symphograph\Bicycle\Api\Response;
 use App\Craft\AccountCraft;
-use App\Errors\MyErrors;
-use App\Errors\ValidationErr;
+use Symphograph\Bicycle\Errors\MyErrors;
+use Symphograph\Bicycle\Errors\ValidationErr;
 use App\User\Account;
 
 $Account = Account::byToken();
-try {
-    $craftId = intval($_POST['craftId'] ?? 0)
-        or throw new ValidationErr('craftId', 'Ошибка данных');
-    AccountCraft::delUBest($Account->id, $craftId);
-    AccountCraft::clearAllCrafts();
-} catch (MyErrors $err) {
-    Api::errorResponse($err->getResponseMsg(), $err->getHttpStatus());
-}
+$craftId = intval($_POST['craftId'] ?? 0)
+or throw new ValidationErr('craftId', 'Ошибка данных');
 
-Api::resultResponse();
+AccountCraft::delUBest($Account->id, $craftId);
+AccountCraft::clearAllCrafts();
+
+Response::success();

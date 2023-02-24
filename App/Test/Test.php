@@ -3,7 +3,7 @@
 namespace App\Test;
 
 use App\Api;
-use App\Errors\AppErr;
+use Symphograph\Bicycle\Errors\AppErr;
 use App\Craft\{Craft, CraftCounter};
 use App\Item\{Item, Price, Pricing};
 use App\Packs\{Pack, PackIds};

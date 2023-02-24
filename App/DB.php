@@ -1,15 +1,17 @@
 <?php
 namespace App;
 
-use App\Env\ConnectDB;
+
 use PDO;
 use PDOException;
 use PDOStatement;
+use Symphograph\Bicycle\ConnectDB;
+use Symphograph\Bicycle\FileHelper;
 
 class DB
 {
-    public ?PDO    $pdo;
-    private ?array $opt;
+    public ?PDO $pdo;
+    private ?array    $opt;
     public ?string $pHolders;
     public ?array  $parArr;
 
@@ -29,50 +31,44 @@ class DB
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             PDO::ATTR_EMULATE_PREPARES   => FALSE
         ];
+        $this->pdo = new PDO($dsn, $con->user, /*$con->pass*/12345, $this->opt);
+        /*
+            try {
 
-        try {
-            $this->pdo = new PDO($dsn, $con->user, $con->pass, $this->opt);
-        } catch (PDOException $ex) {
-            die('dbError');
-        }
-
+            } catch (PDOException $ex) {
+                die('dbError');
+            }
+        */
     }
 
-    public function qwe($sql, $args = NULL): bool|PDOStatement
+    public function qwe($sql, $args = NULL): PDOStatement
     {
+        printr('я тут');
         if (!$args) {
             return self::query($sql);
         }
         return self::execute($sql, $args);
     }
 
-    private function execute(string $sql, array $args): bool|PDOStatement
+    private function execute(string $sql, array $args): PDOStatement
     {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($args);
+        /*
         try {
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($args);
-
         } catch (PDOException $ex) {
-            $log_text = self::prepLog($ex->getTraceAsString(), $sql, $ex->getMessage());
-            self::writelog('sql_error', $log_text);
+            throw new DatabaseErr($ex->getMessage(), '', $sql, $args, );
+            $logText = self::prepLog($ex->getTraceAsString(), $sql, $ex->getMessage());
+            self::writeLog($logText);
             return false;
         }
-        return $stmt ?? false;
+        */
+        return $stmt;
     }
 
-    private function query($sql): bool|PDOStatement
+    private function query($sql): PDOStatement
     {
-        try {
-            $result = $this->pdo->query($sql);
-
-        } catch (PDOException $ex) {
-
-            $log_text = self::prepLog($ex->getTraceAsString(), $sql, $ex->getMessage());
-            self::writelog('sql_error', $log_text);
-            return false;
-
-        }
-        return $result ?? false;
+        return $this->pdo->query($sql);
     }
 
     public static function replace(string $tableName, array $params): bool
@@ -116,11 +112,20 @@ class DB
         return date("Y-m-d H:i:s") . "\t" . $error . "\t" . $trace . "\r\n" . $sql . "\r\n";
     }
 
-    private function writelog($typelog, $log_text): void
+    private function writeLog($logText): void
     {
-        $log = fopen(dirname($_SERVER['DOCUMENT_ROOT']) . '/logs/' . $typelog . '.txt', 'a+');
-        fwrite($log, "$log_text\r\n");
+        $file = self::getLogFilename();
+        if(!file_exists($file)){
+            FileHelper::fileForceContents($file, '');
+        }
+        $log = fopen($file, 'a+');
+        fwrite($log, "$logText\r\n");
         fclose($log);
+    }
+
+    private static function getLogFilename(): string
+    {
+        return dirname($_SERVER['DOCUMENT_ROOT']). '/logs/sqlErrors/' . date('Y-m-d') . '.log';
     }
 
     public function __destruct()
@@ -233,7 +238,7 @@ class DB
         self::connect();
 
         $qwe = $DB->qwe($sql);
-        if(!$qwe or !$qwe->rowCount()){
+        if(!$qwe || !$qwe->rowCount()){
             return 1;
         }
         $q = $qwe->fetchObject();

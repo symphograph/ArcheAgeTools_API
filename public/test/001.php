@@ -3,6 +3,7 @@ $start = microtime(true);
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
 use App\User\{Account};
+use App\DB;
 use App\Item\Item;
 use App\Test\Try\TryClass1;
 use App\Transfer\MailRuUserTransfer;
@@ -21,7 +22,9 @@ use App\Transfer\MailRuUserTransfer;
 //$Account->AccSets->initProfs();
 
 //$arr = getEmptyArr() or die('empty');
-echo 'hghdfg';
+//$DB = new DB();
+$qwe = qwe("select * from items where id = :id", ['id'=>'tyyyy']);
+var_dump($qwe->fetchObject());
 //MailRuUserTransfer::importUsers();
 
 function getEmptyArr()
