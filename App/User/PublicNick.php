@@ -15,12 +15,12 @@ class PublicNick
         $this->nick = Helpers::sanitazeName($nick);
     }
 
-    public function validation(Account $Account): void
+    public function validation(AccSettings $AccSets): void
     {
         $errText = match (false) {
             self::validMinLen() => 'Не менее ' . self::minLen,
             self::validMaxLen() => 'Не более ' . self::minLen,
-            self::isFree($Account) => 'Ник занят',
+            self::isFree($AccSets) => 'Ник занят',
             default => ''
         };
         if(!empty($errText)){
@@ -38,11 +38,11 @@ class PublicNick
         return mb_strlen($this->nick) <= self::maxLen;
     }
 
-    private function isFree(Account $Account): bool
+    private function isFree(AccSettings $AccSets): bool
     {
-        if (mb_strtolower($this->nick) === mb_strtolower($Account->AccSets->publicNick)){
+        if (mb_strtolower($this->nick) === mb_strtolower($AccSets->publicNick)){
             return true;
         }
-        return !$Account->AccSets::isNickExist($this->nick);
+        return !$AccSets::isNickExist($this->nick);
     }
 }

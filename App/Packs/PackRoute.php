@@ -122,7 +122,7 @@ class PackRoute
     private function putToDB(int $side): bool
     {
         $params = [
-            'id'         => $this->id,
+            /*'id'         => $this->id,*/
             'itemId'     => $this->itemId,
             'zoneFromId' => $this->zoneFromId,
             'zoneToId'   => $this->zoneToId,

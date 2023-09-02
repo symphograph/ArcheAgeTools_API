@@ -2,7 +2,7 @@
 
 namespace App\Packs;
 
-use App\User\Account;
+use App\User\AccSettings;
 use PDO;
 
 class PackIds
@@ -30,7 +30,7 @@ class PackIds
      */
     public static function getUncounted(int $side = 1): array
     {
-        $Account = Account::getSelf();
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select tmp.id 
             from 
@@ -51,7 +51,7 @@ class PackIds
                     and isBest
             ) as tmp
             where itemId is null",
-            ['side'=>$side, 'accountId'=> $Account->id, 'serverGroup' => $Account->AccSets->serverGroup]
+            ['side'=>$side, 'accountId'=> $AccSets->accountId, 'serverGroup' => $AccSets->serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){
             return [];

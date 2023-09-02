@@ -2,8 +2,8 @@
 
 namespace App\Craft;
 
+use App\User\AccSettings;
 use Symphograph\Bicycle\Errors\AppErr;
-use App\User\Account;
 use PDO;
 use Symphograph\Bicycle\DB;
 
@@ -30,7 +30,7 @@ class AccountCraft
 
     public static function byID(int $craftId): self|false
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select uc.*,
                    if(ubC.craftId, 1, 0) as isUBest
@@ -42,8 +42,8 @@ class AccountCraft
                 and serverGroup = :serverGroup
                 and uc.craftId = :craftId",
             [
-                'accountId'   => $Account->id,
-                'serverGroup' => $Account->AccSets->serverGroup,
+                'accountId'   => $AccSets->accountId,
+                'serverGroup' => $AccSets->serverGroup,
                 'craftId'     => $craftId
             ]
         );
@@ -100,14 +100,14 @@ class AccountCraft
 
     public static function getCompletedArr(): array
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
 
         $qwe = qwe("
             select itemId
             from uacc_crafts 
             where accountId = :accountId
             and serverGroup = :serverGroup",
-        ['accountId'=>$Account->id, 'serverGroup'=>$Account->AccSets->serverGroup]
+        ['accountId'=>$AccSets->accountId, 'serverGroup'=>$AccSets->serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){
             return [];
@@ -117,18 +117,18 @@ class AccountCraft
 
     public static function clearAllCrafts(): void
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         qwe("
             delete from uacc_crafts 
             where accountId = :accountId 
             and serverGroup = :serverGroup",
-        ['accountId'=>$Account->id, 'serverGroup'=>$Account->AccSets->serverGroup]
+        ['accountId'=>$AccSets->accountId, 'serverGroup'=>$AccSets->serverGroup]
         );
         qwe("
             delete from uacc_CraftPool
             where accountId = :accountId
                 and serverGroup = :serverGroup",
-            ['accountId'=>$Account->id, 'serverGroup'=>$Account->AccSets->serverGroup]
+            ['accountId'=>$AccSets->accountId, 'serverGroup'=>$AccSets->serverGroup]
         );
     }
 
@@ -163,7 +163,7 @@ class AccountCraft
 
     public static function byResultItemId(int $resultItemId)
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select 
                 uc.*,
@@ -177,7 +177,7 @@ class AccountCraft
                 and serverGroup = :serverGroup
             order by isUBest desc, isBest desc, spmu, craftCost
             limit 1",
-            ['itemId'=>$resultItemId, 'accountId'=>$Account->id, 'serverGroup' => $Account->AccSets->serverGroup]
+            ['itemId'=>$resultItemId, 'accountId'=>$AccSets->accountId, 'serverGroup' => $AccSets->serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;

@@ -2,9 +2,7 @@
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 use App\Api;
 use App\Auth\Discord\DiscordApi;
-use Symphograph\Bicycle\Env\Env;
 use Symphograph\Bicycle\Errors\AppErr;
-use Symphograph\Bicycle\Errors\DiscordErr;
 use App\User\{Account, Sess};
 
 if(Api::get('action') == 'login'){

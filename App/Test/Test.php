@@ -5,9 +5,8 @@ namespace App\Test;
 use App\Api;
 use Symphograph\Bicycle\Errors\AppErr;
 use App\Craft\{Craft, CraftCounter};
-use App\Item\{Item, Price, Pricing};
+use App\Item\{Item,Pricing};
 use App\Packs\{Pack, PackIds};
-use App\User\Account;
 
 class Test
 {
@@ -24,21 +23,6 @@ class Test
             if (!($Pricing = Pricing::byItemId($item->id))) {
                 echo "<br>item_id: $item->id. err";
             }
-        }
-    }
-
-    public static function PriceFinder(): void
-    {
-        $Account = Account::bySess();
-        $Account->initMember();
-        $List = Item::searchList();
-        foreach ($List as $item){
-            $Price = Price::bySaved($item->id,1);
-            if(!$Price) continue;
-            $Price->initLabel();
-            echo $item->name . '<br>';
-            printr($Price);
-            echo '<hr>';
         }
     }
 

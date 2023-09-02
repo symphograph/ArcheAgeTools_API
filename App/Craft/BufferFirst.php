@@ -2,7 +2,7 @@
 
 namespace App\Craft;
 
-use App\User\Account;
+use App\User\AccSettings;
 use PDO;
 
 class BufferFirst
@@ -28,23 +28,23 @@ class BufferFirst
 
     public static function clearDB(): void
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         qwe("
             delete from craftBuffer 
                    where accountId = :accountId",
-            ['accountId' => $Account->id]
+            ['accountId' => $AccSets->accountId]
         );
     }
 
     public static function putToDB(int $craftId, int $craftCost, int $matSPM): bool
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             replace into craftBuffer 
                 (accountId, craftId, craftCost, matSPM) 
             VALUES 
                 (:accountId, :craftId, :craftCost, :matSPM)", [
-                'accountId' => $Account->id,
+                'accountId' => $AccSets->accountId,
                 'craftId'   => $craftId,
                 'craftCost' => $craftCost,
                 'matSPM'    => $matSPM
@@ -58,7 +58,7 @@ class BufferFirst
      */
     public static function getCounted(int $resultItemId): array|false
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select  * , 
                     ROUND(if(tmp.kry>0,SQRT(tmp.kry),SQRT(tmp.kry*-1)*-1)) as spmu
@@ -93,7 +93,7 @@ class BufferFirst
                     on doods.id = crafts.doodId
             ) as tmp
             order by isUBest desc , deep desc , resultItemId, spmu, craftCost, resultAmount desc",
-        ['resultItemId' => $resultItemId, 'accountId' => $Account->id]
+        ['resultItemId' => $resultItemId, 'accountId' => $AccSets->accountId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;

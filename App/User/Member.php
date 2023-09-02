@@ -2,6 +2,8 @@
 
 namespace App\User;
 
+
+use Symphograph\Bicycle\DB;
 use Symphograph\Bicycle\Errors\AppErr;
 use App\Item\{Item, Price};
 use PDO;
@@ -9,11 +11,12 @@ use PDO;
 class Member
 {
     public int $accountId;
+    public int $serverGroup;
     public ?bool $isFollow;
     public ?int $pricesCount;
     public ?int $followersCount;
     public ?string $publicNick;
-    public ?Avatar $Avatar;
+    public ?string $avaFileName;
     public ?int $oldId;
 
 
@@ -61,10 +64,16 @@ class Member
      */
     public static function getList(int $accountId, int $serverGroup): array
     {
-        //$privateItemsStr = implode(',', Item::privateItems());
+        $privateItemsStr = '(' . implode(',', Item::privateItems()) . ')';
+        //$serverGroup = 100;
+        if($serverGroup === 100){
+            throw new AppErr('Server not defined', 'Сервер не выбран');
+        }
         $qwe = qwe("
             select
-            uAcc.id as accountId,
+            sets.accountId,
+            sets.avaFileName,
+            sets.publicNick,
             pricesCount,
             lastPriceTime,
             if(uf.master > 0,1,0) as isFollow,
@@ -72,30 +81,34 @@ class Member
             from
             (
                 select accountId, 
+                       serverGroup,
                        COUNT(*) as pricesCount, 
-                       max(datetime) as lastPriceTime
+                       max(updatedAt) as lastPriceTime
                 from uacc_prices
-                where serverGroup = :serverGroup1
-                group by accountId
+                where serverGroup = :serverGroup
+                and itemId not in $privateItemsStr
+                group by accountId, serverGroup
                 order by lastPriceTime desc
             ) as tmp
-            inner join user_accounts uAcc 
-                on uAcc.id = tmp.accountId
-                and uAcc.authTypeId > 1
+            inner join uacc_settings sets 
+                on sets.accountId = tmp.accountId
+                and sets.authType != 'default'
             left join uacc_follows uf
-                on uf.master = uAcc.id
+                on uf.master = sets.accountId
                 and uf.follower = :accountId
-                and uf.serverGroup = :serverGroup2
+                and uf.serverGroup = tmp.serverGroup
             left join
             (
                 select count(*) as flws, 
+                       serverGroup,
                        max(uf.follower) as follower, 
                        max(uf.master) as master
                 from uacc_follows uf
-                where serverGroup = :serverGroup3
-                group by uf.master
+                /*where serverGroup = tmp.serverGroup*/
+                group by uf.master, serverGroup
             ) as flwt
-            ON uAcc.id = flwt.master
+            ON sets.accountId = flwt.master
+            and tmp.serverGroup  = flwt.serverGroup
             order by isFollow desc, 
                      YEAR(lastPriceTime) desc, 
                      MONTH(lastPriceTime) desc, 
@@ -103,26 +116,25 @@ class Member
                      (pricesCount>50) desc, 
                      lastPriceTime desc
             LIMIT 100
-        ", ['serverGroup1' => $serverGroup,
-            'accountId'   => $accountId,
-            'serverGroup2' => $serverGroup,
-            'serverGroup3' => $serverGroup]
+        ", ['serverGroup' => $serverGroup,
+            'accountId'    => $accountId,
+            /*'serverGroup3' => $serverGroup*/]
         );
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
+
+        $list = $qwe->fetchAll(PDO::FETCH_CLASS,self::class)
+            or throw new AppErr('memberList is empty', 'Нет данных');;
+        return $list;
     }
 
     public static function setFollow(int $follower, int $master, int $serverGroup): void
     {
-        qwe("
-            insert into uacc_follows 
-                (follower, master, serverGroup) 
-            VALUES 
-                (:follower, :master, :serverGroup)",
-            ['follower' => $follower, 'master' => $master, 'serverGroup'=> $serverGroup]
-        ) or throw new AppErr('setFollow err', 'Ошибка при сохранении');
+        $params = [
+            'follower'    => $follower,
+            'master'      => $master,
+            'serverGroup' => $serverGroup
+        ];
+        DB::replace('uacc_follows', $params);
+
     }
 
     public static function unsetFollow(int $follower, int $master, int $serverGroup): void
@@ -151,29 +163,18 @@ class Member
         return true;
     }
 
-    public function initAccData(): void
-    {
-        $memberAccount = Account::byId($this->accountId);
-        $memberAccount->initAvatar();
-        $this->Avatar = $memberAccount->Avatar;
-        $this->publicNick = $memberAccount->AccSets->publicNick;
-        if(!empty($memberAccount->AccSets->old_id)){
-            $this->oldId = $memberAccount->AccSets->old_id;
-        }
-    }
-
     public function initIsFollow(): void
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select * from uacc_follows 
             where follower = :follower
                 and master = :master
                 and serverGroup = :serverGroup",
             [
-                'follower'    => $Account->id,
+                'follower'    => $AccSets->accountId,
                 'master'      => $this->accountId,
-                'serverGroup' => $Account->AccSets->serverGroup
+                'serverGroup' => $AccSets->serverGroup
             ]
         );
         if(!$qwe || !$qwe->rowCount()){
@@ -181,6 +182,13 @@ class Member
             return;
         }
         $this->isFollow = true;
+    }
+
+    public function initAccData(): void
+    {
+        $AccSets = AccSettings::byId($this->accountId);
+        $this->avaFileName = $AccSets->avaFileName;
+        $this->publicNick = $AccSets->publicNick;
     }
 
 }

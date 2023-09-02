@@ -2,7 +2,9 @@
 
 namespace App\User;
 
+use App\ServerList;
 use PDO;
+use Symphograph\Bicycle\Errors\AppErr;
 
 class Server
 {
@@ -22,7 +24,7 @@ class Server
     }
 
     /**
-     * @return array<self>
+     * @return self[]
      */
     public static function byGroup(int $group): array
     {
@@ -34,22 +36,19 @@ class Server
     }
 
     /**
-     * @return array<self>|false
+     * @return self[]|false
      */
     public static function getList(): array|false
     {
         $qwe = qwe("select * from servers order by `group`");
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
-        return $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
+        $Servers = $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
+        if(empty($Servers)) throw new AppErr('Servers is empty');
+        return $Servers;
     }
 
-    public static function getGroup(int $serverId): false|int
+    public static function getGroupId(int $serverId): false|int
     {
-       if(!($Server = Server::byId($serverId))){
-           return false;
-       }
-       return $Server->group;
+        $Server = ServerList::getServerById($serverId);
+        return $Server->group;
     }
 }

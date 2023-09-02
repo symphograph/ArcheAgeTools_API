@@ -2,7 +2,7 @@
 
 namespace App\Item;
 
-use App\User\Account;
+use App\User\AccSettings;
 
 class PriceEnum
 {
@@ -21,7 +21,7 @@ class PriceEnum
 
     private static function bySolo(Price $Price): string
     {
-        return self::dateFormat($Price->datetime) . ' - Ваша цена';
+        return self::dateFormat($Price->updatedAt) . ' - Ваша цена';
     }
 
     private static function byToNPC(): string
@@ -31,14 +31,14 @@ class PriceEnum
 
     private static function byFriends(Price $Price): string
     {
-        $Author = Account::byId($Price->accountId);
-        return self::dateFormat($Price->datetime) . ' - ' . $Author->AccSets->publicNick;
+        $AuthorAccSets = AccSettings::byId($Price->accountId);
+        return self::dateFormat($Price->updatedAt) . ' - ' . $AuthorAccSets->publicNick;
     }
 
     private static function byAny(Price $Price): string
     {
-        $Author = Account::byId($Price->accountId);
-        return self::dateFormat($Price->datetime) . ' - ' . $Author->AccSets->publicNick;
+        $AuthorAccSets = AccSettings::byId($Price->accountId);
+        return self::dateFormat($Price->updatedAt) . ' - ' . $AuthorAccSets->publicNick;
     }
 
     private static function dateFormat(string $datetime): string

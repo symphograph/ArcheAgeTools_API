@@ -1,13 +1,12 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\User\{Account, Member, Server};
+use App\User\{AccSettings, Member, Server};
 use Symphograph\Bicycle\Api\Response;
 use App\Craft\AccountCraft;
-use Symphograph\Bicycle\Errors\MyErrors;
 use Symphograph\Bicycle\Errors\ValidationErr;
 
-$Account = Account::byToken();
+$AccSets = AccSettings::byJwt();
 
 $master = intval($_POST['master'] ?? 0)
 or throw new ValidationErr('master', 'Ошибка данных');
@@ -24,9 +23,9 @@ if($isFollow === null){
 }
 
 if($isFollow){
-    Member::setFollow($Account->id, $master, $Server->group);
+    Member::setFollow($AccSets->accountId, $master, $Server->group);
 }else{
-    Member::unsetFollow($Account->id, $master, $Server->group);
+    Member::unsetFollow($AccSets->accountId, $master, $Server->group);
 }
 AccountCraft::clearAllCrafts();
 Response::success();

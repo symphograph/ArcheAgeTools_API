@@ -2,9 +2,8 @@
 
 namespace App\Craft;
 
-use App\User\Account;
+use App\User\AccSettings;
 use Symphograph\Bicycle\DB;
-use Symphograph\Bicycle\JsonDecoder;
 
 class CraftPool
 {
@@ -27,14 +26,14 @@ class CraftPool
 
     public static function getByCache(int $resultItemId)
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select pool 
             from uacc_CraftPool
             where accountId = :accountId 
               and serverGroup = :serverGroup
               and itemId = :itemId",
-        ['accountId'=>$Account->id, 'serverGroup' => $Account->AccSets->serverGroup, 'itemId' => $resultItemId]
+        ['accountId'=>$AccSets->accountId, 'serverGroup' => $AccSets->serverGroup, 'itemId' => $resultItemId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -51,10 +50,10 @@ class CraftPool
 
     private function putToDB(): bool
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $params = [
-            'accountId' => $Account->id,
-            'serverGroup' => $Account->AccSets->serverGroup,
+            'accountId' => $AccSets->accountId,
+            'serverGroup' => $AccSets->serverGroup,
             'itemId' => $this->mainCraft->resultItemId,
             'pool' => json_encode($this, JSON_FORCE_OBJECT)
         ];

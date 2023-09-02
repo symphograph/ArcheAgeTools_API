@@ -46,7 +46,7 @@ class Prof
     }
 
     /**
-     * @return array<self>|bool
+     * @return self[]|bool
      */
     public static function getAccountProfs(int $accountId): array|bool
     {
@@ -100,13 +100,9 @@ class Prof
         if($profId === 25){
             return new self();
         }
-        $Account = Account::getSelf();
-        if(empty($Account->AccSets->Profs)){
-            $Account->AccSets->initProfs();
-        }
-        $profs = $Account->AccSets->Profs;
+        $AccSets = AccSettings::byGlobal();
 
-        foreach ($profs as $prof){
+        foreach ($AccSets->Profs as $prof){
             if($prof->id === $profId){
                 return $prof;
             }

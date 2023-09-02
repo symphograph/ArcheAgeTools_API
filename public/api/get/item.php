@@ -1,17 +1,14 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
+use App\User\AccSettings;
 use Symphograph\Bicycle\Api\Response;
 use Symphograph\Bicycle\Errors\AppErr;
-use Symphograph\Bicycle\Errors\MyErrors;
-use Symphograph\Bicycle\Errors\RequestErr;
 use App\Item\Item;
-use App\User\Account;
 use Symphograph\Bicycle\Errors\ValidationErr;
 
-$Account = Account::byToken();
-$Account->initMember();
 
+$AccSets = AccSettings::byJwt();
 $id = intval($_POST['id'] ?? 0)
 or throw new ValidationErr('invalid id');
 

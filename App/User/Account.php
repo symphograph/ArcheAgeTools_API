@@ -6,10 +6,8 @@ use App\Item\Item;
 use Symphograph\Bicycle\DB;
 use Symphograph\Bicycle\Api\Response;
 use Symphograph\Bicycle\Errors\{AccountErr, AuthErr};
-use App\Auth\{Discord\DiscordUser, Mailru\MailruUser, Telegram\TeleUser};
-
-
-
+use App\Auth\{Discord\DiscordUser, Mailru\MailruUserClient, Telegram\TeleUser};
+use Symphograph\Bicycle\Token\AccessTokenData;
 
 class Account
 {
@@ -17,14 +15,14 @@ class Account
     public int          $user_id;
     public int          $authTypeId;
     public ?string      $created;
+    public ?string      $avaFileName;
     public ?string      $nickName;
     public ?string      $externalAvaUrl;
-    public ?string      $avaFileName;
     public ?string      $label;
     public ?Sess        $Sess;
-    public ?TeleUser    $TeleUser;
-    public ?MailruUser  $MailruUser;
-    public ?DiscordUser $DiscordUser;
+    public ?TeleUser         $TeleUser;
+    public ?MailruUserClient $MailruUser;
+    public ?DiscordUser      $DiscordUser;
     public ?AccSettings $AccSets;
     public ?Avatar      $Avatar;
     public ?Member      $Member;
@@ -49,9 +47,7 @@ class Account
             $Account->externalAvaUrl = '/img/avatars/init_ava.png';
             $Account->nickName = 'Не авторизован';
         }
-        if (!$Account->initSettings()) {
-            return false;
-        }
+        //$Account->initSettings();
         return $Account;
     }
 
@@ -74,19 +70,8 @@ class Account
 
     public static function byToken(): self|bool
     {
-        $token = $_POST['token'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-        if(empty($token)){
-            throw new AuthErr('empty token', 'Обновите страницу', 401);
-        }
-
-        if(!$Sess = Sess::byToken($token)){
-            throw new AuthErr('invalid token', 'Обновите страницу', 401);
-        }
-
-        if(!$Account = self::byId($Sess->accountId)){
-            throw new AccountErr("Account $Sess->accountId does not exist");
-        }
-        return $Account;
+        $accountId = AccessTokenData::accountId();
+        return Account::byId($accountId);
     }
 
     public static function byTelegram(int $tele_id): self|bool
@@ -104,7 +89,7 @@ class Account
 
     public static function byMailRu(string $email): self|bool
     {
-        if(!($MailruUser = MailruUser::byEmail($email))){
+        if(!($MailruUser = MailruUserClient::byEmail($email))){
             return false;
         }
 
@@ -163,7 +148,7 @@ class Account
                         flwt.flws
                         from 
                         (
-                            select accountId, COUNT(*) as cnt, max(datetime) as lastTime 
+                            select accountId, COUNT(*) as cnt, max(updatedAt) as lastTime 
                             from uacc_prices
                             where serverGroup = :serverGroup
                                 and itemId not in ( $privateItemsStr )
@@ -192,14 +177,9 @@ class Account
     public static function getSelf(): self
     {
         global $Account;
-        try {
-            if(!isset($Account)){
-                throw new AccountErr('Account is not defined');
-            }
-        } catch (AccountErr $err){
-            Response::error($err->getResponseMsg());
+        if(!isset($Account)){
+            throw new AccountErr('Account is not defined');
         }
-
         return $Account;
     }
 
@@ -254,7 +234,7 @@ class Account
 
     private function initMailruUser(): bool
     {
-        if(!($MailruUser = MailruUser::byAccountId($this->id))){
+        if(!($MailruUser = MailruUserClient::byAccountId($this->id))){
             return false;
         }
         $this->MailruUser = $MailruUser;
@@ -284,13 +264,11 @@ class Account
         unset($this->TeleUser);
     }
 
-    private function initSettings(): bool
+    private function initSettings(): void
     {
-        if(!($AccSets = AccSettings::byId($this->id))){
-            return false;
-        }
+        $AccSets = AccSettings::byId($this->id)
+            or throw new AccountErr();
         $this->AccSets = $AccSets;
-        return true;
     }
 
     public function initMember(): bool{
@@ -333,7 +311,7 @@ class Account
     {
         $Account = new self();
 
-        if(!($Account->id = DB::createNewID('user_accounts', 'id'))){
+        if(!($Account->id = DB::createNewID('user_accounts'))){
             return false;
         }
         if(!$user_id){
@@ -390,12 +368,12 @@ class Account
         return $TeleUser->putToDB();
     }
 
-    public function saveMailruUser(MailruUser $MailruUser): bool
+    public function saveMailruUser(MailruUserClient $MailruUser): void
     {
         $MailruUser->last_time = date('Y-m-d H:i:s');
         $MailruUser->user_id = $this->user_id;
         $MailruUser->accountId = $this->id;
-        return $MailruUser->putToDB();
+        $MailruUser->putToDB();
     }
 
     public function saveDiscordUser(DiscordUser $DiscordUser): bool

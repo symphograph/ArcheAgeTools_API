@@ -4,7 +4,7 @@ namespace App\Packs;
 
 use App\Craft\{AccountCraft, LaborData};
 use App\Item\Item;
-use App\User\Account;
+use App\User\AccSettings;
 use PDO;
 use App\User\Prof;
 
@@ -111,11 +111,11 @@ class Pack
 
     public function initCraftData(): bool
     {
-        $Account = Account::getSelf();
+        $AccSets = AccSettings::byGlobal();
         $CraftData = AccountCraft::byResultItemId($this->itemId);
         self::initPassLabor();
         $this->laborNeed = round($this->passLabor + $CraftData->laborTotal);
-        $laborCost = $Account->AccSets->getLaborCost();
+        $laborCost = $AccSets->getLaborCost();
         $this->craftPrice = $CraftData->craftCost + $this->passLabor * $laborCost;
         return true;
     }

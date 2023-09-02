@@ -2,37 +2,19 @@
 
 namespace App\Item;
 
+use App\DTO\ItemDTO;
+use App\User\AccSettings;
 use PDO;
-use App\User\Account;
-use Symphograph\Bicycle\Api\Response;
-use Symphograph\Bicycle\Errors\{AppErr, MyErrors};
+use Symphograph\Bicycle\Errors\AppErr;
 use Symphograph\Bicycle\Helpers;
 
-
-
-
-class Item
+class Item extends ItemDTO
 {
-    public ?int     $id;
-    public ?string  $name;
-    public ?int     $priceFromNPC;
-    public ?int     $priceToNPC;
-    public ?int     $currencyId;
-    public ?string  $icon;
-    public ?int     $grade;
-    public ?int     $categId;
     public ?Info    $Info;
     public ?Price   $Price;
     public ?Pricing $Pricing;
-
-    public bool $craftable  = false;
-    public bool $personal   = false;
-    public bool $isGradable = false;
-    public bool $isTradeNPC = false;
-    public bool $isMat      = false;
+    public int $grade = 1;
     public bool $isBuyOnly  = false;
-
-    public function __set(string $name, $value): void{}
 
     /**
      * @return bool|array<self>
@@ -67,23 +49,14 @@ class Item
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    public static function byId(int $id) : self|bool
+    public static function byId(int $id) : self
     {
-        $qwe = qwe("select *, 
-            if(basicGrade,basicGrade,1) as grade 
-            from items where onOff
-                       and id = :id",
-        ['id' => $id]
-        );
-        try {
-            if(!$qwe || !$qwe->rowCount()) {
-                throw new AppErr("item $id does not exist in DB");
-            }
-        } catch (MyErrors $err) {
-            Response::error($err->getResponseMsg());
-        }
-
-        return $qwe->fetchObject(self::class);
+        $ItemDTO = ItemDTO::byId($id)
+            or throw new AppErr("item $id does not exist in DB");
+        $Item = new self();
+        $Item->bindSelf($ItemDTO);
+        $Item->grade = $ItemDTO->basicGrade;
+        return $Item;
     }
 
     public function initInfo(): void
@@ -93,7 +66,6 @@ class Item
 
     public function initPrice(): bool
     {
-        $Account = Account::getSelf();;
         $Price = Price::bySaved($this->id);
         if($Price){
             $this->Price = $Price;
@@ -149,12 +121,12 @@ class Item
         if(!$this->craftable || $this->personal){
             return false;
         }
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select * from uacc_buyOnly 
             where itemId = :itemId 
             and accountId = :accountId",
-            ['itemId' => $this->id, 'accountId' => $Account->id]
+            ['itemId' => $this->id, 'accountId' => $AccSets->accountId]
         );
         return $qwe && $qwe->rowCount();
     }

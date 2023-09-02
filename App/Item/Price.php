@@ -3,19 +3,20 @@
 namespace App\Item;
 
 use App\Craft\{AccountCraft, BufferSecond};
+use App\DTO\PriceDTO;
+use App\User\AccSettings;
+use App\User\Member;
 use Symphograph\Bicycle\Env\Env;
 use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
-use Symphograph\Bicycle\DB;
-use App\User\Account;
 
-class Price
+class Price extends PriceDTO
 {
     public int     $accountId   = 1;
     public int     $itemId      = 0;
     public int     $price       = 0;
     public int     $serverGroup = 0;
-    public string  $datetime    = '';
+    public string  $updatedAt   = '';
     public string  $method      = 'empty';
     public ?string $label;
     public ?string $name;
@@ -38,8 +39,8 @@ class Price
         int     $itemId,
         int     $accountId = 1,
         int     $price = 0,
-        int     $serverGroup = 2,
-        string  $datetime = '',
+        int     $serverGroup = 100,
+        string  $updatedAt = '',
         string  $method = '',
         ?string $label = null,
         ?string $name = null,
@@ -62,8 +63,8 @@ class Price
 
     public static function bySaved(int $itemId): self|bool
     {
-        $Account = Account::getSelf();;
-        return match ($Account->AccSets->mode) {
+        $AccSets = AccSettings::byGlobal();
+        return match ($AccSets->mode) {
             1 => self::byMode1($itemId),
             2 => self::byMode2($itemId),
             3 => self::byMode3($itemId),
@@ -110,13 +111,16 @@ class Price
 
     private static function byAny(int $itemId)
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
+        if($AccSets->serverId === 9){
+            return self::byAnyServer($itemId);
+        }
         $qwe = qwe("select * from uacc_prices
             where itemId = :itemId
             and serverGroup = :serverGroup
-            order by datetime desc 
+            order by updatedAt desc 
             limit 1",
-        ['itemId'=>$itemId, 'serverGroup'=> $Account->AccSets->serverGroup]
+        ['itemId'=>$itemId, 'serverGroup'=> $AccSets->serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -126,12 +130,27 @@ class Price
         return $Price;
     }
 
+    private static function byAnyServer(int $itemId)
+    {
+        $qwe = qwe("select * from uacc_prices
+            where itemId = :itemId
+            order by updatedAt desc 
+            limit 1",
+            ['itemId'=>$itemId]
+        );
+        if(!$qwe || !$qwe->rowCount()){
+            return false;
+        }
+        $Price = $qwe->fetchObject(self::class);
+        $Price->method = 'byAnyServer';
+        return $Price;
+    }
+
     private static function bySolo(int $itemId): self|bool
     {
-        $Account = Account::getSelf();;
-        if($Price = self::byAccount($itemId, $Account->id, $Account->AccSets->serverGroup)){
+        $AccSets = AccSettings::byGlobal();
+        if($Price = self::byAccount($itemId, $AccSets->accountId, $AccSets->serverGroup)){
             $Price->method = 'bySolo';
-            //$Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Ваша цена';
             return $Price;
         }
         //return false;
@@ -140,41 +159,35 @@ class Price
 
     private static function byFriends(int $itemId) : self|bool
     {
-        $Account = Account::getSelf();;
-        if(empty($Account->Member)){
-            $Account->initMember();
-        }
-        $members = $Account->Member->getFollowMasters();
+        $AccSets = AccSettings::byGlobal();
+        $Member = Member::byId($AccSets->accountId, $AccSets->serverGroup);
+
+        $members = $Member->getFollowMasters();
         if(empty($members)){
             return self::bySolo($itemId);
         }
-        $members[] = $Account->id;
+        $members[] = $AccSets->accountId;
 
-        $Price = self::byMemberList($itemId, $Account->AccSets->serverGroup, $members);
+        $Price = self::byMemberList($itemId, $AccSets->serverGroup, $members);
         if(!$Price){
             return false;
         }
         $Price->method = 'byFriends';
-        //$Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Цена друга';
 
-        if($Price->accountId === $Account->id){
+        if($Price->accountId === $AccSets->accountId){
             $Price->method = 'bySolo';
-            //$Price->label = date('d.m.Y H:i', strtotime($Price->datetime))  . ' Ваша цена';
         }
         return $Price;
     }
 
     private static function byWellKnown(int $itemId)
     {
-        $Account = Account::getSelf();
-        $serverGroup = $Account->AccSets->serverGroup;
+        $AccSets = AccSettings::byGlobal();
 
-        $adminAccount = Account::byId(Env::getAdminAccountId());
-        $adminAccount->AccSets->serverGroup = $serverGroup;
-        $adminAccount->initMember();
-        $members = $adminAccount->Member->getFollowMasters();
-        $members[] = $adminAccount->id;
-        $Price = self::byMemberList($itemId, $serverGroup, $members);
+        $Member = Member::byId(Env::getAdminAccountId(), $AccSets->serverGroup);
+        $members = $Member->getFollowMasters();
+        $members[] = $Member->accountId;
+        $Price = self::byMemberList($itemId, $AccSets->serverGroup, $members);
         if(!$Price){
             return false;
         }
@@ -191,7 +204,7 @@ class Price
             where uacc_prices.accountId in ( $stringMembers )
             and itemId = :itemId
             and serverGroup = :serverGroup
-            order by datetime desc 
+            order by updatedAt desc 
             limit 1",
             ['itemId'=>$itemId, 'serverGroup'=>$serverGroup]
         );
@@ -256,17 +269,19 @@ class Price
 
     public static function getLastMemberPrice(int $accountId, int $serverGroup = 0): self|false
     {
+        $privateItemsStr = '(' . implode(',', Item::privateItems()) . ')';
         if($serverGroup){
             $sql = "select * from uacc_prices 
                     where accountId = :accountId
                     and serverGroup = :serverGroup
-                    order by datetime desc 
+                    and itemId not in $privateItemsStr
+                    order by updatedAt desc 
                     limit 1";
             $params = ['accountId'=> $accountId, 'serverGroup'=> $serverGroup];
         }else{
             $sql = "select * from uacc_prices 
                     where accountId = :accountId
-                    order by datetime desc 
+                    order by updatedAt desc 
                     limit 1";
             $params = ['accountId'=> $accountId];
         }
@@ -344,19 +359,19 @@ class Price
 
     public static function byCraft(int $itemId): self|false
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $CraftData = AccountCraft::byResultItemId($itemId);
         $Price = new self();
         $Price->itemId = $itemId;
         $Price->price = $CraftData->craftCost;
-        $Price->accountId = $Account->id;
+        $Price->accountId = $AccSets->accountId;
         $Price->method = 'byCraft';
         return $Price;
     }
 
     public static function byBuffer(int $itemId): self|false
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $bufferData = BufferSecond::byItemId($itemId);
         if(!$bufferData){
             return false;
@@ -364,7 +379,7 @@ class Price
         $Price = new self();
         $Price->itemId = $bufferData->resultItemId;
         $Price->price = $bufferData->craftCost;
-        $Price->accountId = $Account->id;
+        $Price->accountId = $AccSets->accountId;
         $Price->method = 'byBuffer';
         return $Price;
     }
@@ -376,10 +391,11 @@ class Price
         }
         $item = Item::byId($this->itemId);
         $this->name = $item->name;
-        $this->grade = $item->grade;
+        $this->grade = $item->basicGrade;
         $this->icon = $item->icon;
-        $Author = Account::byId($this->accountId);
-        $this->author = $Author->AccSets->publicNick;
+        $AuthorAccSets = AccSettings::byId($this->accountId)
+            or throw new AppErr("Author $this->accountId is missed", 'Автор цены не найден');
+        $this->author = $AuthorAccSets->publicNick;
 
         self::initLabel();
     }
@@ -395,44 +411,18 @@ class Price
         return ($qwe && $qwe->rowCount());
     }
 
-    /**
-     * @return array<self>
-     */
-    public static function getOldList(int $oldUserId): array
+    public function putToDB(): void
     {
-        $qwe = qwe("
-            select  item_id as itemId, 
-                    auc_price as price, 
-                    server_group as serverGroup,
-                    time as datetime
-            from old_prices
-            where user_id = :user_id
-            ",['user_id'=> $oldUserId]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
+        if(empty($this->updatedAt)){
+            $this->updatedAt = date('Y-m-d H:i:s');
         }
-        return $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
-    }
-
-    public function putToDB(): bool
-    {
-        if(empty($this->datetime)){
-            $this->datetime = date('Y-m-d H:i:s');
-        }
-        $params = [
-            'accountId'  => $this->accountId,
-            'serverGroup' => $this->serverGroup,
-            'itemId'     => $this->itemId,
-            'price'       => $this->price,
-            'datetime'    => $this->datetime
-        ];
-        return DB::replace('uacc_prices', $params);
+        $ObjectDTO = parent::byBind($this);
+        $ObjectDTO->putToDB();
     }
 
     /**
-     * @param array<int> $lost
-     * @return array<self>
+     * @param int[] $lost
+     * @return self[]
      */
     public static function lostList(array $lost): array
     {
@@ -442,7 +432,7 @@ class Price
             $Prices[] = self::byParams(
                 itemId: $item->id,
                 name: $item->name,
-                grade: $item->grade,
+                grade: $item->basicGrade,
                 icon: $item->icon
             );
         }
@@ -451,37 +441,13 @@ class Price
 
     public function initAuthor(): void
     {
-        $Author = Account::byId($this->accountId);
-        $this->author = $Author->AccSets->publicNick;
-    }
-
-    public function isExistNewerInDB(): bool
-    {
-        $qwe = qwe("
-            select * 
-            from uacc_prices 
-            where accountId = :accountId
-            and serverGroup = :serverGroup
-            and itemId = :itemId
-            and datetime >= :datetime", [
-                'accountId'   => $this->accountId,
-                'serverGroup' => $this->serverGroup,
-                'itemId'      => $this->itemId,
-                'datetime'    => $this->datetime
-            ]
-        );
-        return $qwe && $qwe->rowCount();
+        $AuthorAccSets = AccSettings::byId($this->accountId);
+        $this->author = $AuthorAccSets->publicNick;
     }
 
     public static function delFromDB(int $accountId, int $itemId, int $serverGroup): void
     {
-        qwe("
-            delete from uacc_prices 
-                   where accountId = :accountId 
-                     and itemId = :itemId 
-                     and serverGroup = :serverGroup",
-            ['accountId' => $accountId, 'itemId' => $itemId, 'serverGroup' => $serverGroup]
-        ) or throw new AppErr('delFromDB err', 'Ошибка при удалении');
+        parent::del($accountId, $itemId, $serverGroup);
     }
 
 }

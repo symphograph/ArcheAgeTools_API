@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Craft;
-use App\User\Account;
+
+use App\User\AccSettings;
 use App\Item\{Item, Price};
 use PDO;
 
@@ -110,7 +111,7 @@ class Mat
      */
     public static function allPotentialMats(int $itemId, array $matIDsArr = []): array
     {
-        $Account = Account::getSelf();
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select items.id,
                    cm.craftId,
@@ -133,8 +134,8 @@ class Mat
                 where resultItemId = :itemId
                 and uCP.itemId is null",
             [
-                'accountId'=> $Account->id,
-                'serverGroup'=>$Account->AccSets->serverGroup,
+                'accountId'=> $AccSets->accountId,
+                'serverGroup'=>$AccSets->serverGroup,
                 'itemId'=>$itemId
             ]
 

@@ -2,45 +2,60 @@
 
 namespace App\User;
 
-use App\Item\Price;
 use App\Craft\LaborData;
-use Symphograph\Bicycle\DB;
-use Symphograph\Bicycle\Api\Response;
+use App\DTO\AccSettingsDTO;
+use App\Item\Price;
+use App\Transfer\User\MailruOldUser;
+use App\Transfer\User\PriceTransfer;
+use Symphograph\Bicycle\Errors\AccountErr;
 use Symphograph\Bicycle\Errors\AppErr;
+use Symphograph\Bicycle\Logs\Log;
+use Symphograph\Bicycle\Token\AccessTokenData;
 
 
-class AccSettings
+class AccSettings extends AccSettingsDTO
 {
-    public int    $accountId   = 0;
-    public int    $serverId    = 9;
-    public int    $serverGroup = 2;
-    public string $publicNick  = 'Никнейм';
-    public int    $grade       = 1;
-    public int    $mode        = 1;
-    public ?int   $old_id;
-    public bool   $siol        = false;
     /**
      * @var array<Prof>|null
      */
     public ?array $Profs;
     public ?int $laborCost;
+    public int    $serverGroup = 100;
 
-    public function __set(string $name, $value): void
-    {
-    }
 
     //Get-----------------------------------------------------------
     public static function byId(int $accountId): self|bool
     {
-        if (!$accountId) return false;
-
-        $qwe = qwe("select * from uacc_settings where accountId = :id", ['id' => $accountId]);
-        if (!$qwe || !$qwe->rowCount()) {
-            return self::getDefault($accountId);
+        $AccountDTO = parent::byId($accountId);
+        if(!$AccountDTO) {
+            return false;
         }
+        $AccSets = new self();
+        $AccSets->bindSelf($AccountDTO);
+        $AccSets->initData();
+        return $AccSets;
+    }
 
-        $AccSets = $qwe->fetchObject(self::class);
-        $AccSets->initServerGroup();
+    public static function byOldId(int $old_id): self|bool
+    {
+        $qwe = qwe("select * from uacc_settings where old_id = :old_id", ['old_id' => $old_id]);
+        return $qwe->fetchObject(self::class);
+    }
+
+    public static function byJwt(): self|false
+    {
+        $accountId = AccessTokenData::accountId();
+        $AccSettings = AccSettings::byId($accountId);
+            //or throw new AccountErr('AccSettings is empty', 'Настройки не загрузились');
+        return $AccSettings;
+    }
+
+    public static function byGlobal(): self
+    {
+        global $AccSets;
+        if(empty($AccSets)){
+            throw new AccountErr('AccSets is not defined');
+        }
         return $AccSets;
     }
 
@@ -52,30 +67,44 @@ class AccSettings
         return $AccSets;
     }
 
-    public static function byOld(int $accountId): self|bool
+    public static function byOldServer(int $accountId, string $email): self|bool
     {
-        $Account = Account::byId($accountId);
-        $Account->initOAuthUserData();
-
-        if($Account->authTypeId !== 3){
+        $OldUser = MailruOldUser::byEmail($email);
+        if(empty($OldUser)){
+            Log::msg('MailruOldUser is empty');
             return false;
         }
-        if(!empty($Account->AccSets->old_id)){
-            //Его данные уже брали. Переписывать не нужно.
-            return false;
-        }
-        if(!($OldUser = MailruOldUser::byEmail($Account->MailruUser->email ?? ''))){
-           return false;
-        }
+        $AccSets = self::byOldData($OldUser);
+        $AccSets->accountId = $accountId;
+        $AccSets->putToDB();
+        $AccSets->initData();
+        $OldUser->importPrices($accountId);
+        $OldUser->importFollows($accountId);
 
-        $Account->AccSets->mode = $OldUser->mode;
-        $Account->AccSets->publicNick = $OldUser->user_nick;
-        $Account->AccSets->old_id = $OldUser->mail_id;
-        return $Account->AccSets;
+        return $AccSets;
     }
 
+    public static function byOldData(MailruOldUser $OldUser): self
+    {
+        $AccSets = new self();
+        $AccSets->mode = $OldUser->mode;
+        $AccSets->publicNick = $OldUser->user_nick ?? self::genNickName();
+        $AccSets->old_id = $OldUser->mail_id;
+        $AccSets->serverId = $OldUser->server_id;
+        $AccSets->authType = 'mailru';
+        return $AccSets;
+    }
 
     //Self-----------------------------------------------------------
+    public function initData(): void
+    {
+        self::initServerGroup();
+        if(!empty($AccSets)){
+            self::initLaborCost();
+        }
+        self::initProfs();
+    }
+
     public static function genNickName(): string
     {
         $nick = NickNameGenerator::getNickName();
@@ -97,8 +126,7 @@ class AccSettings
 
     public function initServerGroup(): void
     {
-        $Server = Server::byId($this->serverId);
-        $this->serverGroup = $Server->group ?? 2;
+        $this->serverGroup = Server::getGroupId($this->serverId);
     }
 
     public function initLaborCost(): void
@@ -128,24 +156,10 @@ class AccSettings
 
 
     //Save-----------------------------------------------------------
-    public function putToDB(): bool
+    public function putToDB(): void
     {
-        $params = [
-            'accountId' => $this->accountId,
-            'serverId'  => $this->serverId,
-            'publicNick' => $this->publicNick,
-            'grade'      => $this->grade,
-            'mode'       => $this->mode,
-            'siol'       => intval($this->siol),
-            'old_id'     => $this->old_id ?? null
-        ];
-        try {
-            $qwe = DB::replace('uacc_settings', $params)
-                or throw new AppErr('putToDB err', 'Ошибка при сохранении');
-        } catch (AppErr $err) {
-            Response::error($err->getResponseMsg());
-        }
-        return  !!$qwe;
-
+        $dto = new parent();
+        $dto->bindSelf($this);
+        $dto->putToDB();
     }
 }

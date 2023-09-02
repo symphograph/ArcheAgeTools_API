@@ -2,8 +2,7 @@
 
 namespace App\Craft;
 
-use App\Item\Item;
-use App\User\Account;
+use App\User\AccSettings;
 
 class BufferSecond
 {
@@ -15,22 +14,22 @@ class BufferSecond
 
     public static function clearDB(): void
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         qwe("
             delete from craftBuffer2 
                    where accountId = :accountId",
-            ['accountId' => $Account->id]
+            ['accountId' => $AccSets->accountId]
         );
     }
 
     public static function byCraftId(int $craftId): self|false
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select * from craftBuffer2 
             where accountId = :accountId 
             and craftId = :craftId",
-            ['accountId' => $Account->id, 'craftId' => $craftId]
+            ['accountId' => $AccSets->accountId, 'craftId' => $craftId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -40,12 +39,12 @@ class BufferSecond
 
     public static function byItemId(int $resultItemId): self|false
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select * from craftBuffer2 
             where accountId = :accountId 
             and resultItemId = :resultItemId",
-            ['accountId' => $Account->id, 'resultItemId' => $resultItemId]
+            ['accountId' => $AccSets->accountId, 'resultItemId' => $resultItemId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -55,13 +54,13 @@ class BufferSecond
 
     public static function putToDB(int $craftId, int $resultItemId, int $craftCost, int $spm): bool
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             replace into craftBuffer2 
                 (accountId, craftId, resultItemId, craftCost, spm) 
             VALUES 
                 (:accountId, :craftId, :resultItemId, :craftCost, :spm)", [
-                'accountId'    => $Account->id,
+                'accountId'    => $AccSets->accountId,
                 'craftId'      => $craftId,
                 'resultItemId' => $resultItemId,
                 'craftCost'    => $craftCost,
@@ -73,7 +72,7 @@ class BufferSecond
 
     public static function saveCrafts(int $resultItemId): void
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $firstBuffer = BufferFirst::getCounted($resultItemId);
         $i = 0;
         foreach ($firstBuffer as $buffCraft){
@@ -88,7 +87,8 @@ class BufferSecond
                 $isBest = 0;
             }
             $AccCraft = AccountCraft::byParams(
-                $Account->id,$Account->AccSets->serverGroup,
+                $AccSets->accountId,
+                $AccSets->serverGroup,
                 $buffCraft->craftId,
                 $buffCraft->resultItemId,
                 $isBest,

@@ -1,15 +1,15 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
+use App\User\AccSettings;
 use Symphograph\Bicycle\Api\Response;
 use App\Craft\CraftCounter;
 use App\Item\{Item, Price};
 use App\Packs\{PackIds, PackRoute};
-use App\User\Account;
 use Symphograph\Bicycle\Errors\AppErr;
 
-$Account = Account::byToken();
 
+$AccSets = AccSettings::byJwt();
 $side = intval($_POST['side'] ?? 0);
 $condition = intval($_POST['condition'] ?? 0);
 

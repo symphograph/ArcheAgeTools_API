@@ -1,18 +1,17 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
+use App\User\AccSettings;
 use Symphograph\Bicycle\Api\Response;
-use Symphograph\Bicycle\Errors\MyErrors;
 use App\Craft\{CraftCounter, CraftPool};
 use App\Item\{Price};
-use App\User\Account;
+use Symphograph\Bicycle\Errors\AppErr;
+use Symphograph\Bicycle\Errors\ValidationErr;
 
 
-
-$Account = Account::byToken();
-$Account->initMember();
-$itemId = intval($_POST['itemId'] ?? 0)
-or Response::error('itemId is empty', 400);
+$AccSets = AccSettings::byJwt();
+$itemId = intval($_POST['itemId'] ?? false)
+or throw new ValidationErr();
 
 if($Pool = CraftPool::getByCache($itemId)){
     Response::data($Pool);
@@ -29,6 +28,6 @@ foreach ($craftCounter->countedItems as $resultItemId){
     $CraftPool = CraftPool::getPoolWithAllData($resultItemId);
 }
 $Pool = CraftPool::getByCache($itemId)
-or Response::error('Рецепты не найдены');
+    or throw new AppErr('CraftPool is empty', 'Рецепты не найдены');
 
 Response::data($Pool);

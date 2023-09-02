@@ -1,16 +1,15 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
+use App\User\AccSettings;
 use Symphograph\Bicycle\Api\Response;
-use Symphograph\Bicycle\Errors\{AppErr, MyErrors, ValidationErr};
-use App\User\Account;
+use Symphograph\Bicycle\Errors\{AppErr, ValidationErr};
 
-$Account = Account::byToken();
 
-$Account->AccSets->serverId = intval($_POST['server'] ?? 0)
+$AccSets = AccSettings::byJwt();
+$AccSets->serverId = intval($_POST['server'] ?? 9)
 or throw new ValidationErr('server', 'Ошибка данных');
 
-$Account->AccSets->putToDB()
-or throw new AppErr('putToDB err', 'Ошибка при сохранении');
+$AccSets->putToDB();
 
 Response::success();

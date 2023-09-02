@@ -2,7 +2,7 @@
 
 namespace App\Craft;
 
-use App\User\Account;
+use App\User\AccSettings;
 use App\User\Prof;
 
 class LaborData
@@ -29,8 +29,8 @@ class LaborData
 
     public static function getLaborCost(): int
     {
-        $Account = Account::getSelf();;
-        return $Account->AccSets->getLaborCost();
+        $AccSets = AccSettings::byGlobal();
+        return $AccSets->getLaborCost();
     }
 
     public static function getBonusedLabor(int|float $laborNeed, int $laborBonus): int

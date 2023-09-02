@@ -1,11 +1,13 @@
 <?php
 
 use Symphograph\Bicycle\Env\Config;
+use Symphograph\Bicycle\Errors\Handler;
 use Symphograph\Bicycle\Logs\AccessLog;
 
 Config::redirectFromWWW();
-Config::regHandlers();
+Handler::regHandlers();
 Config::initDisplayErrors();
 Config::checkPermission();
-Config::initApiSettings();
+Config::postHandler();
+\App\Env\Config::initEndPoints();
 AccessLog::writeToLog();

@@ -2,8 +2,8 @@
 
 namespace App\Craft;
 
+use App\User\AccSettings;
 use Symphograph\Bicycle\Errors\AppErr;
-use App\User\Account;
 use PDO;
 use App\User\Prof;
 
@@ -195,14 +195,14 @@ class Craft
 
     public static function isCountedItem(int $resultItemId): bool
     {
-        $Account = Account::getSelf();;
+        $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
             select * from uacc_crafts 
             where accountId = :accountId
             and serverGroup = :serverGroup
             and itemId = :resultItemId",
-            ['accountId'    => $Account->id,
-             'serverGroup'  => $Account->AccSets->serverGroup,
+            ['accountId'    => $AccSets->accountId,
+             'serverGroup'  => $AccSets->serverGroup,
              'resultItemId' => $resultItemId]
         );
         return boolval($qwe);

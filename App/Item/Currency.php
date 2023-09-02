@@ -140,7 +140,7 @@ class Currency
         $Price = new Price();
         $Price->name = $curItem->Item->name;
         $Price->icon = $curItem->Item->icon;
-        $Price->grade = $curItem->Item->grade;
+        $Price->grade = $curItem->Item->basicGrade;
         $Price->itemId = $curItem->Item->id;
         $this->lost[] = $Price;
     }
