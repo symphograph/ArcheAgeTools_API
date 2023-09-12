@@ -3,6 +3,7 @@
 namespace App\Transfer;
 
 use App\Item\Item;
+use App\DTO\ItemDTO;
 
 class TargetSection extends TargetArea
 {
@@ -37,9 +38,8 @@ class TargetSection extends TargetArea
         return $sections;
     }
 
-    protected static function isItemExist(int $id): bool
+    protected static function isItemExist(int $itemId): bool
     {
-        $qwe = qwe("select id from items where id = :id", ['id' => $id]);
-        return $qwe && $qwe->rowCount();
+        return !!ItemDTO::byId($itemId);
     }
 }

@@ -2,23 +2,22 @@
 
 namespace App\Craft;
 
+use App\DTO\MatDTO;
 use App\User\AccSettings;
 use App\Item\{Item, Price};
 use PDO;
 
-class Mat
+class Mat extends MatDTO
 {
-    public int            $id;
-    public ?int           $craftId;
-    public ?int           $resultItemId;
-    public ?int           $grade;
-    public int|float|null $need;
-    public ?bool          $craftable;
-    public ?Item          $Item;
-    public ?bool          $isBuyOnly;
+    public int    $id;
+    public ?int   $resultItemId;
+    public ?int   $grade;
+    public ?bool  $craftable;
+    public ?Item  $Item;
+    public ?bool  $isBuyOnly;
     public ?Price $Price;
+    public bool $isCounted;
 
-    public function __set(string $name, $value): void{}
 
     public static function byIds(int $matId, int $craftId) : self|bool
     {
@@ -53,7 +52,7 @@ class Mat
     }
 
     /**
-     * @return array<int>
+     * @return int[]
      */
     public static function getCraftMatIDs(int $craftId): array
     {
@@ -70,14 +69,13 @@ class Mat
     }
 
     /**
-     * @return array<self>|bool
+     * @return self[]|bool
      */
     public static function getCraftMats(int $craftId) : array|bool
     {
         $qwe = qwe("
             select cm.*, 
-                   itemId as id, 
-                   /*if(matGrade, matGrade, 1) as grade */
+                   i.id, 
                     matGrade as grade
             from craftMaterials cm 
             inner join items i 
@@ -89,7 +87,7 @@ class Mat
         if(!$qwe || !$qwe->rowCount()){
             return false;
         }
-        /** @var array<self> $arr */
+        /** @var self[] $arr */
         $arr = $qwe->fetchAll(PDO::FETCH_CLASS, get_class());
         $List = [];
         foreach ($arr as $mat){
@@ -107,7 +105,7 @@ class Mat
     }
 
     /**
-     * @return array<int>
+     * @return int[]
      */
     public static function allPotentialMats(int $itemId, array $matIDsArr = []): array
     {
@@ -163,7 +161,14 @@ class Mat
         self::initIsByOnly();
 
         if($this->isBuyOnly){
-            return self::initPriceBySaved();
+            if(self::initPriceBySaved()){
+                return true;
+            }
+
+            if(GroupCraft::byCraftId($this->craftId)){
+                return self::initPriceByCraft();
+            }
+            return false;
         }
 
         if($this->need < 0){

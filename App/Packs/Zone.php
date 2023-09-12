@@ -2,31 +2,19 @@
 
 namespace App\Packs;
 
+use App\DTO\ZoneDTO;
+use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
+use Symphograph\Bicycle\Logs\Log;
 
-class Zone
+class Zone extends ZoneDTO
 {
-    public int    $id;
-    public string $name;
-    public ?int    $side;
-    public ?int   $isGet;
-    public ?int   $getWest;
-    public ?int   $getEast;
-    public ?int   $freshType;
+    use ModelTrait;
     public ?array $ZonesTo;
 
-    public static function byId(int $id): self|false
-    {
-        $qwe = qwe("select * from zones where id = :id", ['id' => $id]);
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
-        return $qwe->fetchObject(self::class);
-    }
-
     /**
-     * @return array<self>|false
+     * @return self[]|false
      */
     public static function bySide(int $side): array|false
     {
@@ -99,6 +87,7 @@ class Zone
         if(!$qwe || !$qwe->rowCount()){
             throw new AppErr('initZonesTo err', 'Локации не найдены');
         }
+        //Log::msg("zoneFromId: $this->id");
         $this->ZonesTo = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 }

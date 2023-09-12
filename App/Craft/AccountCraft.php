@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\DTO\CraftDTO;
 use App\User\AccSettings;
 use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
@@ -28,7 +29,7 @@ class AccountCraft
 
 
 
-    public static function byID(int $craftId): self|false
+    public static function byId(int $craftId): self|false
     {
         $AccSets = AccSettings::byGlobal();
         $qwe = qwe("
@@ -134,7 +135,7 @@ class AccountCraft
 
     public static function setUBest(int $accountId, int $craftId): bool
     {
-        $craft = Craft::byId($craftId);
+        $craft = CraftDTO::byId($craftId);
         $qwe = qwe("
             replace into uacc_bestCrafts 
                 (accountId, itemId, craftId) 
@@ -147,7 +148,7 @@ class AccountCraft
 
     public static function delUBest(int $accountId, int $craftId): bool
     {
-        $craft = Craft::byId($craftId);
+        $craft = CraftDTO::byId($craftId);
         $qwe = qwe("
             delete from uacc_bestCrafts
             where accountId = :accountId

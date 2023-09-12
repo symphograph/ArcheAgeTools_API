@@ -6,9 +6,9 @@ use PDO;
 
 class TransferList
 {
-    protected string $randQString;
-    protected string $typeOfList = 'getList';
+    protected string $orderBy;
     protected array  $errorFilter = [];
+    protected string $subject;
 
     /**
      * @param int $limit
@@ -17,31 +17,33 @@ class TransferList
      */
     public function __construct
     (
+        protected int  $startId = 0,
         protected int  $limit = 1,
         protected bool $readOnly = true,
         protected bool $random = false
     )
     {
-
-        $this->randQString = $this->random ? 'order by rand()' : '';
-    }
-
-    protected function getList(string $sql): array
-    {
-        $qwe = qwe($sql, ['limit' => $this->limit]);
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
+        $this->orderBy = $this->random ? 'rand()' : 'id';
+        if(!$this->startId){
+            $this->startId = self::getLast();
         }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    protected static function resetLast(int $id, string $subject): void
+
+
+    protected function getLast(): int
+    {
+        $qwe = qwe("select * from transfer_Last where lastRec = :subject", ['subject' => $this->subject]);
+        return $qwe->fetchObject()->id;
+    }
+
+    protected function resetLast(int $id): void
     {
         qwe("
             update transfer_Last 
             set id = :id 
             where lastRec = :subject",
-            ['id' => $id, 'subject'=>$subject]
+            ['id' => $id, 'subject'=>$this->subject]
         );
     }
 }

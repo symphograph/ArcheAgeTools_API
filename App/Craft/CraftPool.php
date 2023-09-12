@@ -95,30 +95,13 @@ class CraftPool
         return false;
     }
 
-    private static function initMatPrice(Craft $craft): Craft
-    {
-        $mats = [];
-        foreach ($craft->Mats as $mat){
-            /*
-            if(!$mat->initPrice()){
-                printr($craft);
-                die();
-            }
-            */
-            $mat->initPrice();
-            $mat->Price->initAuthor();
-            $mats[] = $mat;
-        }
-        $craft->Mats = $mats;
-        return $craft;
-    }
-
     public function  initMatPrices(): void
     {
-        $this->mainCraft = self::initMatPrice($this->mainCraft);
+        $this->mainCraft->initMatPrice();
         $crafts = [];
         foreach ($this->otherCrafts as $craft){
-            $crafts[] = self::initMatPrice($craft);
+            $craft->initMatPrice();
+            $crafts[] = $craft;
         }
         $this->otherCrafts = $crafts;
     }

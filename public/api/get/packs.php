@@ -1,6 +1,7 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
+use App\Craft\Craft;
 use App\User\AccSettings;
 use Symphograph\Bicycle\Api\Response;
 use App\Craft\CraftCounter;
@@ -45,6 +46,11 @@ if(!empty($_POST['addProfit'])){
 
 $Packs = PackRoute::getList($side, !empty($_POST['addProfit']))
     or throw new AppErr('packs is empty','Паки не найдены');
+$List = [];
+foreach ($Packs as $Pack){
+    $Craft = Craft::getList($Pack->itemId)[0];
+    $Pack->Mats = $Craft->Mats;
+}
 
 $goldPrice = new Price();
 $goldPrice->itemId = 500;

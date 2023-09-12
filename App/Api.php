@@ -43,6 +43,10 @@ class Api
         return array_key_exists($key, $_GET) ? $_GET[$key] : $default;
     }
 
+    public static function post($key, $default=NULL) {
+        return array_key_exists($key, $_GET) ? $_GET[$key] : $default;
+    }
+
     public static function session($key, $default=NULL) {
         return array_key_exists($key, $_SESSION) ? $_SESSION[$key] : $default;
     }

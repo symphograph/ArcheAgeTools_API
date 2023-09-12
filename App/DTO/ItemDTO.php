@@ -3,9 +3,11 @@
 namespace App\DTO;
 
 use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\DTO\DTOTrait;
 
 class ItemDTO extends DTO
 {
+    use DTOTrait;
     const tableName = 'items';
     public int     $id;
     public int     $currencyId;
@@ -31,15 +33,4 @@ class ItemDTO extends DTO
     public ?string $expiresAt;
     public bool    $isLock     = false;
 
-    public static function byId(int $id): self|bool
-    {
-        $qwe = qwe("select * from items where id = :id", ['id' => $id]);
-        return $qwe->fetchObject(self::class);
-    }
-
-    public function putToDB(): void
-    {
-        $params = DB::initParams($this);
-        DB::replace(self::tableName, $params);
-    }
 }

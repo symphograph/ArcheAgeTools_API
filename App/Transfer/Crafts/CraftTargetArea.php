@@ -2,21 +2,25 @@
 
 namespace App\Transfer\Crafts;
 
+use App\Transfer\Errors\CraftErr;
 use App\Transfer\Items\ItemTargetSection;
 use App\Transfer\TargetArea;
 
 class CraftTargetArea extends TargetArea
 {
 
+
+    public TopSection    $topSection;
+    public ProfSection   $profSection;
+    public ResultSection $resultSection;
+
     /**
-     * @var array<CraftTargetSection>|null
+     * @var CraftTargetSection[]|null
      */
     public ?array $sections;
-    public TopSection $topSection;
-    public ProfSection $profSection;
-    public ResultSection $resultSection;
+
     /**
-     * @var array<MatSection>
+     * @var MatSection[]
      */
     public array $matList = [];
 
@@ -28,7 +32,10 @@ class CraftTargetArea extends TargetArea
         unset($this->sections);
     }
 
-    private function initSections()
+    /**
+     * @throws CraftErr
+     */
+    private function initSections(): void
     {
         $sections = explode('<tr><td><hr class="hr_long"></td></tr>', $this->content);
         $sections = str_replace(
@@ -37,9 +44,9 @@ class CraftTargetArea extends TargetArea
             $sections
         );
 
-        foreach ($sections as $section){
+        foreach ($sections as $section) {
             $section = new CraftTargetSection($section);
-            match ($section->type){
+            match ($section->type) {
                 'top' => self::initTopSection($section->content),
                 'prof' => self::initProfSection($section->content),
                 'mats' => $this->matList = $section->matList,
@@ -47,34 +54,37 @@ class CraftTargetArea extends TargetArea
                 default => null
             };
         }
-        $this->error = match (true){
-            empty($this->topSection) => 'TopSection is not exist',
-            empty($this->profSection) => 'ProfSection is not exist',
-            empty($this->matList) => 'MatList is not exist',
-            empty($this->resultSection) => 'ResultSection is not exist',
+        $error = match (true) {
+            empty($this->topSection) => 'TopSection does not exist',
+            empty($this->profSection) => 'ProfSection does not exist',
+            empty($this->matList) => 'MatList does not exist',
+            empty($this->resultSection) => 'ResultSection does not exist',
             default => ''
         };
+        if(!empty($error)){
+            throw new CraftErr($error);
+        }
     }
 
-    private function initResultSection(string $content)
+    private function initResultSection(string $content): void
     {
         $this->resultSection = new ResultSection($content);
     }
 
-    private function initTopSection(string $content)
+    private function initTopSection(string $content): void
     {
         $this->topSection = new TopSection($content);
     }
 
-    private function initProfSection(string $content)
+    private function initProfSection(string $content): void
     {
         $this->profSection = new ProfSection($content);
     }
 
-    public function printSections(array $types = [])
+    public function printSections(array $types = []): void
     {
-        foreach ($this->sections as $section){
-            if(!empty($types) && !in_array($section->type, $types)){
+        foreach ($this->sections as $section) {
+            if (!empty($types) && !in_array($section->type, $types)) {
                 continue;
             }
             echo $section->type . '<br>';
@@ -83,11 +93,11 @@ class CraftTargetArea extends TargetArea
     }
 
     /**
-     * @return array<CraftTargetSection>|null
+     * @return CraftTargetSection[]|null
      */
     public function getSectionsByType(string $type): ?array
     {
-        return array_filter($this->sections,function($section, $type){
+        return array_filter($this->sections, function ($section, $type) {
             return $section->type === $type;
         });
     }

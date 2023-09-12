@@ -32,7 +32,7 @@ class CraftTargetSection extends TargetSection
         }
     }
 
-    private function explodeMatSections()
+    private function explodeMatSections(): void
     {
         $matTargetList = explode('<br>', $this->content);
         foreach ($matTargetList as $matSection) {

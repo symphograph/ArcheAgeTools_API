@@ -32,6 +32,8 @@ class MatSum
         array $lost = []
     ): self
     {
+        //printr($craft->Mats);
+        //die();
         $craftCost = self::addLaborCost($craftCost,$craft);
         $craftCost = round($craftCost / $groupAmount);
         $sumSPM = round($sumSPM / $craft->resultAmount);

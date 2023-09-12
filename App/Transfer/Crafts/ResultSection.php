@@ -3,6 +3,7 @@
 namespace App\Transfer\Crafts;
 
 use App\Item\Item;
+use App\Transfer\Errors\CraftErr;
 use App\Transfer\TargetSection;
 
 class ResultSection extends TargetSection
@@ -17,14 +18,20 @@ class ResultSection extends TargetSection
         unset($this->content);
     }
 
+    /**
+     * @throws CraftErr
+     */
     private function extractData(): void
     {
-        $this->error = match (false){
+        $error = match (false){
             self::extractId() => 'ResultItemId is empty',
             self::isItemExist($this->resultItemId) => 'ResultItem does not exist in DB: ' . $this->resultItemId,
             self::extractResultAmount() => 'ResultAmount is empty',
             default => ''
         };
+        if(!empty($error)){
+            throw new CraftErr($error);
+        }
     }
 
     private function extractId(): bool

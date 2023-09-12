@@ -3,151 +3,114 @@
 namespace App\Transfer\Items;
 
 use App\Item\Category;
+use App\Transfer\Errors\ItemErr;
 use App\Transfer\Page;
+use App\DTO\ItemDTO;
 
 class PageItem extends Page
 {
-    public ItemDTO|false $ItemDB;
-    public ?ItemDTO $ItemDTO;
+
     public ItemTargetArea $TargetArea;
     public ?GradeArea $GradeArea;
-    private bool $readOnly = true;
 
-    public function __construct(public int $itemId)
-    {
-        self::saveLast($itemId, 'item');
-    }
-
-    public function executeTransfer(bool $readOnly = true): bool
+    public function __construct(
+        public ItemDTO $ItemDTO,
+        bool $readOnly = true
+    )
     {
         $this->readOnly = $readOnly;
-        if(!$this->ItemDB = ItemDTO::byDB($this->itemId)){
-            $this->error = 'Item does not exist in DB';
-            return false;
-        }
-        $this->ItemDTO = new ItemDTO();
-
-        if(!self::parseData()){
-            return false;
-        }
-        if(empty($this->error) && !$readOnly){
-            if(!self::updateDB()){
-                $this->error = 'updateDB error';
-            }
-        }
-        return true;
+        self::saveLast($ItemDTO->id, 'item');
     }
 
-    private function parseData(): bool
+    /**
+     * @throws ItemErr
+     */
+    public function executeTransfer(): void
     {
-        $result = match (false){
-            self::initContent() => false,
-            self::initTargetArea() => false,
-            self::initItemId() => false,
-            self::initItemName() => false,
-            self::isNecessary() => false,
-            self::initItemLvl() => false,
-            self::initIsPersonal() => false,
-            self::initGrade() => false,
-            self::initCategory() => false,
-            self::initDescription() => false,
-            self::initPrices() => false,
-            self::loadIcon() => false,
-            default => true
-        };
-        if(!$result){
-            return false;
-        }
+        self::initContent();
+        self::initTargetArea();
+        self::initItemId();
+        self::initItemName();
+        self::isNecessary();
+        self::initCategory();
+        self::initDescription();
+        self::initPrices();
+        self::loadIcon();
 
+
+        self::initItemLvl();
+        self::initIsPersonal();
+        self::initGrade();
         self::initIsTradeNPC();
         self::initIsGradable();
         self::initExpiresDate();
 
-        return true;
+        self::updateDB();
     }
 
-    private function initContent(?int $grade = null): string|false
+    //Required params________________________________
+
+    /**
+     * @throws ItemErr
+     */
+    private function initContent(): void
     {
-        $query = $grade ? 'grade=' . $grade : '';
-        $url = self::site . '/ru/item/' . $this->itemId . '/' . $query;
-        return self::getContent($url);
+        $url = self::site . '/ru/item/' . $this->ItemDTO->id . '/';
+        self::getContent($url);
     }
 
-    private function initTargetArea(): bool
+    /**
+     * @throws ItemErr
+     */
+    private function initTargetArea(): void
     {
         preg_match_all('#<td colspan="2">ID:(.+?)<div class="addon_info">#is', $this->content, $arr);
         if(empty($arr[0][0])){
-            $this->error = 'ItemPage is empty';
-            return false;
+            throw new ItemErr('ItemPage is empty');
         }
         $this->TargetArea = new ItemTargetArea($arr[0][0]);
-        return true;
     }
 
-    private function initItemId(): bool
+    /**
+     * @throws ItemErr
+     */
+    private function initItemId(): void
     {
-        if(!$this->TargetArea->checkItemId($this->itemId)){
-            $this->error = 'Invalid Item Id';
-            return false;
-        }
-        $this->ItemDTO->id = $this->itemId;
-        return true;
+        $this->TargetArea->checkItemId($this->ItemDTO->id)
+            or throw new ItemErr('Invalid Item Id');
     }
 
-    private function initItemName(): bool
+    /**
+     * @throws ItemErr
+     */
+    private function initItemName(): void
     {
         $name = $this->TargetArea->extractItemName();
         if(empty($name)){
-            $this->error = 'ItemName is empty';
-            return false;
+            throw new ItemErr('ItemName is empty');
         }
-
-        $this->ItemDTO->name = $name;
-        return true;
+        if($name !== $this->ItemDTO->name){
+            $this->warnings[] = "dif itemName: $name";
+        }
     }
 
-    private function isNecessary(): bool
+    /**
+     * @throws ItemErr
+     */
+    private function isNecessary(): void
     {
         if($this->TargetArea->isUnnecessary($this->ItemDTO->name)){
-            $this->error = 'Item is unnecessary';
-            return false;
-        }
-        return true;
-    }
-
-    private function initExpiresDate(): void
-    {
-        if($this->ItemDTO->expiresAt = $this->TargetArea->extractExpiresAt()){
-            $this->ItemDTO->onOff = 0;
+            throw new ItemErr('Item is unnecessary');
         }
     }
 
-    private function initIsPersonal(): bool
-    {
-        $this->ItemDTO->personal = str_contains($this->TargetArea->content, 'Персональный предмет');
-        return true;
-    }
-
-    private function initItemLvl(): bool
-    {
-        $lvl = $this->TargetArea->extractItemLvl();
-        if($lvl === false){
-            $lvl = $this->ItemDB->lvl ?? 0;
-        }
-        $this->ItemDTO->lvl = $lvl;
-        return true;
-    }
-
-    private function initGrade(): bool
-    {
-        $this->ItemDTO->basicGrade = $this->TargetArea->extractGrade();
-        return true;
-    }
-
-    private function initCategory(): bool
+    /**
+     * @throws ItemErr
+     */
+    private function initCategory(): void
     {
         $categoryName = $this->TargetArea->extractCategoryName();
-        $error = match (true){
+        $error = match (true) {
             empty($categoryName) => 'Category is empty',
             $categoryName === 'тест',
             !!preg_match(
@@ -159,14 +122,11 @@ class PageItem extends Page
             default => ''
         };
 
-        if(!empty($error)){
-            $this->error = $error;
-            return false;
+        if (!empty($error)) {
+            throw new ItemErr($error);
         }
 
         $this->ItemDTO->categId = $Categories[0]->id ?? 0;
-
-        return true;
     }
 
     /**
@@ -178,29 +138,65 @@ class PageItem extends Page
         if(!(count($Categories) > 1)){
             return false;
         }
-        if(!empty($this->ItemDB->categId)){
-            $this->ItemDTO->categId = $this->ItemDB->categId;
+        if(!empty($this->itemDTO->categId)){
             return false;
         }
         return true;
     }
 
-    private function initDescription(): bool
+    /**
+     * @throws ItemErr
+     */
+    private function initDescription(): void
     {
         $description = DescriptionExtract::extract($this->TargetArea->content);
         if(empty($description)){
-            $this->error = 'Description is empty';
-            return false;
+            throw new ItemErr('Description is empty');
         }
         $this->ItemDTO->description = $description;
-        return true;
     }
 
-    private function initPrices(): bool
+    /**
+     * @throws ItemErr
+     */
+    private function initPrices(): void
     {
         self::initPriceFromNPC();
         self::initPriceToNPC();
-        return self::initCurrencyId();
+        self::initCurrencyId();
+    }
+
+    /**
+     * @throws ItemErr
+     */
+    private function loadIcon(): void
+    {
+        $iconFileName = $this->TargetArea->extractIconSRC();
+        $IconPage = new PageIcon($iconFileName, $this->ItemDTO->id);
+        $IconPage->executeTransfer($this->readOnly);
+        $this->ItemDTO->icon = $IconPage->newSRC;
+        $this->ItemDTO->iconMD5 = $IconPage->iconMD5;
+    }
+
+
+    //Other params______________________________________
+    private function initItemLvl(): void
+    {
+        $lvl = $this->TargetArea->extractItemLvl();
+        if($lvl === false){
+            $lvl = $this->itemDTO->lvl ?? 0;
+        }
+        $this->ItemDTO->lvl = $lvl;
+    }
+
+    private function initIsPersonal(): void
+    {
+        $this->ItemDTO->personal = str_contains($this->TargetArea->content, 'Персональный предмет');
+    }
+
+    private function initGrade(): void
+    {
+        $this->ItemDTO->basicGrade = $this->TargetArea->extractGrade();
     }
 
     private function initIsTradeNPC(): void
@@ -208,7 +204,7 @@ class PageItem extends Page
         $this->ItemDTO->isTradeNPC = match (true){
             str_contains($this->content, 'Можно приобрести') => true,
             str_contains($this->content, 'Продаётся у NPC') => true,
-            $this->ItemDTO->currencyId && $this->ItemDTO->currencyId !==500 => true,
+            !empty($this->ItemDTO->currencyId) && $this->ItemDTO->currencyId !==500 => true,
             default => false
         };
     }
@@ -218,17 +214,11 @@ class PageItem extends Page
         $this->ItemDTO->isGradable = self::initGradeArea();
     }
 
-    private function loadIcon(): bool
+    private function initExpiresDate(): void
     {
-        $iconFileName = $this->TargetArea->extractIconSRC();
-        $IconPage = new PageIcon($iconFileName, $this->itemId);
-        if(!$IconPage->executeTransfer($this->readOnly)){
-            $this->error = 'Icon: ' . $IconPage->error;
-            return false;
+        if($this->ItemDTO->expiresAt = $this->TargetArea->extractExpiresAt()){
+            $this->ItemDTO->onOff = 0;
         }
-        $this->ItemDTO->icon = $IconPage->newSRC;
-        $this->ItemDTO->iconMD5 = $IconPage->iconMD5;
-        return true;
     }
 
     //----------------------------------------------------------------------
@@ -254,26 +244,22 @@ class PageItem extends Page
         $this->ItemDTO->priceToNPC = $price;
     }
 
-    private function initCurrencyId(): bool
+    private function initCurrencyId(): void
     {
         if($currencyId = $this->TargetArea->extractCurrencyId()){
             $this->ItemDTO->currencyId = $currencyId;
-            return true;
+            return;
         }
-        if(!$this->ItemDTO->priceFromNPC && !$this->ItemDTO->priceToNPC){
+        if(empty($this->ItemDTO->priceFromNPC) && empty($this->ItemDTO->priceToNPC)){
             if($this->ItemDTO->personal){
                 $this->ItemDTO->currencyId = 500;
             }
-            return true;
+            return;
         }
 
         if(str_contains($this->content, 'Можно приобрести') || str_contains($this->content, 'Продаётся у NPC')){
-            $this->error = 'Currency not defined';
-            printr($this->ItemDTO);
-            return false;
+            throw new ItemErr('Currency not defined');
         }
-
-        return true;
     }
 
     private function initGradeArea(): bool
@@ -288,14 +274,12 @@ class PageItem extends Page
 
     //------------------------------------------------------------------------
 
-
-
-    private function updateDB(): bool
+    private function updateDB(): void
     {
-        return match (false){
-            $this->ItemDB->update($this->ItemDTO) => false,
-            $this->TargetArea->putSectionsToDB($this->itemId) => false,
-            default => true
-        };
+        if($this->readOnly) return;
+        qwe("START TRANSACTION");
+        $this->ItemDTO->putToDB();
+        $this->TargetArea->putSectionsToDB($this->ItemDTO->id);
+        qwe("COMMIT");
     }
 }

@@ -30,7 +30,7 @@ class Member
     {
     }
 
-    public static function byId(int $accountId, int $serverGroup)
+    public static function byId(int $accountId, int $serverGroup): self
     {
         $member = new self();
         $member->accountId = $accountId;
@@ -64,7 +64,7 @@ class Member
      */
     public static function getList(int $accountId, int $serverGroup): array
     {
-        $privateItemsStr = '(' . implode(',', Item::privateItems()) . ')';
+        $privateItemsStr = DB::implodeIntIn(Item::privateItems());
         //$serverGroup = 100;
         if($serverGroup === 100){
             throw new AppErr('Server not defined', 'Сервер не выбран');
@@ -189,6 +189,7 @@ class Member
         $AccSets = AccSettings::byId($this->accountId);
         $this->avaFileName = $AccSets->avaFileName;
         $this->publicNick = $AccSets->publicNick;
+        $this->oldId = $AccSets->old_id;
     }
 
 }

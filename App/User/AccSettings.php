@@ -7,6 +7,7 @@ use App\DTO\AccSettingsDTO;
 use App\Item\Price;
 use App\Transfer\User\MailruOldUser;
 use App\Transfer\User\PriceTransfer;
+use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AccountErr;
 use Symphograph\Bicycle\Errors\AppErr;
 use Symphograph\Bicycle\Logs\Log;
@@ -15,6 +16,7 @@ use Symphograph\Bicycle\Token\AccessTokenData;
 
 class AccSettings extends AccSettingsDTO
 {
+    use ModelTrait;
     /**
      * @var array<Prof>|null
      */
@@ -24,17 +26,6 @@ class AccSettings extends AccSettingsDTO
 
 
     //Get-----------------------------------------------------------
-    public static function byId(int $accountId): self|bool
-    {
-        $AccountDTO = parent::byId($accountId);
-        if(!$AccountDTO) {
-            return false;
-        }
-        $AccSets = new self();
-        $AccSets->bindSelf($AccountDTO);
-        $AccSets->initData();
-        return $AccSets;
-    }
 
     public static function byOldId(int $old_id): self|bool
     {
@@ -45,7 +36,7 @@ class AccSettings extends AccSettingsDTO
     public static function byJwt(): self|false
     {
         $accountId = AccessTokenData::accountId();
-        $AccSettings = AccSettings::byId($accountId);
+        $AccSettings = AccSettings::byIdAndInit($accountId);
             //or throw new AccountErr('AccSettings is empty', 'Настройки не загрузились');
         return $AccSettings;
     }
@@ -98,6 +89,7 @@ class AccSettings extends AccSettingsDTO
     //Self-----------------------------------------------------------
     public function initData(): void
     {
+        global $AccSets;
         self::initServerGroup();
         if(!empty($AccSets)){
             self::initLaborCost();
@@ -154,12 +146,4 @@ class AccSettings extends AccSettingsDTO
         }
     }
 
-
-    //Save-----------------------------------------------------------
-    public function putToDB(): void
-    {
-        $dto = new parent();
-        $dto->bindSelf($this);
-        $dto->putToDB();
-    }
 }

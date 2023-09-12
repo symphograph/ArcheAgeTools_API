@@ -2,6 +2,7 @@
 
 namespace App\Transfer\Crafts;
 
+use App\Transfer\Errors\CraftErr;
 use App\Transfer\TargetSection;
 use Symphograph\Bicycle\DB;
 use Symphograph\Bicycle\Helpers;
@@ -20,13 +21,16 @@ class MatSection extends TargetSection
 
     private function extractData(): void
     {
-        $this->error = match (false) {
+        $error = match (false) {
             self::extractId() => 'MatId is empty',
             self::isItemExist($this->matId) => 'Mat does not exist in DB: ' . $this->matId,
             self::extractNeed() => 'MatNeed is empty: ' . $this->matId,
             self::extractGrade() => 'MatGrade is invalid: ' . $this->matId,
             default => ''
         };
+        if(!empty($error)){
+            throw new CraftErr($error);
+        }
         unset($this->content);
     }
 
@@ -42,8 +46,6 @@ class MatSection extends TargetSection
         $this->matId = self::sanitizeInt($arr[1][0]);
         return !!$this->matId;
     }
-
-
 
     private function extractNeed(): bool
     {

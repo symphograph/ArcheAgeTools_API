@@ -30,8 +30,9 @@ class MatPool
 
         foreach ($craft->Mats as $mat){
 
-            $mat->initPrice();
-            $mat->Price->initAuthor();
+            if($mat->initPrice()){
+                $mat->Price->initAuthor();
+            }
             //printr($mat->Item->name);
 
             if($mat->need < 0){
@@ -75,17 +76,6 @@ class MatPool
             $this->matPool[$mat->id] = $mat;
 
         }
-    }
-
-    private function initMatPrices(): void
-    {
-        $mats = [];
-        foreach ($this->matPool as $mat){
-            $mat->initPrice();
-            $mat->Price->initAuthor();
-            $mats[] = $mat;
-        }
-        $this->matPool = $mats;
     }
 
     private function initSolidGroup(): void

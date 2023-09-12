@@ -86,8 +86,8 @@ class DeepFinder
             inner join items i 
                 on cm.itemId = i.id
                 and i.onOff
-            inner join crafts c on i.id = c.resultItemId
-                and c.onOff
+            inner join crafts on i.id = crafts.resultItemId
+                and crafts.onOff
             where craftId = :craftId
             and cm.need > 0
             group by id",

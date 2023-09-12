@@ -2,42 +2,39 @@
 
 namespace App\Craft;
 
+use App\DTO\CraftDTO;
+use App\Errors\CraftCountErr;
+use App\Item\Item;
 use App\User\AccSettings;
+use Symphograph\Bicycle\DB;
 use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
 use App\User\Prof;
 
-class Craft
+class Craft extends CraftDTO
 {
-    public int $id;
+    public ?string       $itemName;
+    public ?string       $doodName;
+    public ?Prof         $Prof;
+    public string        $error = '';
+    public ?AccountCraft $countData;
+
     /**
      * @var array<Mat>|null
      */
-    public ?array        $Mats;
-    public ?int          $resultItemId;
-    public ?string       $itemName;
-    public ?string $craftName;
-    public int|float     $resultAmount = 1;
-    public ?int          $doodId;
-    public ?string       $doodName;
-    public int           $profId       = 25;
-    public ?int          $profNeed;
-    public ?int          $laborNeed;
-    public ?Prof         $Prof;
-    public ?AccountCraft $countData;
+    public ?array $Mats;
+
     /**
      * @var array<Mat>|null
      */
     public ?array $matPool;
+
     /**
      * @var array<Mat>|null
      */
     public ?array $trashPool;
-    public string $error = '';
 
-    public function __set(string $name, $value): void{}
-
-    public static function byId(int $id) : self|bool
+    public static function byId(int|string $id) : self|bool
     {
         $qwe = qwe("
             select crafts.*, 
@@ -82,7 +79,7 @@ class Craft
 
     private function initCountData(): bool
     {
-        if(!$countData = AccountCraft::byID($this->id)){
+        if(!$countData = AccountCraft::byId($this->id)){
             return false;
         }
         $this->countData = $countData;
@@ -93,8 +90,8 @@ class Craft
     public function initAllData(): bool
     {
         $this->error = match (false){
-            self::initMats() => 'Mats is empty',
-            self::initProf() => 'Prof data is empty',
+            self::initMats() => throw new CraftCountErr('Mats is empty'),
+            self::initProf() => throw new CraftCountErr('Prof data is empty'),
             self::initCountData() => '',
             default => ''
         };
@@ -154,17 +151,16 @@ class Craft
     }
 
     /**
-     * @return array<array<self>>
+     * @return self[][]
      */
     public static function allPotentialCrafts(int $itemId): array
     {
         $craftIDs = self::getCraftIDs($itemId);
-        $craftIDsImpl = implode(',', $craftIDs);
-        $allMats = Mat::allPotentialMats($itemId);
-        if (empty($allMats)){
-            $allMats[] = 0;
-        }
-        $allMatsImpl = implode(',', $allMats);
+        $matIds = Mat::allPotentialMats($itemId);
+        if (empty($matIds)) $matIds[] = 0;
+
+        $matIdsPH = DB::pHolders($matIds);
+        $craftIdsPH = DB::pHolders($craftIDs,2);
 
         $qwe = qwe("
             select crafts.*,
@@ -175,11 +171,12 @@ class Craft
                     and items.onOff
                     and crafts.onOff
                     and (
-                            resultItemId in ($allMatsImpl) 
-                            or crafts.id in ($craftIDsImpl)
+                            crafts.resultItemId in ($matIdsPH) 
+                            or crafts.id in ($craftIdsPH)
                         )
                  left join doods on doods.id = crafts.doodId
-            order by deep desc, resultItemId"
+            order by deep desc, resultItemId",
+        [DB::pHoldsArr($matIds), DB::pHoldsArr($craftIDs,2)]
         );
         if(!$qwe || !$qwe->rowCount()){
             return [];
@@ -208,14 +205,18 @@ class Craft
         return boolval($qwe);
     }
 
-    public function initMatPrice(): void
+    public function initMatPrice(): bool
     {
         $mats = [];
         foreach ($this->Mats as $mat){
-            $mat->initPrice();
+            if(!$mat->initPrice()){
+                return false;
+            }
+            $mat->Price->initAuthor();
             $mats[] = $mat;
         }
         $this->Mats = $mats;
+        return true;
     }
 
     public static function getAllResultItems(): false|array

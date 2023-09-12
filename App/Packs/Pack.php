@@ -3,24 +3,15 @@
 namespace App\Packs;
 
 use App\Craft\{AccountCraft, LaborData};
+use App\DTO\PackDTO;
 use App\Item\Item;
 use App\User\AccSettings;
 use PDO;
 use App\User\Prof;
 
-class Pack
+class Pack extends PackDTO
 {
-    public int     $itemId;
-    public ?int    $zoneFromId;
-    public ?string $name;
-    public ?string $shortName;
-    public ?string $zoneName;
-    public ?int    $typeId;
-    public ?string $typeName;
-    public ?int    $side;
-    public ?int    $freshId;
-    public ?int    $nativeId;
-    public ?int    $doodId;
+
     public string  $icon;
     public int     $grade;
     public int     $passLabor;
@@ -76,7 +67,7 @@ class Pack
         return $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
     }
 
-    public static function byId(int $itemId, int $zoneFromId)
+    public static function byIds(int $itemId, int $zoneFromId)
     {
         $qwe = qwe("
             select 

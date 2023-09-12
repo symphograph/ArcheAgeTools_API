@@ -2,77 +2,81 @@
 
 namespace App\Packs;
 
+use App\DTO\PackRouteDTO;
 use PDO;
-use Symphograph\Bicycle\{DB, JsonDecoder};
+use Symphograph\Bicycle\Errors\AppErr;
 
-class PackRoute
+class PackRoute extends PackRouteDTO
 {
-    public int $id;
-    public int  $itemId;
-    public int  $zoneFromId;
-    public int  $zoneToId;
-    public int  $dbPrice;
-    public int  $currencyId;
-    public ?int  $mul;
-    public ?int $side;
-    public ?Pack $Pack;
-    public ?Zone $ZoneFrom;
-    public ?Zone $ZoneTo;
-    public ?Freshness $Freshness;
+
+    public ?string $name;
+    public Pack|string|null $Pack;
+    public Zone|string|null $ZoneFrom;
+    public Zone|string|null $ZoneTo;
+    public Freshness|string|null $Freshness;
+    public ?array $Mats;
 
     /**
-     * @return array<self>|false
+     * @return self[]
      */
-    public static function getList(int $side, bool $forProfit = false): array|false
+    public static function getList(int $side, bool $forProfit = false): array
     {
-        if(!$forProfit){
-            return self::getFlatList($side);
+        $list = self::getFlatList($side);
+        if($forProfit){
+            $list = self::initProfitInList($list);
         }
-        return self::getListForProfit($side);
+        return $list;
     }
 
     /**
-     * @return array<self>|false
+     * @return self[]
      */
-    public static function getListForProfit(int $side): array|false
+    public static function getFlatList(int $side): array
     {
-        if(!$List = self::getList($side)){
-            return false;
-        }
+        $routes = self::getRoutes($side)
+            or throw new AppErr('PackList is error', 'Паки не загрузились');
 
+        return self::initDataInList($routes);
+    }
+
+    /**
+     * @param self[] $List
+     * @return self[]
+     */
+    private static function initDataInList(array $List): array
+    {
         $arr = [];
-        foreach ($List as $route){
-            $route->Pack->initCraftData();
-            $arr[] = $route;
+        foreach ($List as $selfObject){
+            $selfObject->initData();
+            $arr[] = $selfObject;
         }
         return $arr;
     }
 
     /**
-     * @return array<self>
+     * @param self[] $List
+     * @return self[]
      */
-    public static function getFlatList(int $side): array|false
+    private static function initProfitInList(array $List): array
     {
-
-        if($routes = self::getListByCache($side)){
-            return $routes;
-        }
-
-        if(!$routes = self::getRoutes($side)){
-            return false;
-        }
-
         $arr = [];
-        foreach ($routes as $route)
-        {
-            $route->initZones();
-            $route->initPack();
-            $route->initFreshness();
-            $route->putToDB($side);
-
-            $arr[] = $route;
+        foreach ($List as $selfObject){
+            $selfObject->initProfit();
+            $arr[] = $selfObject;
         }
         return $arr;
+    }
+
+    private function initData(): void
+    {
+        self::initZones();
+        self::initPack();
+        self::initFreshness();
+    }
+
+    private function initProfit(): void
+    {
+        $this->Pack->initCraftData();
     }
 
     /**
@@ -104,57 +108,18 @@ class PackRoute
 
     private function initPack(): void
     {
-        if($pack = Pack::byId($this->itemId, $this->zoneFromId)){
-            $this->Pack = Pack::byId($this->itemId, $this->zoneFromId);
-        }else{
-            printr($this);
-            die();
-        }
-
+        $this->Pack = Pack::byIds($this->itemId, $this->zoneFromId)
+        or throw new AppErr(
+            "Pack $this->itemId from $this->zoneFromId does not exist",
+            'Пак не найден'
+        );
+        $this->name = $this->Pack->name;
     }
 
     private function initFreshness(): void
     {
         $Freshness = Freshness::byId($this->Pack->freshId);
         $this->Freshness = $Freshness;
-    }
-
-    private function putToDB(int $side): bool
-    {
-        $params = [
-            /*'id'         => $this->id,*/
-            'itemId'     => $this->itemId,
-            'zoneFromId' => $this->zoneFromId,
-            'zoneToId'   => $this->zoneToId,
-            'side'       => $side,
-            'dbPrice'    => $this->dbPrice,
-            'currencyId' => $this->currencyId,
-            'Pack'       => json_encode($this->Pack, JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT),
-            'ZoneFrom'   => json_encode($this->ZoneFrom, JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT),
-            'ZoneTo'     => json_encode($this->ZoneTo, JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT),
-            'Freshness'  => json_encode($this->Freshness, JSON_UNESCAPED_UNICODE | JSON_FORCE_OBJECT)
-        ];
-        return DB::replace('uacc_RoutePool', $params);
-    }
-
-    public static function getListByCache(int $side): array|false
-    {
-        $qwe = qwe("select * from uacc_RoutePool where side = :side", ['side'=>$side]);
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
-        $arr = $qwe->fetchAll(PDO::FETCH_CLASS);
-        $list = [];
-        foreach ($arr as $pRoute){
-            //printr($pRoute);
-            $pRoute->Pack = json_decode($pRoute->Pack,4);
-            $pRoute->ZoneFrom = json_decode($pRoute->ZoneFrom,4);
-            $pRoute->ZoneTo = json_decode($pRoute->ZoneTo,4);
-            $pRoute->Freshness = json_decode($pRoute->Freshness, 4);
-            $pRoute = JsonDecoder::cloneFromAny($pRoute, self::class);
-            $list[] = $pRoute;
-        }
-        return $list;
     }
 
 }

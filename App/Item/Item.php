@@ -5,16 +5,19 @@ namespace App\Item;
 use App\DTO\ItemDTO;
 use App\User\AccSettings;
 use PDO;
+use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AppErr;
 use Symphograph\Bicycle\Helpers;
 
 class Item extends ItemDTO
 {
+    use ModelTrait;
     public ?Info    $Info;
     public ?Price   $Price;
     public ?Pricing $Pricing;
     public int $grade = 1;
     public bool $isBuyOnly  = false;
+    public bool $isPack;
 
     /**
      * @return bool|array<self>
@@ -49,13 +52,14 @@ class Item extends ItemDTO
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    public static function byId(int $id) : self
+    public static function byId(int|string $id) : self
     {
         $ItemDTO = ItemDTO::byId($id)
             or throw new AppErr("item $id does not exist in DB");
         $Item = new self();
         $Item->bindSelf($ItemDTO);
         $Item->grade = $ItemDTO->basicGrade;
+        $Item->isPack = Category::isPack($Item->categId);
         return $Item;
     }
 
@@ -67,11 +71,9 @@ class Item extends ItemDTO
     public function initPrice(): bool
     {
         $Price = Price::bySaved($this->id);
-        if($Price){
-            $this->Price = $Price;
-            return true;
-        }
-        return false;
+        if(!$Price) return false;
+        $this->Price = $Price;
+        return true;
     }
 
     public function initPricing(): void
@@ -81,6 +83,9 @@ class Item extends ItemDTO
         }
     }
 
+    /**
+     * @return int[]
+     */
     public static function privateItems(): array
     {
         global $privateItems;
@@ -130,5 +135,4 @@ class Item extends ItemDTO
         );
         return $qwe && $qwe->rowCount();
     }
-
 }

@@ -2,6 +2,9 @@
 
 namespace App\Transfer\Crafts;
 
+use App\DTO\DoodDTO;
+use App\DTO\ProfDTO;
+use App\Transfer\Errors\CraftErr;
 use App\Transfer\TargetSection;
 
 class ProfSection extends TargetSection
@@ -13,42 +16,38 @@ class ProfSection extends TargetSection
     public function __construct(string $content)
     {
         parent::__construct($content);
-        self::extractData();
+        self::extractDood();
+        self::initProfId();
         unset($this->content);
     }
 
 
-    private function extractData(): void
-    {
-        if(!self::extractDood()){
-            return;
-        }
-
-        self::initProfId();
-    }
-
-    private function extractDood(): bool
+    /**
+     * @throws CraftErr
+     */
+    private function extractDood(): void
     {
         $regExp = '#data-id="doodad--(.+?)data-grade#is';
         if(!preg_match_all($regExp, $this->content, $arr)){
             $this->warnings[] = 'Dood is empty';
-            return true;
+            return;
         }
         if (empty($arr[1][0])){
             $this->warnings[] = 'Dood is empty';
-            return true;
+            return;
         }
         if(!$this->doodId = self::sanitizeInt($arr[1][0])){
             $this->warnings[] = 'Dood is 0';
-            return true;
+            return;
         }
         if(!self::isDoodExist($this->doodId)){
-            $this->error = 'Dood does not exist in DB: ' . $this->doodId;
-            return false;
+            throw new CraftErr('Dood does not exist in DB: ' . $this->doodId);
         }
-        return true;
     }
 
+    /**
+     * @throws CraftErr
+     */
     private function initProfId(): void
     {
         if(!self::extractProfName()){
@@ -56,21 +55,15 @@ class ProfSection extends TargetSection
             $this->profName = 'Прочее';
         }
 
-        $qwe = qwe("select id from profs where name = :name", ['name' => $this->profName]);
-        if (!$qwe || !$qwe->rowCount()) {
-            $this->error = 'Prof does not exist in DB';
-            return;
+        $Profs = ProfDTO::listByName($this->profName);
+        if(empty($Profs)){
+            throw new CraftErr('Prof does not exist in DB');
         }
-        if ($qwe->rowCount() > 1) {
-            $this->error = 'Prof having variants';
-            return;
+
+        if (count($Profs) > 1) {
+            throw new CraftErr('Prof having variants');
         }
-        $q = $qwe->fetchObject();
-        if ($q->id) {
-            $this->profId = $q->id;
-            return;
-        }
-        $this->error = 'Prof unknown error';
+        $this->profId = $Profs[0]->id;
     }
 
     private function extractProfName(): bool
@@ -89,9 +82,9 @@ class ProfSection extends TargetSection
         return !empty($this->profName);
     }
 
-    private static function isDoodExist(int $id): bool
+    private static function isDoodExist(int $doodId): bool
     {
-        $qwe = qwe("select id from doods where id = :id", ['id'=>$id]);
-        return $qwe && $qwe->rowCount();
+        return !!DoodDTO::byId($doodId);
     }
+
 }

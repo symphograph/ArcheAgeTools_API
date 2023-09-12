@@ -18,9 +18,8 @@ $priceMember = new Member();
 $priceMember->accountId = $memberId;
 $priceMember->initAccData();
 $priceMember->initIsFollow();
-
 if(!empty($priceMember->oldId)){
-    PriceTransfer::byArr($priceMember->oldId, $priceMember->accountId);
+    PriceTransfer::byId($priceMember->accountId, $priceMember->oldId);
 }
 
 $List = Price::memberPriceList($memberId, $ServerGroup);

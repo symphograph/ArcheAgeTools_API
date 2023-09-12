@@ -2,35 +2,21 @@
 
 namespace App\Item;
 
+use App\DTO\CategoryDTO;
+use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
 use Symphograph\Bicycle\Helpers;
 
-class Category
+class Category extends CategoryDTO
 {
-    public ?int    $id;
+    use ModelTrait;
     public ?int    $index;
-    public ?string $name;
-    public ?int    $deep;
-    public ?string $description;
     public bool    $selectable = true;
     /**
      * @var array<self>|null
      */
     public ?array  $children;
-    public ?int    $parent;
-    public ?string $icon;
-
-    public function __set(string $name, $value): void{}
-
-    public static function byId(int $id) : self|bool
-    {
-        $qwe = qwe("select * from item_categories where id = :id",['id'=>$id]);
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
-        return $qwe->fetchObject(self::class);
-    }
 
     /**
      * @return array<self>
@@ -50,7 +36,7 @@ class Category
             SELECT * FROM cte
             ORDER BY deep"
         );
-        if(!$qwe || !$qwe->rowCount()){
+        if (!$qwe || !$qwe->rowCount()) {
             throw new AppErr('Categories is empty');
         }
 
@@ -62,14 +48,15 @@ class Category
      * @param array<self> $List
      * @return array<self>
      */
-    private static function treeFromList(array $List) {
-        $tree = [] ;
+    private static function treeFromList(array $List)
+    {
+        $tree = [];
         $categories = $List;
-        foreach($categories as $id => &$node) {
-            if(empty($node->parent)){
-                $tree[] = &$node ;
-            }else{
-                $categories[$node->parent]->children[] = &$node ;
+        foreach ($categories as $id => &$node) {
+            if (empty($node->parent)) {
+                $tree[] = &$node;
+            } else {
+                $categories[$node->parent]->children[] = &$node;
             }
         }
         return $tree;
@@ -87,10 +74,10 @@ class Category
 
     private function initData(): void
     {
-        if(!empty($this->icon)){
+        if (!empty($this->icon)) {
             $this->icon = 'img:/img/category/' . $this->icon;
         }
-        if(!empty($this->children)){
+        if (!empty($this->children)) {
             $this->selectable = false;
         }
     }
@@ -99,11 +86,11 @@ class Category
      * @param array<self> $List
      * @return array<self>
      */
-    private static function initChildren(array $List) : array
+    private static function initChildren(array $List): array
     {
         $arr = [];
         foreach ($List as $node) {
-            if(!empty($node->children)) {
+            if (!empty($node->children)) {
                 $node->children = self::initChildren($node->children);
             }
             $node->initData();
@@ -121,12 +108,16 @@ class Category
             select * from Categories 
             where name = :name 
             and deep = 3",
-            ['name'=>$categoryName]
+            ['name' => $categoryName]
         );
-        if(!$qwe || !$qwe->rowCount()){
+        if (!$qwe || !$qwe->rowCount()) {
             return false;
         }
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
+    public static function isPack(int $categId): bool
+    {
+        return in_array($categId, [122, 133, 171]);
+    }
 }

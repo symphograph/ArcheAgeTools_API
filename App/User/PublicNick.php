@@ -12,7 +12,7 @@ class PublicNick
 
     public function __construct(public string $nick)
     {
-        $this->nick = Helpers::sanitazeName($nick);
+        $this->nick = Helpers::sanitizeName($nick);
     }
 
     public function validation(AccSettings $AccSets): void

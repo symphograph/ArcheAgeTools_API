@@ -4,7 +4,8 @@ namespace App\DTO;
 
 class DTO
 {
-    protected function bindSelf(object|array $Object): void
+    //TODO перенести в трейт
+    public function bindSelf(object|array $Object): void
     {
         $Object = (object) $Object;
         $vars = get_class_vars($this::class);

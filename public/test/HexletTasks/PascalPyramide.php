@@ -2,8 +2,6 @@
 $start = microtime(true);
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\DB;
-
 ?>
 <!doctype html>
 <html lang="ru">

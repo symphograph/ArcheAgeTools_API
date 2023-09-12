@@ -4,6 +4,7 @@ namespace App\Item;
 
 use App\Craft\{AccountCraft, BufferSecond};
 use App\DTO\PriceDTO;
+use App\Transfer\Errors\CraftErr;
 use App\User\AccSettings;
 use App\User\Member;
 use Symphograph\Bicycle\Env\Env;
@@ -361,6 +362,8 @@ class Price extends PriceDTO
     {
         $AccSets = AccSettings::byGlobal();
         $CraftData = AccountCraft::byResultItemId($itemId);
+        if(!$CraftData) return false;
+
         $Price = new self();
         $Price->itemId = $itemId;
         $Price->price = $CraftData->craftCost;

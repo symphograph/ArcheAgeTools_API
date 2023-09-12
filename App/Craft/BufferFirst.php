@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\DTO\CraftDTO;
 use App\User\AccSettings;
 use PDO;
 

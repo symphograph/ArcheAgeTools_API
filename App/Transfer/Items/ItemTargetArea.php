@@ -2,6 +2,7 @@
 
 namespace App\Transfer\Items;
 
+use App\Transfer\Errors\TransferErr;
 use App\Transfer\TargetArea;
 use Symphograph\Bicycle\Helpers;
 
@@ -172,21 +173,20 @@ class ItemTargetArea extends TargetArea
     }
 
 
-    public function putSectionsToDB(int $itemId): bool
+    public function putSectionsToDB(int $itemId): void
     {
         self::deleteSectionsFromDB($itemId);
         foreach ($this->sections as $section){
             if($section->isIgnored()) continue;
-
-            if(!$section->putToDB($itemId)){
-                self::deleteSectionsFromDB($itemId);
-                return false;
-            }
+            $DescrSection = new DescrSection();
+            $DescrSection->itemId = $itemId;
+            $DescrSection->sectionTypeName = $section->type;
+            $DescrSection->sectionTypeId = DescrSectionType::getIdByName($section->type);
+            $DescrSection->putToDB();
         }
-        return true;
     }
 
-    private static function deleteSectionsFromDB(int $itemId)
+    private static function deleteSectionsFromDB(int $itemId): void
     {
         qwe("delete from itemDescriptions where itemId = :itemId",['itemId'=> $itemId]);
     }

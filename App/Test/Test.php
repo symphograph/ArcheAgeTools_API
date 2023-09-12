@@ -50,13 +50,17 @@ class Test
 
     public static function scriptTime(float $start, string $funcName = '$funcName'): string
     {
-        $time = round(microtime(true) - $start, 4);
-        return "<p>Время $funcName: $time сек.<p>";
+        $time = self::endTime($start);
+        return "<hr><p>Время $funcName: $time сек.<p>";
     }
 
-    public static function startTime(string $funcName = '$funcName'): float
+    public static function endTime(float $start): float
     {
-        //echo "<p>Старт: $funcName</p>";
+        return  round(microtime(true) - $start, 4);
+    }
+
+    public static function startTime(): float
+    {
         return microtime(true);
     }
 }

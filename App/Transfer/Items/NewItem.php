@@ -2,24 +2,28 @@
 
 namespace App\Transfer\Items;
 
+use App\DTO\DTO;
+use NilPortugues\Sql\QueryBuilder\Builder\GenericBuilder;
 use PDO;
+use Symphograph\Bicycle\DTO\DTOTrait;
+use Symphograph\Bicycle\Errors\AppErr;
+use Symphograph\Bicycle\Helpers;
 
-class NewItem
+class NewItem extends DTO
 {
-    const tableName = 'NewItems_8.0.2.7_9.0.1.6';
+    use DTOTrait;
+    const tableName = '`NewItems_20230622`';
     public int $id;
     public string $name;
     public int $lvl;
 
     /**
-     * @return false|array<self>
+     * @return self[]|false
      */
-    public static function getList(string $tableName): false|array
+    public static function getList(array $orderBy = []): array|false
     {
-        $qwe = qwe("select * from $tableName");
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
+        $qwe = qwe("select * from " . self::tableName);
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
+
 }

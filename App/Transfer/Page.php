@@ -2,11 +2,14 @@
 
 namespace App\Transfer;
 
+use App\Transfer\Errors\TransferErr;
+
 class Page
 {
     public string $content = '';
     public string $error = '';
     public array $warnings = [];
+    public bool $readOnly = true;
 
     const site = 'https://archeagecodex.com';
     const options = [
@@ -40,15 +43,16 @@ class Page
         return $result;
     }
 
-    protected function getContent(string $url, array $options = []): bool
+    /**
+     * @throws TransferErr
+     */
+    protected function getContent(string $url, array $options = []): void
     {
         $result = self::curl($url, $options);
         if($result->err || $result->http_code !== 200 || empty($result->content)){
-            $this->error = 'content not received';
-            return false;
+            throw new TransferErr('content not received');
         }
         $this->content = $result->content;
-        return true;
     }
 
     protected static function saveLast(int $id, string $subject): bool

@@ -30,6 +30,7 @@ class GroupCraft
         if(!$result->groupAmount){
             return false;
         }
+        //printr($result);
         return $result;
     }
 

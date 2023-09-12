@@ -2,9 +2,9 @@
 
 namespace App\Transfer\Items;
 
-
-
 use App\DBServices\ItemFixer;
+use App\Transfer\Errors\IconErr;
+use App\Transfer\Errors\TransferErr;
 use App\Transfer\Page;
 use Symphograph\Bicycle\FileHelper;
 
@@ -16,65 +16,76 @@ class PageIcon extends Page
     public string  $iconMD5;
     private string $tmpDir;
     private string $tmpFullPath;
-    private bool   $readOnly;
+    public bool   $readOnly;
 
     public function __construct(public string $src, public int $itemId)
     {
 
     }
 
-    public function executeTransfer(bool $readOnly = true): bool
+    /**
+     * @throws IconErr
+     */
+    public function executeTransfer(bool $readOnly = true): void
     {
         $this->readOnly = $readOnly;
-        return match (false){
-            self::initContent() => false,
-            self::isIconPNG() => false,
-            self::saveIconFile() => false,
-            self::initMD5() => false,
-            default => true
-        };
+        try {
+            self::initContent();
+        } catch (TransferErr $err) {
+            throw new IconErr($err->getMessage());
+        }
+
+        self::validateFormat();
+        self::saveIconFile();
+        self::initMD5();
     }
 
-    private function initContent(): bool
+    /**
+     * @throws TransferErr
+     */
+    private function initContent(): void
     {
         $url = self::site . '/items/' . $this->src;
-        return self::getContent($url);
+        self::getContent($url);
     }
 
-    private function isIconPNG(): bool
+    /**
+     * @throws IconErr
+     */
+    private function validateFormat(): void
     {
         self::initDirs();
         FileHelper::delDir($this->tmpDir);
         FileHelper::fileForceContents($this->tmpFullPath, $this->content);
 
         if(exif_imagetype($this->tmpFullPath) !== IMAGETYPE_PNG){
-            $this->error = 'invalid format';
-            return false;
+            throw new IconErr('invalid format');
         }
-        return true;
     }
 
-    private function saveIconFile(): bool
+    /**
+     * @throws IconErr
+     */
+    private function saveIconFile(): void
     {
         if($this->readOnly){
-            return true;
+            return;
         }
         $newFullPath = $_SERVER['DOCUMENT_ROOT'] . self::iconDir . $this->newSRC;
         if(!FileHelper::fileForceContents($newFullPath, $this->content)){
-            $this->error = 'error on file save';
-            return false;
+            throw new IconErr('error on file save');
         }
-        return true;
     }
 
-    private function initMD5(): bool
+    /**
+     * @throws IconErr
+     */
+    private function initMD5(): void
     {
         if(!$md5 = md5_file($this->tmpFullPath)){
-            $this->error = 'error md5';
-            return false;
+            throw new IconErr('error md5');
         }
         $this->iconMD5 = $md5;
-        return true;
     }
 
     private function initDirs(): void
@@ -82,7 +93,6 @@ class PageIcon extends Page
         $this->tmpDir = dirname($_SERVER['DOCUMENT_ROOT']) . '/tmp/img/';
         $this->newSRC = ItemFixer::iconNameSeparator($this->src);
         $this->tmpFullPath = $this->tmpDir . $this->newSRC;
-        //printr($this->tmpFullPath);
     }
 
 }

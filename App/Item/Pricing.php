@@ -43,7 +43,7 @@ class Pricing
 
     private function isGoldable() : bool
     {
-        if(in_array($this->categId,[133, 171, 122])){
+        if(Category::isPack($this->itemId)){
             return false;
         }
 

@@ -3,8 +3,11 @@
 namespace App\Craft;
 
 
+use App\Errors\CraftCountErr;
+use App\Item\Item;
 use App\User\AccSettings;
 use PDO;
+use Symphograph\Bicycle\Errors\AppErr;
 
 
 class CraftCounter
@@ -54,11 +57,14 @@ class CraftCounter
 
         $List = Craft::allPotentialCrafts($itemId);
 
+        //printr($List);
+
         foreach ($List as $resultItemId => $crafts){
             if(in_array($resultItemId, $CraftCounter->countedItems)){
                 continue;
             }
-            //$Item = Item::byId($resultItemId);
+            $Item = Item::byId($resultItemId);
+            //printr($Item->name);
 
             foreach ($crafts as $craft){
 
@@ -86,8 +92,7 @@ class CraftCounter
         $sum = $sumSPM = 0;
 
         if(!empty($craft->error)){
-            //die(Api::errorMsg($craft->error . ': ' . $craft->id));
-            //printr($craft);
+            throw new CraftCountErr('Craft '. $craft->id . 'is error');
         }
 
         foreach ($craft->Mats as $mat) {
@@ -100,7 +105,6 @@ class CraftCounter
                     self::addToLost($mat->id);
                     continue;
                 }
-                printr($mat);
             }
             if ($mat->need > 0) {
                 $spm = 0;
