@@ -23,19 +23,29 @@ use Symphograph\Bicycle\SQL\SQLBuilder;
 <?php
 //$List = MailruOldUser::getList();
 //MailRuUserTransfer::importUsers(1000000);
-$ids = DB::prepMul(['ids' => [2, 3]]);
-$ids2 = DB::prepMul(['ids2' => [4, 5]]);
-$orderBy = SQLBuilder::orderBy(Item::class,'categId desc, id desce');
-$qwe = qwe("
-select id, name from items 
-         where id = :id
-or categId = :categId
-order by $orderBy
-",
-['id' => 1, 'categId'=> 27]
-);
-$qwe = $qwe->fetchAll();
-printr($qwe);
+
+class SomeClass
+{
+    //deep1
+    public static function myFunc1(): void {self::myFunc3();}
+
+    //deep1
+    public static function myFunc2(): void {self::myFunc4();}
+
+    //-------------------------------------------------------
+    //deep2
+    private static function myFunc3(): void{self::myFunc5();}
+
+    //deep2
+    private static function myFunc4(): void{self::myFunc6();}
+
+    //-------------------------------------------------------
+    //deep3
+    private static function myFunc5(){}
+
+    //deep3
+    private static function myFunc6(){}
+}
 
 
 

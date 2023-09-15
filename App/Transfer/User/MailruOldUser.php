@@ -9,6 +9,7 @@ use App\DTO\ItemDTO;
 use App\DTO\PriceDTO;
 use App\User\AccSettings;
 use App\User\Server;
+use Symphograph\Bicycle\Errors\AccountErr;
 use Symphograph\Bicycle\Errors\CurlErr;
 use Symphograph\Bicycle\Logs\ErrorLog;
 use Symphograph\Bicycle\Logs\Log;
@@ -55,11 +56,9 @@ class MailruOldUser extends DTO
     public static function byId(string $mail_id): self|bool
     {
         $url = 'https://' . self::apiDomain . '/api/get/user.php';
-        $result = Api::curl($url, ['mail_id'=>$mail_id, 'method' => 'getById']);
-        if(empty($result)){
-            ErrorLog::writeMsg('getById is error');
-            return false;
-        }
+        $result = Api::curl($url, ['mail_id'=>$mail_id, 'method' => 'getById'])
+            or throw new AccountErr('oldSettings is error', 'Ошибка синхронизации настроек');
+
         $result = json_decode($result);
         $MailRuOldUser = new self();
         $MailRuOldUser->bindSelf($result);

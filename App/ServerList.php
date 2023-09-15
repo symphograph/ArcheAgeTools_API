@@ -3,6 +3,7 @@
 namespace App;
 
 use App\User\Server;
+use App\User\ServerGroup;
 use Symphograph\Bicycle\Errors\AppErr;
 use Symphograph\Bicycle\Helpers;
 
@@ -40,6 +41,26 @@ class ServerList
             return $server;
         }
         throw new AppErr("Server $serverId does not exist in SelverList");
+    }
+
+    /**
+     * @return ServerGroup[]
+     */
+    public static function getServerGroups(): array
+    {
+        $Servers = self::getList();
+        $groups = [];
+        foreach ($Servers as $server){
+            $groups[$server->group][] = $server;
+        }
+        $groupList = [];
+        foreach ($groups as $groupId => $group){
+            $ServerGroup = new ServerGroup();
+            $ServerGroup->id = $groupId;
+            $ServerGroup->servers = $group;
+            $groupList[] = $ServerGroup;
+        }
+        return $groupList;
     }
 
 }

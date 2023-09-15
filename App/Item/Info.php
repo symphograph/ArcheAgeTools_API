@@ -67,11 +67,6 @@ class Info
         $this->Category = $Category;
     }
 
-    public function initCrafts()
-    {
-
-    }
-
     public static function byId(int $id) :  self
     {
         $Info = new self($id);

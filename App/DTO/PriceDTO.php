@@ -58,24 +58,4 @@ class PriceDTO extends DTO
         );
     }
 
-    /**
-     * @return self[]
-     */
-    public static function getListSortedBySQL(): array
-    {
-        $qwe = qwe("select * from uacc_prices order by itemId");
-        return $qwe->fetchAll(PDO::FETCH_CLASS);
-    }
-
-    /**
-     * @return self[]
-     */
-    public static function getListSortedByPHP(): array
-    {
-        $qwe = qwe("select * from uacc_prices");
-        $prices = $qwe->fetchAll(PDO::FETCH_CLASS);
-        usort($prices, fn($a,$b)=> $a->itemId <=> $b->itemId);
-        return $prices;
-    }
-
 }

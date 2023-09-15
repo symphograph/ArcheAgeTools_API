@@ -29,10 +29,7 @@ class Server
     public static function byGroup(int $group): array
     {
         $qwe = qwe("select * from servers where `group` = :group", ['group' => $group]);
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_CLASS,self::class);
+        return $qwe->fetchAll(PDO::FETCH_CLASS,self::class) ?? [];
     }
 
     /**

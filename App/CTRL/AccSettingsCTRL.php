@@ -7,6 +7,7 @@ use App\Transfer\User\MailruOldUser;
 use App\Transfer\User\PriceTransfer;
 use App\User\AccSettings;
 use App\User\User;
+use JetBrains\PhpStorm\NoReturn;
 use Symphograph\Bicycle\Api\Response;
 use Symphograph\Bicycle\Errors\AccountErr;
 use Symphograph\Bicycle\Errors\ValidationErr;
@@ -15,13 +16,11 @@ use Symphograph\Bicycle\Token\AccessTokenData;
 
 class AccSettingsCTRL extends AccSettings
 {
-
-    public static function get(): void
+    #[NoReturn] public static function get(): void
     {
         self::tryByJwt();
         self::tryByOld();
         self::byDefault();
-        throw new AccountErr('Settings is miss', 'Настройки не загрузились');
     }
 
     private static function tryByJwt(): void
@@ -54,7 +53,7 @@ class AccSettingsCTRL extends AccSettings
         Response::data($AccSets);
     }
 
-    private static function byDefault(): void
+    #[NoReturn] private static function byDefault(): void
     {
         $AccSets = self::getDefault(AccessTokenData::accountId());
         $AccSets->initData();
