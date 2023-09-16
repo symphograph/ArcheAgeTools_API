@@ -4,10 +4,10 @@ composer.phar
 /vendor/
 /logs/
 /includes/env.php
-/public/img/avatars/
-/public/img/icons/
+/public_html/img/avatars/
+/public_html/img/icons/
 /uploadtmp/
-/public/html_report/
-/public/myreport/
+/public_html/html_report/
+/public_html/myreport/
 /ExternalAssets/
 /tmp/
