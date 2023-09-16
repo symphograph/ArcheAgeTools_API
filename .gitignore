@@ -9,5 +9,6 @@ composer.phar
 /uploadtmp/
 /public_html/html_report/
 /public_html/myreport/
+/public_html/cgi-bin
 /ExternalAssets/
 /tmp/
