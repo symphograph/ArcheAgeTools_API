@@ -2,6 +2,7 @@
 
 namespace App\Craft;
 
+use App\AppStorage;
 use App\DTO\CraftDTO;
 use App\Errors\CraftCountErr;
 use App\Item\Item;
@@ -235,8 +236,9 @@ class Craft extends CraftDTO
         return $qwe->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    public static function getMain(int $resultItemId)
+    public static function getUBest(int $resultItemId): int|false
     {
-
+        $AppStorage = AppStorage::getSelf();
+        return $AppStorage->uBestCrafts[$resultItemId] ?? false;
     }
 }

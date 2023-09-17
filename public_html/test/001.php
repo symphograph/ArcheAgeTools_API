@@ -3,6 +3,8 @@ $start = microtime(true);
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
 use App\Api;
+use App\Craft\AccountCraft;
+use App\Craft\CraftCounter;
 use App\Item\Item;
 use App\Test\Test;
 use App\Transfer\Items\ItemTransLog;
@@ -23,31 +25,10 @@ use Symphograph\Bicycle\SQL\SQLBuilder;
 <?php
 //$List = MailruOldUser::getList();
 //MailRuUserTransfer::importUsers(1000000);
-
-class SomeClass
-{
-    //deep1
-    public static function myFunc1(): void {self::myFunc3();}
-
-    //deep1
-    public static function myFunc2(): void {self::myFunc4();}
-
-    //-------------------------------------------------------
-    //deep2
-    private static function myFunc3(): void{self::myFunc5();}
-
-    //deep2
-    private static function myFunc4(): void{self::myFunc6();}
-
-    //-------------------------------------------------------
-    //deep3
-    private static function myFunc5(){}
-
-    //deep3
-    private static function myFunc6(){}
-}
-
-
+$AccSets = \App\User\AccSettings::byIdAndInit(1057);
+AccountCraft::clearAllCrafts();
+$craftCounter = CraftCounter::recountList([48251]);
+//printr($craftCounter);
 
 echo Test::scriptTime($start);
 //echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';

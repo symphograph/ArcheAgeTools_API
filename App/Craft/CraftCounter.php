@@ -21,20 +21,19 @@ class CraftCounter
 
     public static function clearBuff(): void
     {
+        BufferFirst::clearStorage();
+        BufferSecond::clearStorage();
         BufferFirst::clearDB();
-        BufferSecond::clearDB();
     }
 
     public static function recountList(array $itemIds): self
     {
-        //AccountCraft::clearAllCrafts();
         CraftCounter::clearBuff();
         $craftCounter = new self();
-        //$start = Test::startTime('recountItem');
+
         foreach ($itemIds as $itemId){
             $craftCounter = CraftCounter::recountItem($itemId, $craftCounter);
         }
-        //echo Test::scriptTime($start, 'recountItem');
         CraftCounter::clearBuff();
 
         if (empty($craftCounter->lost)){
@@ -45,7 +44,7 @@ class CraftCounter
         return $craftCounter;
     }
 
-    public static function recountItem(int $itemId, ?self $CraftCounter = null): self
+    private static function recountItem(int $itemId, ?self $CraftCounter = null): self
     {
 
         if(empty($CraftCounter)){
@@ -57,22 +56,17 @@ class CraftCounter
 
         $List = Craft::allPotentialCrafts($itemId);
 
-        //printr($List);
-
         foreach ($List as $resultItemId => $crafts){
             if(in_array($resultItemId, $CraftCounter->countedItems)){
                 continue;
             }
-            $Item = Item::byId($resultItemId);
-            //printr($Item->name);
 
             foreach ($crafts as $craft){
 
                 $matSum = $CraftCounter->matSumCost($craft);
-                $buff = BufferFirst::putToDB($craft->id,$matSum->craftCost, $matSum->sumSPM);
-                if(!$buff){
-                    continue;
-                }
+                //BufferFirst::putToDB($craft->id, $matSum->craftCost, $matSum->sumSPM);
+                BufferFirst::putToStorage($craft, $matSum->craftCost, $matSum->sumSPM);
+
                 $CraftCounter->countedCrafts[] = $craft->id;
             }
             BufferSecond::saveCrafts($resultItemId);
