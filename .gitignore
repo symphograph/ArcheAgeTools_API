@@ -1,4 +1,5 @@
 .idea
+.htaccess
 composer.lock
 composer.phar
 /vendor/
