@@ -5,7 +5,6 @@ namespace App\Craft;
 use App\AppStorage;
 use App\DTO\CraftDTO;
 use App\Errors\CraftCountErr;
-use App\Item\Item;
 use App\User\AccSettings;
 use Symphograph\Bicycle\DB;
 use Symphograph\Bicycle\Errors\AppErr;
@@ -197,10 +196,10 @@ class Craft extends CraftDTO
         $qwe = qwe("
             select * from uacc_crafts 
             where accountId = :accountId
-            and serverGroup = :serverGroup
+            and serverGroupId = :serverGroupId
             and itemId = :resultItemId",
             ['accountId'    => $AccSets->accountId,
-             'serverGroup'  => $AccSets->serverGroup,
+             'serverGroupId'  => $AccSets->serverGroupId,
              'resultItemId' => $resultItemId]
         );
         return boolval($qwe);

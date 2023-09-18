@@ -5,7 +5,6 @@ namespace App;
 use App\User\Server;
 use App\User\ServerGroup;
 use Symphograph\Bicycle\Errors\AppErr;
-use Symphograph\Bicycle\Helpers;
 
 class ServerList
 {
@@ -51,13 +50,14 @@ class ServerList
         $Servers = self::getList();
         $groups = [];
         foreach ($Servers as $server){
-            $groups[$server->group][] = $server;
+            $groups[$server->groupId][] = $server;
         }
         $groupList = [];
         foreach ($groups as $groupId => $group){
             $ServerGroup = new ServerGroup();
             $ServerGroup->id = $groupId;
             $ServerGroup->servers = $group;
+            $ServerGroup->initLabel();
             $groupList[] = $ServerGroup;
         }
         return $groupList;

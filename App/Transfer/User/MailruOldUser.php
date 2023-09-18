@@ -139,7 +139,7 @@ class MailruOldUser extends DTO
         $AccSets->avaFileName = $newUser->avaFilename;
         $AccSets->authType = 'mailru';
         $AccSets->putToDB();
-        $this->importPrices($AccSets->accountId, $this->prices);
+        $this->importPrices($AccSets->accountId);
         return true;
     }
 
@@ -152,8 +152,8 @@ class MailruOldUser extends DTO
         foreach ($this->prices as $price){
             $price = PriceDTO::byBind($price);
             $price->accountId = $accountId;
-            if(empty($price->serverGroup)){
-                $price->serverGroup = 100;
+            if(empty($price->serverGroupId)){
+                $price->serverGroupId = 100;
             }
             if($price->isExistNewerInDB()){
                 Log::msg("NewerPrice for item $price->itemId is exist");

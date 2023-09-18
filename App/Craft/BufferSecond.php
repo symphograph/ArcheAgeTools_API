@@ -48,7 +48,7 @@ class BufferSecond
         foreach ($firstBuffer as $k => $buffCraft){
             $AccCraft = AccountCraft::byParams(
                 $AccSets->accountId,
-                $AccSets->serverGroup,
+                $AccSets->serverGroupId,
                 $buffCraft->craftId,
                 $buffCraft->resultItemId,
                 intval($k === 0),

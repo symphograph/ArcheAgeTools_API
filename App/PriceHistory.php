@@ -6,7 +6,7 @@ use PDO;
 class PriceHistory
 {
     public int    $accountId;
-    public int    $serverGroup;
+    public int    $serverGroupId;
     public int    $itemId;
     public int    $price;
     public string $updatedAt;

@@ -5,15 +5,12 @@ namespace App\User;
 class ServerGroup
 {
     public int $id;
+    public string $label;
     public array $servers;
 
-    public static function byId(int $serverGroupId)
+    public function initLabel(): void
     {
-        $qwe = qwe("
-            select * from servers 
-            where `group` = :serverGroupId",
-            ['serverGroupId' => $serverGroupId]
-        );
-
+        $names = array_column($this->servers, 'name');
+        $this->label = implode('|',$names);
     }
 }

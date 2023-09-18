@@ -6,10 +6,8 @@ use App\Craft\LaborData;
 use App\DTO\AccSettingsDTO;
 use App\Item\Price;
 use App\Transfer\User\MailruOldUser;
-use App\Transfer\User\PriceTransfer;
 use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AccountErr;
-use Symphograph\Bicycle\Errors\AppErr;
 use Symphograph\Bicycle\Logs\Log;
 use Symphograph\Bicycle\Token\AccessTokenData;
 
@@ -22,7 +20,6 @@ class AccSettings extends AccSettingsDTO
      */
     public ?array $Profs;
     public ?int $laborCost;
-    public int    $serverGroup = 100;
 
 
     //Get-----------------------------------------------------------
@@ -36,9 +33,7 @@ class AccSettings extends AccSettingsDTO
     public static function byJwt(): self|false
     {
         $accountId = AccessTokenData::accountId();
-        $AccSettings = AccSettings::byIdAndInit($accountId);
-            //or throw new AccountErr('AccSettings is empty', 'Настройки не загрузились');
-        return $AccSettings;
+        return AccSettings::byIdAndInit($accountId);
     }
 
     public static function byGlobal(): self
@@ -81,7 +76,7 @@ class AccSettings extends AccSettingsDTO
         $AccSets->mode = $OldUser->mode;
         $AccSets->publicNick = $OldUser->user_nick ?? self::genNickName();
         $AccSets->old_id = $OldUser->mail_id;
-        $AccSets->serverId = $OldUser->server_id;
+        $AccSets->serverGroupId = Server::getGroupId($OldUser->server_id);
         $AccSets->authType = 'mailru';
         return $AccSets;
     }
@@ -90,7 +85,6 @@ class AccSettings extends AccSettingsDTO
     public function initData(): void
     {
         global $AccSets;
-        self::initServerGroup();
         if(!empty($AccSets)){
             self::initLaborCost();
         }
@@ -114,11 +108,6 @@ class AccSettings extends AccSettingsDTO
         }
         $qwe = qwe("select * from old_mailusers where lower(user_nick) = lower(:nick)", ['nick' => $nick]);
         return ($qwe && $qwe->rowCount());
-    }
-
-    public function initServerGroup(): void
-    {
-        $this->serverGroup = Server::getGroupId($this->serverId);
     }
 
     public function initLaborCost(): void

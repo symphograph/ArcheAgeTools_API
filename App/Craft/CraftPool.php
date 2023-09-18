@@ -31,14 +31,14 @@ class CraftPool
             select pool 
             from uacc_CraftPool
             where accountId = :accountId 
-              and serverGroup = :serverGroup
+              and serverGroupId = :serverGroupId
               and itemId = :itemId",
-        ['accountId'=>$AccSets->accountId, 'serverGroup' => $AccSets->serverGroup, 'itemId' => $resultItemId]
+        ['accountId' =>$AccSets->accountId, 'serverGroupId' => $AccSets->serverGroupId, 'itemId' => $resultItemId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
         }
-        $q = $qwe->fetchColumn(0);
+        $q = $qwe->fetchColumn();
         return json_decode($q,4);
     }
 
@@ -48,16 +48,16 @@ class CraftPool
         self::initMatPools();
     }
 
-    private function putToDB(): bool
+    private function putToDB(): void
     {
         $AccSets = AccSettings::byGlobal();
         $params = [
             'accountId' => $AccSets->accountId,
-            'serverGroup' => $AccSets->serverGroup,
+            'serverGroupId' => $AccSets->serverGroupId,
             'itemId' => $this->mainCraft->resultItemId,
             'pool' => json_encode($this, JSON_FORCE_OBJECT)
         ];
-        return DB::replace('uacc_CraftPool', $params);
+        DB::replace('uacc_CraftPool', $params);
     }
 
     public static function getPool(int $resultItemId): self

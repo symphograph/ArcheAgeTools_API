@@ -7,16 +7,15 @@ use Symphograph\Bicycle\Errors\AppErr;
 use Symphograph\Bicycle\Errors\ValidationErr;
 
 $AccSets = AccSettings::byJwt();
-$serverId = $_POST['serverId'] ?? throw new ValidationErr('invalid serverId', 'Сервер не найден');
-$ServerGroup = Server::getGroupId($serverId)
-    or throw new ValidationErr('invalid serverId', 'Сервер не найден');
+$serverGroupId = $_POST['serverGroupId'] ?? throw new ValidationErr('invalid serverId', 'Сервер не найден');
 
-$List = Member::getList($AccSets->accountId, $ServerGroup)
+
+$List = Member::getList($AccSets->accountId, $serverGroupId)
     or throw new AppErr('members not found');
 
 $Members = [];
 foreach ($List as $member){
-    if(!$member->initLastPricedItem($ServerGroup)){
+    if(!$member->initLastPricedItem($serverGroupId)){
         continue;
     }
     $Members[] = $member;

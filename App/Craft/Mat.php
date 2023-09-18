@@ -128,12 +128,12 @@ class Mat extends MatDTO
                    left join uacc_CraftPool uCP 
                        on items.id = uCP.itemId
                         and uCP.accountId = :accountId
-                        and uCP.serverGroup = :serverGroup
+                        and uCP.serverGroupId = :serverGroupId
                 where resultItemId = :itemId
                 and uCP.itemId is null",
             [
                 'accountId'=> $AccSets->accountId,
-                'serverGroup'=>$AccSets->serverGroup,
+                'serverGroupId'=>$AccSets->serverGroupId,
                 'itemId'=>$itemId
             ]
 

@@ -10,17 +10,17 @@ use Symphograph\Bicycle\DB;
 
 class AccountCraft
 {
-    public ?int    $accountId;
-    public ?int    $serverGroup;
-    public ?int    $craftId;
-    public ?int    $itemId;
-    public ?bool   $isBest;
-    public ?bool   $isUBest;
-    public ?int    $craftCost;
-    public ?string $datetime;
-    public ?int    $spmu;
-    public ?string $allMats;
-    public ?LaborData $LaborData;
+    public ?int           $accountId;
+    public ?int           $serverGroupId;
+    public ?int           $craftId;
+    public ?int           $itemId;
+    public ?bool          $isBest;
+    public ?bool          $isUBest;
+    public ?int           $craftCost;
+    public ?string        $datetime;
+    public ?int           $spmu;
+    public ?string        $allMats;
+    public ?LaborData     $LaborData;
     public float|int|null $laborTotal;
 
     public function __set(string $name, $value): void
@@ -40,11 +40,11 @@ class AccountCraft
                 on uc.accountId = ubC.accountId
                 and ubC.craftId = uc.craftId
             where uc.accountId = :accountId
-                and serverGroup = :serverGroup
+                and serverGroupId = :serverGroupId
                 and uc.craftId = :craftId",
             [
                 'accountId'   => $AccSets->accountId,
-                'serverGroup' => $AccSets->serverGroup,
+                'serverGroupId' => $AccSets->serverGroupId,
                 'craftId'     => $craftId
             ]
         );
@@ -56,7 +56,7 @@ class AccountCraft
 
     public static function byParams(
         int            $accountId,
-        int            $serverGroup,
+        int            $serverGroupId,
         int            $craftId,
         int            $itemId,
         int            $isBest,
@@ -69,7 +69,7 @@ class AccountCraft
     {
         $Craft = new self();
         $Craft->accountId = $accountId;
-        $Craft->serverGroup = $serverGroup;
+        $Craft->serverGroupId = $serverGroupId;
         $Craft->craftId = $craftId;
         $Craft->itemId = $itemId;
         $Craft->isBest = $isBest;
@@ -86,7 +86,7 @@ class AccountCraft
     {
         $params = [
             'accountId'   => $this->accountId,
-            'serverGroup' => $this->serverGroup,
+            'serverGroupId' => $this->serverGroupId,
             'craftId'     => $this->craftId,
             'itemId'      => $this->itemId,
             'isBest'      => intval($this->isBest),
@@ -99,51 +99,33 @@ class AccountCraft
         return DB::replace('uacc_crafts', $params);
     }
 
-    public static function getCompletedArr(): array
-    {
-        $AccSets = AccSettings::byGlobal();
-
-        $qwe = qwe("
-            select itemId
-            from uacc_crafts 
-            where accountId = :accountId
-            and serverGroup = :serverGroup",
-        ['accountId'=>$AccSets->accountId, 'serverGroup'=>$AccSets->serverGroup]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN);
-    }
-
     public static function clearAllCrafts(): void
     {
         $AccSets = AccSettings::byGlobal();
         qwe("
             delete from uacc_crafts 
             where accountId = :accountId 
-            and serverGroup = :serverGroup",
-        ['accountId'=>$AccSets->accountId, 'serverGroup'=>$AccSets->serverGroup]
+            and serverGroupId = :serverGroupId",
+            ['accountId'=>$AccSets->accountId, 'serverGroupId'=>$AccSets->serverGroupId]
         );
         qwe("
             delete from uacc_CraftPool
             where accountId = :accountId
-                and serverGroup = :serverGroup",
-            ['accountId'=>$AccSets->accountId, 'serverGroup'=>$AccSets->serverGroup]
+                and serverGroupId = :serverGroupId",
+            ['accountId'=>$AccSets->accountId, 'serverGroupId'=>$AccSets->serverGroupId]
         );
     }
 
-    public static function setUBest(int $accountId, int $craftId): bool
+    public static function setUBest(int $accountId, int $craftId): void
     {
         $craft = CraftDTO::byId($craftId);
-        $qwe = qwe("
+        qwe("
             replace into uacc_bestCrafts 
                 (accountId, itemId, craftId) 
             VALUES 
                 (:accountId, :itemId, :craftId)",
             ['accountId'=> $accountId, 'itemId' => $craft->resultItemId, 'craftId'=>$craftId]
-        );
-        return boolval($qwe);
+        ) or throw new AppErr('error on Replace uBestCraft', 'Не сохранилось');
     }
 
     public static function delUBest(int $accountId, int $craftId): bool
@@ -175,10 +157,10 @@ class AccountCraft
                 and uc.accountId = ubC.accountId
             where uc.itemId = :itemId 
                 and uc.accountId = :accountId
-                and serverGroup = :serverGroup
+                and serverGroupId = :serverGroupId
             order by isUBest desc, isBest desc, spmu, craftCost
             limit 1",
-            ['itemId'=>$resultItemId, 'accountId'=>$AccSets->accountId, 'serverGroup' => $AccSets->serverGroup]
+            ['itemId'=>$resultItemId, 'accountId'=>$AccSets->accountId, 'serverGroupId' => $AccSets->serverGroupId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;

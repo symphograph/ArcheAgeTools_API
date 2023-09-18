@@ -11,7 +11,7 @@ $AccSets = AccSettings::byJwt();
 $itemId = intval($_POST['itemId'] ?? 0)
 or throw new ValidationErr('itemId', 'Ошибка данных');
 
-Price::delFromDB($AccSets->accountId, $itemId, $AccSets->serverGroup);
+Price::delFromDB($AccSets->accountId, $itemId, $AccSets->serverGroupId);
 AccountCraft::clearAllCrafts();
 
 Response::success();

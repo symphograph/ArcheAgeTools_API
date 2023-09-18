@@ -47,11 +47,11 @@ class PackIds
                 left join uacc_crafts uC 
                     on i.id = uC.itemId
                     and uC.accountId = :accountId
-                    and uC.serverGroup = :serverGroup
+                    and uC.serverGroupId = :serverGroupId
                     and isBest
             ) as tmp
             where itemId is null",
-            ['side'=>$side, 'accountId'=> $AccSets->accountId, 'serverGroup' => $AccSets->serverGroup]
+            ['side'=>$side, 'accountId'=> $AccSets->accountId, 'serverGroupId' => $AccSets->serverGroupId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return [];

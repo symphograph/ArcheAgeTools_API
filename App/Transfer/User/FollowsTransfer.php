@@ -6,6 +6,7 @@ use App\ServerList;
 use App\User\AccSettings;
 use App\User\Member;
 use Symphograph\Bicycle\Logs\ErrorLog;
+use Throwable;
 
 
 class FollowsTransfer
@@ -14,23 +15,13 @@ class FollowsTransfer
     {
 
         foreach ($masters as $master){
-           //Member::setFollow($accountId, $master, $serverGroup);
             $masterAccSets = AccSettings::byOldId($master);
             try{
                 Member::setFollow($accountId, $masterAccSets->accountId, $serverGroup);
-            } catch (\Throwable $err) {
+            } catch (Throwable $err) {
                 ErrorLog::writeToLog($err);
-                //Response::data([$accountId, $master, $serverGroup]);
             }
 
-        }
-    }
-
-    public static function toAllServerGroups(int $accountId, array $masters): void
-    {
-        $Servers = ServerList::getList();
-        foreach ($Servers as $server){
-            self::import($accountId, $masters, $server->group);
         }
     }
 }

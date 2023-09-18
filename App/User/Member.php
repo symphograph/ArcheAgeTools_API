@@ -11,7 +11,7 @@ use PDO;
 class Member
 {
     public int $accountId;
-    public int $serverGroup;
+    public int $serverGroupId;
     public ?bool $isFollow;
     public ?int $pricesCount;
     public ?int $followersCount;
@@ -50,8 +50,8 @@ class Member
     {
         $qwe = qwe("
             select master from uacc_follows 
-              where follower = :follower and serverGroup = :serverGroup",
-            ['follower' => $this->accountId, 'serverGroup' => $serverGroup]
+              where follower = :follower and serverGroupId = :serverGroupId",
+            ['follower' => $this->accountId, 'serverGroupId' => $serverGroup]
         );
         if(!$qwe || !$qwe->rowCount()){
             return;
@@ -62,11 +62,11 @@ class Member
     /**
      * @return array<self>
      */
-    public static function getList(int $accountId, int $serverGroup): array
+    public static function getList(int $accountId, int $serverGroupId): array
     {
         $privateItemsStr = DB::implodeIntIn(Item::privateItems());
-        //$serverGroup = 100;
-        if($serverGroup === 100){
+        //$serverGroupId = 100;
+        if($serverGroupId === 100){
             throw new AppErr('Server not defined', 'Сервер не выбран');
         }
         $qwe = qwe("
@@ -81,13 +81,13 @@ class Member
             from
             (
                 select accountId, 
-                       serverGroup,
+                       serverGroupId,
                        COUNT(*) as pricesCount, 
                        max(updatedAt) as lastPriceTime
                 from uacc_prices
-                where serverGroup = :serverGroup
+                where serverGroupId = :serverGroupId
                 and itemId not in $privateItemsStr
-                group by accountId, serverGroup
+                group by accountId, serverGroupId
                 order by lastPriceTime desc
             ) as tmp
             inner join uacc_settings sets 
@@ -96,19 +96,19 @@ class Member
             left join uacc_follows uf
                 on uf.master = sets.accountId
                 and uf.follower = :accountId
-                and uf.serverGroup = tmp.serverGroup
+                and uf.serverGroupId = tmp.serverGroupId
             left join
             (
                 select count(*) as flws, 
-                       serverGroup,
+                       serverGroupId,
                        max(uf.follower) as follower, 
                        max(uf.master) as master
                 from uacc_follows uf
-                /*where serverGroup = tmp.serverGroup*/
-                group by uf.master, serverGroup
+                /*where serverGroupId = tmp.serverGroupId*/
+                group by uf.master, serverGroupId
             ) as flwt
             ON sets.accountId = flwt.master
-            and tmp.serverGroup  = flwt.serverGroup
+            and tmp.serverGroupId  = flwt.serverGroupId
             order by isFollow desc, 
                      YEAR(lastPriceTime) desc, 
                      MONTH(lastPriceTime) desc, 
@@ -116,41 +116,41 @@ class Member
                      (pricesCount>50) desc, 
                      lastPriceTime desc
             LIMIT 100
-        ", ['serverGroup' => $serverGroup,
+        ", ['serverGroupId' => $serverGroupId,
             'accountId'    => $accountId,
             /*'serverGroup3' => $serverGroup*/]
         );
 
         $list = $qwe->fetchAll(PDO::FETCH_CLASS,self::class)
-            or throw new AppErr('memberList is empty', 'Нет данных');;
+            or throw new AppErr('memberList is empty', 'Нет данных');
         return $list;
     }
 
-    public static function setFollow(int $follower, int $master, int $serverGroup): void
+    public static function setFollow(int $follower, int $master, int $serverGroupId): void
     {
         $params = [
             'follower'    => $follower,
             'master'      => $master,
-            'serverGroup' => $serverGroup
+            'serverGroupId' => $serverGroupId
         ];
         DB::replace('uacc_follows', $params);
 
     }
 
-    public static function unsetFollow(int $follower, int $master, int $serverGroup): void
+    public static function unsetFollow(int $follower, int $master, int $serverGroupId): void
     {
         qwe("
             delete from uacc_follows 
             where follower = :follower
                 and master = :master
-                and serverGroup = :serverGroup",
-            ['follower' => $follower, 'master' => $master, 'serverGroup'=> $serverGroup]
+                and serverGroupId = :serverGroupId",
+            ['follower' => $follower, 'master' => $master, 'serverGroupId'=> $serverGroupId]
         ) or throw new AppErr('unsetFollow err', 'Ошибка при сохранении');
     }
 
-    public function initLastPricedItem(int $serverGroup): bool
+    public function initLastPricedItem(int $serverGroupId): bool
     {
-        $Price = Price::getLastMemberPrice($this->accountId, $serverGroup);
+        $Price = Price::getLastMemberPrice($this->accountId, $serverGroupId);
         if(!$Price){
             return false;
         }
@@ -170,11 +170,11 @@ class Member
             select * from uacc_follows 
             where follower = :follower
                 and master = :master
-                and serverGroup = :serverGroup",
+                and serverGroupId = :serverGroupId",
             [
                 'follower'    => $AccSets->accountId,
                 'master'      => $this->accountId,
-                'serverGroup' => $AccSets->serverGroup
+                'serverGroupId' => $AccSets->serverGroupId
             ]
         );
         if(!$qwe || !$qwe->rowCount()){

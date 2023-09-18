@@ -4,7 +4,6 @@ namespace App\Item;
 
 use App\Craft\{AccountCraft, BufferSecond};
 use App\DTO\PriceDTO;
-use App\Transfer\Errors\CraftErr;
 use App\User\AccSettings;
 use App\User\Member;
 use Symphograph\Bicycle\Env\Env;
@@ -15,9 +14,9 @@ class Price extends PriceDTO
 {
     public int     $accountId   = 1;
     public int     $itemId      = 0;
-    public int     $price       = 0;
-    public int     $serverGroup = 0;
-    public string  $updatedAt   = '';
+    public int    $price         = 0;
+    public int    $serverGroupId = 0;
+    public string $updatedAt     = '';
     public string  $method      = 'empty';
     public ?string $label;
     public ?string $name;
@@ -40,7 +39,7 @@ class Price extends PriceDTO
         int     $itemId,
         int     $accountId = 1,
         int     $price = 0,
-        int     $serverGroup = 100,
+        int     $serverGroupId = 100,
         string  $updatedAt = '',
         string  $method = '',
         ?string $label = null,
@@ -113,15 +112,15 @@ class Price extends PriceDTO
     private static function byAny(int $itemId)
     {
         $AccSets = AccSettings::byGlobal();
-        if($AccSets->serverId === 9){
+        if($AccSets->serverGroupId === 100){
             return self::byAnyServer($itemId);
         }
         $qwe = qwe("select * from uacc_prices
             where itemId = :itemId
-            and serverGroup = :serverGroup
+            and serverGroupId = :serverGroupId
             order by updatedAt desc 
             limit 1",
-        ['itemId'=>$itemId, 'serverGroup'=> $AccSets->serverGroup]
+        ['itemId'=>$itemId, 'serverGroupId'=> $AccSets->serverGroupId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -150,7 +149,7 @@ class Price extends PriceDTO
     private static function bySolo(int $itemId): self|bool
     {
         $AccSets = AccSettings::byGlobal();
-        if($Price = self::byAccount($itemId, $AccSets->accountId, $AccSets->serverGroup)){
+        if($Price = self::byAccount($itemId, $AccSets->accountId, $AccSets->serverGroupId)){
             $Price->method = 'bySolo';
             return $Price;
         }
@@ -161,7 +160,7 @@ class Price extends PriceDTO
     private static function byFriends(int $itemId) : self|bool
     {
         $AccSets = AccSettings::byGlobal();
-        $Member = Member::byId($AccSets->accountId, $AccSets->serverGroup);
+        $Member = Member::byId($AccSets->accountId, $AccSets->serverGroupId);
 
         $members = $Member->getFollowMasters();
         if(empty($members)){
@@ -169,7 +168,7 @@ class Price extends PriceDTO
         }
         $members[] = $AccSets->accountId;
 
-        $Price = self::byMemberList($itemId, $AccSets->serverGroup, $members);
+        $Price = self::byMemberList($itemId, $AccSets->serverGroupId, $members);
         if(!$Price){
             return false;
         }
@@ -185,10 +184,10 @@ class Price extends PriceDTO
     {
         $AccSets = AccSettings::byGlobal();
 
-        $Member = Member::byId(Env::getAdminAccountId(), $AccSets->serverGroup);
+        $Member = Member::byId(Env::getAdminAccountId(), $AccSets->serverGroupId);
         $members = $Member->getFollowMasters();
         $members[] = $Member->accountId;
-        $Price = self::byMemberList($itemId, $AccSets->serverGroup, $members);
+        $Price = self::byMemberList($itemId, $AccSets->serverGroupId, $members);
         if(!$Price){
             return false;
         }
@@ -196,7 +195,7 @@ class Price extends PriceDTO
         return $Price;
     }
 
-    private static function byMemberList(int $itemId, int $serverGroup, array $members)
+    private static function byMemberList(int $itemId, int $serverGroupId, array $members)
     {
         $stringMembers = implode(',', $members);
         $qwe = qwe("
@@ -204,10 +203,10 @@ class Price extends PriceDTO
             from uacc_prices
             where uacc_prices.accountId in ( $stringMembers )
             and itemId = :itemId
-            and serverGroup = :serverGroup
+            and serverGroupId = :serverGroupId
             order by updatedAt desc 
             limit 1",
-            ['itemId'=>$itemId, 'serverGroup'=>$serverGroup]
+            ['itemId'=>$itemId, 'serverGroupId'=>$serverGroupId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return false;
@@ -221,10 +220,10 @@ class Price extends PriceDTO
             select * from uacc_prices 
             where accountId = :accountId 
                 and itemId = :itemId 
-                and serverGroup = :serverGroup",
+                and serverGroupId = :serverGroupId",
             ['accountId'  => $accountId,
              'itemId'     => $itemId,
-             'serverGroup' => $serverGroup]
+             'serverGroupId' => $serverGroup]
         );
         if (!$qwe || !$qwe->rowCount()){
             return false;
@@ -258,27 +257,27 @@ class Price extends PriceDTO
         return false;
     }
 
-    public static function byInput(int $accountId, int $itemId, int $serverGroup, int $price): self|bool
+    public static function byInput(int $accountId, int $itemId, int $serverGroupId, int $price): self|bool
     {
         $Price = new self();
         $Price->accountId = $accountId;
         $Price->itemId = $itemId;
-        $Price->serverGroup = $serverGroup;
+        $Price->serverGroupId = $serverGroupId;
         $Price->price = $price;
         return $Price;
     }
 
-    public static function getLastMemberPrice(int $accountId, int $serverGroup = 0): self|false
+    public static function getLastMemberPrice(int $accountId, int $serverGroupId = 0): self|false
     {
         $privateItemsStr = '(' . implode(',', Item::privateItems()) . ')';
-        if($serverGroup){
+        if($serverGroupId){
             $sql = "select * from uacc_prices 
                     where accountId = :accountId
-                    and serverGroup = :serverGroup
+                    and serverGroupId = :serverGroupId
                     and itemId not in $privateItemsStr
                     order by updatedAt desc 
                     limit 1";
-            $params = ['accountId'=> $accountId, 'serverGroup'=> $serverGroup];
+            $params = ['accountId'=> $accountId, 'serverGroupId'=> $serverGroupId];
         }else{
             $sql = "select * from uacc_prices 
                     where accountId = :accountId
@@ -299,7 +298,7 @@ class Price extends PriceDTO
     /**
      * @return array<self>
      */
-    public static function memberPriceList(int $accountId, int $serverGroup): array
+    public static function memberPriceList(int $accountId, int $serverGroupId): array
     {
         $qwe = qwe("
             select up.*, 
@@ -314,8 +313,8 @@ class Price extends PriceDTO
             left join uacc_buyOnly ubO on items.id = ubO.itemId
             and ubO.accountId = up.accountId
              where up.accountId = :accountId 
-               and serverGroup = :serverGroup",
-            ['accountId' => $accountId, 'serverGroup' => $serverGroup]
+               and serverGroupId = :serverGroupId",
+            ['accountId' => $accountId, 'serverGroupId' => $serverGroupId]
         );
         if(!$qwe || !$qwe->rowCount()){
             return [];
@@ -331,7 +330,7 @@ class Price extends PriceDTO
 
         $qwe = qwe("select * from basedItems");
         $qwe = $qwe->fetchAll(PDO::FETCH_COLUMN)
-        or throw new AppErr('basedList is empty', 'Предметы не найдены');;
+        or throw new AppErr('basedList is empty', 'Предметы не найдены');
         $List = [];
         foreach ($qwe as $id){
             $price = self::bySaved($id);
@@ -448,9 +447,9 @@ class Price extends PriceDTO
         $this->author = $AuthorAccSets->publicNick;
     }
 
-    public static function delFromDB(int $accountId, int $itemId, int $serverGroup): void
+    public static function delFromDB(int $accountId, int $itemId, int $serverGroupId): void
     {
-        parent::del($accountId, $itemId, $serverGroup);
+        parent::del($accountId, $itemId, $serverGroupId);
     }
 
 }

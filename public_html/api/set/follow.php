@@ -8,24 +8,21 @@ use Symphograph\Bicycle\Errors\ValidationErr;
 
 $AccSets = AccSettings::byJwt();
 
-$master = intval($_POST['master'] ?? 0)
-or throw new ValidationErr('master', 'Ошибка данных');
+$master = $_POST['master']
+    ?? throw new ValidationErr('master');
 
-$serverId = intval($_POST['serverId'] ?? 0)
-or throw new ValidationErr('serverId', 'Ошибка данных');
-
-$Server = Server::byId($serverId)
-or throw new ValidationErr('server not found', 'Сервер не указан');
+$serverGroupId = $_POST['serverGroupId']
+    ?? throw new ValidationErr('serverGroupId');
 
 $isFollow = ($_POST['isFollow'] ?? null);
 if($isFollow === null){
-    throw new ValidationErr('isFollow', 'Ошибка данных');
+    throw new ValidationErr('isFollow');
 }
 
 if($isFollow){
-    Member::setFollow($AccSets->accountId, $master, $Server->group);
+    Member::setFollow($AccSets->accountId, $master, $serverGroupId);
 }else{
-    Member::unsetFollow($AccSets->accountId, $master, $Server->group);
+    Member::unsetFollow($AccSets->accountId, $master, $serverGroupId);
 }
 AccountCraft::clearAllCrafts();
 Response::success();

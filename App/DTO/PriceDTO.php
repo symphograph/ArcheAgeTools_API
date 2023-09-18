@@ -3,14 +3,13 @@
 namespace App\DTO;
 
 use App\Item\PriceLog;
-use PDO;
 use Symphograph\Bicycle\DB;
 
 class PriceDTO extends DTO
 {
     const tableName = 'uacc_prices';
     public int $accountId;
-    public int $serverGroup;
+    public int $serverGroupId;
     public int $itemId;
     public int $price;
     public string $updatedAt;
@@ -35,11 +34,11 @@ class PriceDTO extends DTO
             select * 
             from uacc_prices 
             where accountId = :accountId
-            and serverGroup = :serverGroup
+            and serverGroupId = :serverGroupId
             and itemId = :itemId
             and updatedAt >= :updatedAt", [
                 'accountId'   => $this->accountId,
-                'serverGroup' => $this->serverGroup,
+                'serverGroupId' => $this->serverGroupId,
                 'itemId'      => $this->itemId,
                 'updatedAt'    => $this->updatedAt
             ]
@@ -53,8 +52,8 @@ class PriceDTO extends DTO
             delete from uacc_prices 
                    where accountId = :accountId 
                      and itemId = :itemId 
-                     and serverGroup = :serverGroup",
-            ['accountId' => $accountId, 'itemId' => $itemId, 'serverGroup' => $serverGroup]
+                     and serverGroupId = :serverGroupId",
+            ['accountId' => $accountId, 'itemId' => $itemId, 'serverGroupId' => $serverGroup]
         );
     }
 
