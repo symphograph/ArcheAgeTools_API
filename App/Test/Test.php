@@ -94,5 +94,6 @@ class Test
     public function sortFunction2(): void
     {
         $qwe = qwe("select id, name, categId from items order by categId, name");
+        //$qwe = $qwe->fetchAll();
     }
 }
