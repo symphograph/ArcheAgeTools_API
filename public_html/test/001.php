@@ -27,18 +27,12 @@ use Symphograph\Bicycle\SQL\SQLBuilder;
 //MailRuUserTransfer::importUsers(1000000);
 
 $AccSets = \App\User\AccSettings::byIdAndInit(1057);
-AccountCraft::clearAllCrafts();
-$craftCounter = CraftCounter::recountList([48251]);
 
-/*
 $Test = new App\Test\Test();
-$qwe = qwe("select id, name, categId from items");
-$list = $qwe->fetchAll();
-echo 'TestMedian: ' . $Test->speedTestTime('sortFunction2', 100, $list);
-*/
-//printr($craftCounter);
+echo 'TestMedian: ' . $Test->speedTestTime('craftCount', 10, 48251);
 
 echo Test::scriptTime($start);
+
 //echo '<br>Время выполнения скрипта: ' . round(microtime(true) - $start, 4) . ' сек.';
 ?>
 </body>

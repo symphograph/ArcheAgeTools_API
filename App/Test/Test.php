@@ -4,7 +4,7 @@ namespace App\Test;
 
 use App\Api;
 use Symphograph\Bicycle\Errors\AppErr;
-use App\Craft\{Craft, CraftCounter};
+use App\Craft\{AccountCraft, Craft, CraftCounter};
 use App\Item\{Item,Pricing};
 use App\Packs\{Pack, PackIds};
 use Symphograph\Bicycle\Helpers;
@@ -95,5 +95,11 @@ class Test
     {
         $qwe = qwe("select id, name, categId from items order by categId, name");
         //$qwe = $qwe->fetchAll();
+    }
+
+    public function craftCount(int $itemId): void
+    {
+        AccountCraft::clearAllCrafts();
+        $craftCounter = CraftCounter::recountList([$itemId]);
     }
 }
