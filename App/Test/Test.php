@@ -91,9 +91,16 @@ class Test
         $list = Helpers::sortMultiArrayByProp($list, $sort);
     }
 
-    public function sortFunction2(): void
+    public function sqlBenchMark(): void
     {
-        $qwe = qwe("select id, name, categId from items order by categId, name");
+        $qwe = qwe("
+            select crafts.* from crafts 
+            inner join items
+            on crafts.resultItemId = items.id
+            and items.onOff
+            and crafts.onOff
+            order by categId, name"
+        );
         //$qwe = $qwe->fetchAll();
     }
 

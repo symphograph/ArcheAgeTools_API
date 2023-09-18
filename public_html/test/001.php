@@ -29,7 +29,7 @@ use Symphograph\Bicycle\SQL\SQLBuilder;
 $AccSets = \App\User\AccSettings::byIdAndInit(1057);
 
 $Test = new App\Test\Test();
-echo 'TestMedian: ' . $Test->speedTestTime('craftCount', 10, 48251);
+echo 'TestMedian: ' . $Test->speedTestTime('sqlBenchMark', 100);
 
 echo Test::scriptTime($start);
 
