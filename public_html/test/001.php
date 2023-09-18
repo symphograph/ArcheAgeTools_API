@@ -25,12 +25,16 @@ use Symphograph\Bicycle\SQL\SQLBuilder;
 <?php
 //$List = MailruOldUser::getList();
 //MailRuUserTransfer::importUsers(1000000);
-
+/*
 $AccSets = \App\User\AccSettings::byIdAndInit(1057);
 AccountCraft::clearAllCrafts();
 $craftCounter = CraftCounter::recountList([48251]);
+*/
 
-
+$Test = new App\Test\Test();
+$qwe = qwe("select id, name, categId from items");
+$list = $qwe->fetchAll();
+echo 'TestMedian: ' . $Test->speedTestTime('sortFunction', 100, $list);
 
 //printr($craftCounter);
 
