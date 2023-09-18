@@ -19,11 +19,10 @@ class CraftCounter
     public array $countedCrafts = [];
 
 
-    public static function clearBuff(): void
+    private static function clearBuff(): void
     {
         BufferFirst::clearStorage();
         BufferSecond::clearStorage();
-        BufferFirst::clearDB();
     }
 
     public static function recountList(array $itemIds): self
@@ -62,14 +61,11 @@ class CraftCounter
             }
 
             foreach ($crafts as $craft){
-
                 $matSum = $CraftCounter->matSumCost($craft);
-                //BufferFirst::putToDB($craft->id, $matSum->craftCost, $matSum->sumSPM);
                 BufferFirst::putToStorage($craft, $matSum->craftCost, $matSum->sumSPM);
-
                 $CraftCounter->countedCrafts[] = $craft->id;
             }
-            BufferSecond::saveCrafts($resultItemId);
+            BufferSecond::saveCrafts();
             $CraftCounter->countedItems[] = $resultItemId;
         }
         $CraftCounter->countedCrafts = array_unique($CraftCounter->countedCrafts);

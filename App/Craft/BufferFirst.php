@@ -6,9 +6,16 @@ use App\AppStorage;
 use App\DTO\CraftDTO;
 use App\User\AccSettings;
 use PDO;
+use Symphograph\Bicycle\Helpers;
 
 class BufferFirst
 {
+    const sortArgs = [
+        'isUBest' => 'desc',
+        'spmu' => 'asc',
+        'craftCost' => 'asc',
+        'resultAmount' => 'desc'
+    ];
     public int $accountId;
     public int $craftId;
     public int $craftCost;
@@ -69,6 +76,7 @@ class BufferFirst
         $bufferFirst->spm = $craft->spm;
         $bufferFirst->resultItemId = $craft->resultItemId;
         $bufferFirst->deep = $craft->deep;
+        $bufferFirst->resultAmount = $craft->resultAmount;
         $bufferFirst->isUBest = Craft::getUBest($craft->resultItemId) === $craft->id;
         $bufferFirst->initSPMU();
         AppStorage::getSelf()->CraftsFirst[] = $bufferFirst;
@@ -80,8 +88,6 @@ class BufferFirst
         $spmu = sqrt($kry);
         $this->spmu = round($spmu);
     }
-
-
 
     private function getKRY(): int
     {
@@ -98,61 +104,19 @@ class BufferFirst
         return abs($kry);
     }
 
-
     /**
      * @return array<self>|false
      */
-    public static function getCounted(int $resultItemId): array|false
+    public static function getCounted(): array|false
     {
-        /*
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
-            select  * , 
-                    ROUND(if(tmp.kry>0,SQRT(tmp.kry),SQRT(tmp.kry*-1)*-1)) as spmu
-            from(
-                select 
-                    items.id as resultItemId,
-                    items.name as itemName,
-                    items.categId,
-                    crafts.id as craftId,
-                    doods.name as doodName,
-                    crafts.resultAmount,
-                    cb.craftCost,
-                    ((crafts.spm+cb.matSPM)*(if(bo.itemId,0,1))) as spm,
-                    ROUND(SQRT((crafts.spm+cb.matSPM)))*(if(bo.itemId,0,1))*cb.craftCost+cb.craftCost as kry,
-                    crafts.deep,
-                    if(ubC.craftId, 1, 0) as isUBest,
-                    cb.matSPM
-                from crafts
-                inner join craftBuffer cb
-                    on cb.craftId = crafts.id
-                    and crafts.resultItemId = :resultItemId
-                    and cb.accountId = :accountId
-                inner join items 
-                    on items.id = crafts.resultItemId
-                left join uacc_bestCrafts ubC 
-                    on ubC.accountId = cb.accountId
-                    and ubC.craftId = cb.craftId
-                left join uacc_buyOnly bo
-                    on bo.accountId = cb.accountId
-                    and bo.itemId = items.id
-                left join doods
-                    on doods.id = crafts.doodId
-            ) as tmp
-            order by isUBest desc , deep desc , resultItemId, spmu, craftCost, resultAmount desc",
-        ['resultItemId' => $resultItemId, 'accountId' => $AccSets->accountId]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
 
-        $list = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
-        */
-        $list2 = AppStorage::getSelf()->CraftsFirst;
+        $list = AppStorage::getSelf()->CraftsFirst;
+        $list = Helpers::sortMultiArrayByProp($list, self::sortArgs);
+
         self::clearStorage();
-        //printr(array_column($list, 'craftId'));
-        //printr(array_column($list2, 'craftId'));
 
-        return $list2;
+
+        return $list;
     }
+
 }

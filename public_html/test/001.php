@@ -25,9 +25,13 @@ use Symphograph\Bicycle\SQL\SQLBuilder;
 <?php
 //$List = MailruOldUser::getList();
 //MailRuUserTransfer::importUsers(1000000);
+
 $AccSets = \App\User\AccSettings::byIdAndInit(1057);
 AccountCraft::clearAllCrafts();
 $craftCounter = CraftCounter::recountList([48251]);
+
+
+
 //printr($craftCounter);
 
 echo Test::scriptTime($start);

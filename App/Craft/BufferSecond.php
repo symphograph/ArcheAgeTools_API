@@ -38,10 +38,10 @@ class BufferSecond
         AppStorage::getSelf()->CraftsSecond[] = $bufferSecond;
     }
 
-    public static function saveCrafts(int $resultItemId): void
+    public static function saveCrafts(): void
     {
         $AccSets = AccSettings::byGlobal();
-        $firstBuffer = BufferFirst::getCounted($resultItemId);
+        $firstBuffer = BufferFirst::getCounted();
 
         self::putToStorage($firstBuffer[0]);
 
@@ -59,7 +59,6 @@ class BufferSecond
                 null
             );
             $AccCraft->putToDB();
-
         }
     }
 }
