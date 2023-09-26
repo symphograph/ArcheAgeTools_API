@@ -19,6 +19,7 @@ class AppStorage
     public array $CraftsSecond = [];
     public array $uBestCrafts  = [];
     public array $buyOnlyItems = [];
+    public array $oldNicks = [];
 
 
     public static function getSelf(): self

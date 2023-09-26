@@ -2,6 +2,7 @@
 
 namespace App\User;
 
+use App\AppStorage;
 use App\Craft\LaborData;
 use App\DTO\AccSettingsDTO;
 use App\Item\Price;
@@ -108,8 +109,11 @@ class AccSettings extends AccSettingsDTO
         if($qwe && $qwe->rowCount()){
             return true;
         }
+        /*
         $qwe = qwe("select * from old_mailusers where lower(user_nick) = lower(:nick)", ['nick' => $nick]);
         return ($qwe && $qwe->rowCount());
+        */
+        return in_array($nick, AppStorage::getSelf()->oldNicks);
     }
 
     public function initLaborCost(): void

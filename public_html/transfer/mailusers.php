@@ -7,7 +7,7 @@ use App\Transfer\User\MailRuUserTransfer;
 $start = microtime(true);
 echo Debug::header();
 
-$List = MailruOldUser::getList();
+//$List = MailruOldUser::getList();
 MailRuUserTransfer::importUsers(1000000);
 
 echo Debug::footer($start);

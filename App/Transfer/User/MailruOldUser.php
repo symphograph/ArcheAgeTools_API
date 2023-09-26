@@ -115,7 +115,8 @@ class MailruOldUser extends DTO
 
     public function updateIfExist(): bool
     {
-        if(!$AccSets = AccSettings::byOldId($this->mail_id)){
+        $AccSets = AccSettings::byOldId($this->mail_id);
+        if(!$AccSets){
             return false;
         }
 
