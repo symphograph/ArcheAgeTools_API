@@ -2,11 +2,11 @@
 
 namespace App\User;
 
-use App\AppStorage;
 use App\Craft\LaborData;
 use App\DTO\AccSettingsDTO;
 use App\Item\Price;
 use App\Transfer\User\MailruOldUser;
+use App\UserStorage;
 use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AccountErr;
 use Symphograph\Bicycle\Logs\Log;
@@ -113,7 +113,7 @@ class AccSettings extends AccSettingsDTO
         $qwe = qwe("select * from old_mailusers where lower(user_nick) = lower(:nick)", ['nick' => $nick]);
         return ($qwe && $qwe->rowCount());
         */
-        return in_array($nick, AppStorage::getSelf()->oldNicks);
+        return in_array($nick, UserStorage::getSelf(true)->oldNicks);
     }
 
     public function initLaborCost(): void

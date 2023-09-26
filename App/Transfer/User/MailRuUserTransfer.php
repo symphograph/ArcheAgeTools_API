@@ -2,9 +2,7 @@
 
 namespace App\Transfer\User;
 
-use App\AppStorage;
-use App\Auth\Mailru\MailruUserClient;
-use App\User\AccSettings;
+use App\UserStorage;
 use Symphograph\Bicycle\Logs\Log;
 
 class MailRuUserTransfer
@@ -16,9 +14,7 @@ class MailRuUserTransfer
             Log::msg("List is empty");
             return false;
         }
-        AppStorage::getSelf()->oldNicks = array_column($List, 'user_nick');
-        printr(AppStorage::getSelf()->oldNicks);
-        die();
+        UserStorage::getSelf()->oldNicks = array_column($List, 'user_nick');
 
         foreach ($List as $oldMailUser) {
             if ($limit < 1) break;
