@@ -32,8 +32,10 @@ class AccSettings extends AccSettingsDTO
 
     public static function byJwt(): self|false
     {
+        global $AccSets;
         $accountId = AccessTokenData::accountId();
-        return AccSettings::byIdAndInit($accountId);
+        $AccSets = AccSettings::byIdAndInit($accountId);
+        return $AccSets;
     }
 
     public static function byGlobal(): self

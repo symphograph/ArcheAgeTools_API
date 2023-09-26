@@ -156,7 +156,7 @@ class MailruOldUser extends DTO
                 $price->serverGroupId = 100;
             }
             if($price->isExistNewerInDB()){
-                Log::msg("NewerPrice for item $price->itemId is exist");
+                //Log::msg("NewerPrice for item $price->itemId is exist");
                 continue;
             }
             if(!ItemDTO::byId($price->itemId)){

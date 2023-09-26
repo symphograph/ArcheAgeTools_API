@@ -11,7 +11,7 @@ if (empty($_POST['method'])) {
 }
 
 match ($_POST['method']) {
-    /*'get' => PriceCTRL::get(),*/
+    'listOfMember' => PriceCTRL::listOfMember(),
     'history' => PriceCTRL::history(),
     default => throw new ApiErr()
 };

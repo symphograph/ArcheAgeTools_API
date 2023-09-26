@@ -189,7 +189,7 @@ class Member
         $AccSets = AccSettings::byId($this->accountId);
         $this->avaFileName = $AccSets->avaFileName;
         $this->publicNick = $AccSets->publicNick;
-        $this->oldId = $AccSets->old_id;
+        $this->oldId = $AccSets->old_id ?? null;
     }
 
 }
