@@ -12,7 +12,7 @@ use Symphograph\Bicycle\Token\CurlToken;
 class MailruUserClient extends MailruUser
 {
     const url = '/api/user/mailru.php';
-    const apiName = 'ussoAuth';
+    const apiName = 'AuthServer';
     public ?string $avaFilename;
 
     public static function byAccountId(int $accountId): self|bool

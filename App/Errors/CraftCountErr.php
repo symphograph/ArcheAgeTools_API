@@ -7,9 +7,9 @@ use Symphograph\Bicycle\Helpers;
 
 class CraftCountErr extends MyErrors
 {
-    protected string $type = 'CraftCountErr';
-    protected bool $loggable = true;
-    public string $logFolder = 'errors/craft';
+    protected string $type      = 'CraftCountErr';
+    public bool      $loggable  = true;
+    public string    $logFolder = 'errors/craft';
 
     public function __construct(
         string $message = 'craft is err',
@@ -18,7 +18,6 @@ class CraftCountErr extends MyErrors
     )
     {
         $this->type = Helpers::classBasename(self::class);
-        $msg = $message;
-        parent::__construct($msg, $pubMsg, $httpStatus);
+        parent::__construct($message, $pubMsg, $httpStatus);
     }
 }
