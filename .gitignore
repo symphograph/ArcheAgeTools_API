@@ -13,3 +13,4 @@ composer.phar
 /public_html/cgi-bin
 /ExternalAssets/
 /tmp/
+/composer.json
