@@ -7,7 +7,6 @@ use Symphograph\Bicycle\Helpers;
 class CraftErr extends TransferErr
 {
     protected string $type = 'CraftErr';
-    protected bool $loggable = true;
     public string $logFolder = 'errors/transfer';
 
     public function __construct(

@@ -38,7 +38,7 @@ class Test
     {
         //CraftCounter::clearBuff();
         $packIds = PackIds::getAll();
-        $start = self::startTime('CraftCounter');
+        $start = self::startTime();
         $craftCounter = CraftCounter::recountList($packIds);
 
         echo self::scriptTime($start, 'CraftCounter');
@@ -49,7 +49,7 @@ class Test
     {
         //AccountCraft::clearAllCrafts();
         $allIds = Craft::getAllResultItems();
-        $start = self::startTime('CraftCounter');
+        $start = self::startTime();
         $craftCounter = CraftCounter::recountList($allIds);
 
         echo self::scriptTime($start, 'CraftCounter');

@@ -7,7 +7,6 @@ use Symphograph\Bicycle\Helpers;
 class IconErr extends TransferErr
 {
     protected string $type = 'IconErr';
-    protected bool $loggable = true;
     public string $logFolder = 'errors/transfer';
 
     public function __construct(

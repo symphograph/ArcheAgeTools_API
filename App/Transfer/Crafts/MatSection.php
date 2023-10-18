@@ -78,7 +78,7 @@ class MatSection extends TargetSection
         return true;
     }
 
-    public function putToDB(int $craftId): bool
+    public function putToDB(int $craftId): void
     {
         $params = [
             'craftId' => $craftId,
@@ -86,6 +86,6 @@ class MatSection extends TargetSection
             'need' => $this->need,
             'matGrade' => $this->grade
         ];
-        return DB::replace('craftMaterials', $params);
+        DB::replace('craftMaterials', $params);
     }
 }
