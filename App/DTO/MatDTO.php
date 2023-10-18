@@ -2,10 +2,9 @@
 
 namespace App\DTO;
 
-use App\DTO\DTO;
 use Symphograph\Bicycle\DTO\DTOTrait;
 
-class MatDTO extends DTO
+class MatDTO
 {
     use DTOTrait;
     const tableName = 'craftMaterials';

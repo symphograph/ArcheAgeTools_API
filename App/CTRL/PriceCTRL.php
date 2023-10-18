@@ -4,11 +4,13 @@ namespace App\CTRL;
 
 
 
+use App\Craft\AccountCraft;
 use App\Item\Price;
 use App\PriceHistory;
 use App\Transfer\User\PriceTransfer;
 use App\User\AccSettings;
 use App\User\Member;
+use JetBrains\PhpStorm\NoReturn;
 use Symphograph\Bicycle\Api\Response;
 use Symphograph\Bicycle\Errors\ValidationErr;
 
@@ -35,5 +37,45 @@ class PriceCTRL
         }
         $List = Price::memberPriceList($accountId, $AccSets->serverGroupId);
         Response::data(['Prices' => $List, 'priceMember' => $priceMember]);
+    }
+
+    public static function del(): void
+    {
+        $AccSets = AccSettings::byJwt();
+        $itemId = $_POST['itemId'] or throw new ValidationErr('itemId');
+
+        Price::delFromDB($AccSets->accountId, $itemId, $AccSets->serverGroupId);
+        AccountCraft::clearAllCrafts();
+
+        Response::success();
+    }
+
+    #[NoReturn] public static function getBasedList(): void
+    {
+        $AccSets = AccSettings::byJwt();
+        $List = Price::basedList();
+
+        Response::data(['Prices'=>$List]);
+    }
+
+    public static function set(): void
+    {
+        $AccSets = AccSettings::byJwt();
+        $itemId = intval($_POST['itemId'] ?? 0)
+        or throw new ValidationErr('itemId');
+
+        $price = preg_replace("/[^0-9]/", '', $_POST['price'] ?? 0);
+        $price = intval($price);
+
+        if (empty($AccSets->serverGroupId)) {
+            throw new ValidationErr('Server is empty', 'Сервер не выбран');
+        }
+
+        $Price = Price::byInput($AccSets->accountId, $itemId, $AccSets->serverGroupId, $price);
+        $Price->putToDB();
+
+        AccountCraft::clearAllCrafts();
+
+        Response::success();
     }
 }

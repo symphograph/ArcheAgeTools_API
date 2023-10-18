@@ -4,20 +4,22 @@ namespace App\Transfer\User;
 
 use App\Api;
 use App\Auth\Mailru\MailruUserClient;
-use App\DTO\DTO;
 use App\DTO\ItemDTO;
 use App\DTO\PriceDTO;
 use App\User\AccSettings;
 use App\User\Server;
+use Symphograph\Bicycle\DTO\BindTrait;
 use Symphograph\Bicycle\Errors\AccountErr;
 use Symphograph\Bicycle\Errors\CurlErr;
 use Symphograph\Bicycle\Logs\ErrorLog;
 use Symphograph\Bicycle\Logs\Log;
 
 
-class MailruOldUser extends DTO
+class MailruOldUser
 {
+    use BindTrait;
     const apiDomain = 'dllib.ru';
+
     public ?int    $mail_id;
     public ?string $first_name;
     public ?string $last_name;
@@ -31,13 +33,13 @@ class MailruOldUser extends DTO
     public ?string $last_ip;
     public ?string $identy;
     public ?string $token;
-    public bool    $siol = false;
+    public bool    $siol    = false;
     public ?string $user_nick;
     public ?string $avafile;
     public ?int    $mode;
     public ?int    $server_id;
-    public array $follows = [];
-    public array $prices = [];
+    public array   $follows = [];
+    public array   $prices  = [];
 
     public static function byEmail(string $email): self|bool
     {
@@ -60,9 +62,7 @@ class MailruOldUser extends DTO
             or throw new AccountErr('oldSettings is error', 'Ошибка синхронизации настроек');
 
         $result = json_decode($result);
-        $MailRuOldUser = new self();
-        $MailRuOldUser->bindSelf($result);
-        return $MailRuOldUser;
+        return self::byBind($result);
     }
 
     public static function isExist(int $old_id): bool

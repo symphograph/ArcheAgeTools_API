@@ -4,10 +4,11 @@ namespace App\DTO;
 
 use Symphograph\Bicycle\DTO\DTOTrait;
 
-class PackDTO extends DTO
+class PackDTO
 {
-
+    use DTOTrait;
     const tableName = 'packs';
+
     public int     $itemId;
     public ?int    $zoneFromId;
     public ?string $name;

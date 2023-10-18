@@ -4,7 +4,7 @@ namespace App\Transfer\Crafts;
 
 use App\Transfer\Errors\CraftErr;
 use App\Transfer\TargetSection;
-use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\PDO\DB;
 use Symphograph\Bicycle\Helpers;
 
 class MatSection extends TargetSection

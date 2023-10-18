@@ -4,8 +4,7 @@ namespace App\Transfer\Items;
 
 use App\Transfer\TransferLog;
 use App\Transfer\TransLogTrait;
-use PDO;
-use Symphograph\Bicycle\DTO\DTOTrait;
+
 
 class ItemTransLog extends TransferLog
 {

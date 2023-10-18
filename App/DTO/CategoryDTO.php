@@ -5,7 +5,7 @@ namespace App\DTO;
 
 use Symphograph\Bicycle\DTO\DTOTrait;
 
-class CategoryDTO extends DTO
+class CategoryDTO
 {
     use DTOTrait;
     const tableName = 'Categories';

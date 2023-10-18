@@ -5,8 +5,7 @@ namespace App\Transfer\Items;
 use App\DTO\ItemDTO;
 use App\Transfer\Errors\TransferErr;
 use App\Transfer\TransferList;
-use PDO;
-use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\PDO\DB;
 
 class TransferItems extends TransferList
 {

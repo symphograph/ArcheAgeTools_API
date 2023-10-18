@@ -2,15 +2,14 @@
 
 namespace App\Transfer\Crafts;
 
-use App\DTO\DTO;
 use Symphograph\Bicycle\DTO\DTOTrait;
-use PDO;
 
-class NewCraft extends DTO
+class NewCraft
 {
     use DTOTrait;
     const tableName = '`NewCrafts_20230622`';
     const importedFile = '/includes/ttt.php';
+
     public int    $id;
     public string $craftName;
     public int    $profNeed;

@@ -3,7 +3,7 @@
 namespace App\User;
 
 
-use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\PDO\DB;
 use Symphograph\Bicycle\Errors\AppErr;
 use App\Item\{Item, Price};
 use PDO;

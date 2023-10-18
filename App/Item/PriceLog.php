@@ -3,10 +3,12 @@
 namespace App\Item;
 
 use App\DTO\PriceDTO;
-use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\PDO\DB;
+use Symphograph\Bicycle\DTO\BindTrait;
 
 class PriceLog extends PriceDTO
 {
+    use BindTrait;
     const tableName = 'uacc_priceLog';
     public string $createDate;
 
@@ -20,7 +22,6 @@ class PriceLog extends PriceDTO
 
     public function putToDB(): void
     {
-        $params = DB::initParams($this);
-        DB::replace(self::tableName, $params);
+        DB::replace(self::tableName, self::getAllProps());
     }
 }

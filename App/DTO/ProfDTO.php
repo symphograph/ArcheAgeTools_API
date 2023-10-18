@@ -6,7 +6,7 @@ namespace App\DTO;
 use PDO;
 use Symphograph\Bicycle\DTO\DTOTrait;
 
-class ProfDTO extends DTO
+class ProfDTO
 {
     use DTOTrait;
     const tableName = 'profs';

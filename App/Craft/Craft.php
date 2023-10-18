@@ -6,7 +6,6 @@ use App\AppStorage;
 use App\DTO\CraftDTO;
 use App\Errors\CraftCountErr;
 use App\User\AccSettings;
-use Symphograph\Bicycle\DB;
 use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
 use App\User\Prof;
@@ -158,10 +157,7 @@ class Craft extends CraftDTO
         $craftIDs = self::getCraftIDs($itemId);
         $matIds = Mat::allPotentialMats($itemId);
         if (empty($matIds)) $matIds[] = 0;
-
-        $matIdsPH = DB::pHolders($matIds);
-        $craftIdsPH = DB::pHolders($craftIDs,2);
-
+        
         $qwe = qwe("
             select crafts.*,
                    items.name as itemName,
@@ -171,12 +167,12 @@ class Craft extends CraftDTO
                     and items.onOff
                     and crafts.onOff
                     and (
-                            crafts.resultItemId in ($matIdsPH) 
-                            or crafts.id in ($craftIdsPH)
+                            crafts.resultItemId in (:matIds) 
+                            or crafts.id in (:craftIDs)
                         )
                  left join doods on doods.id = crafts.doodId
             order by deep desc, resultItemId",
-        [DB::pHoldsArr($matIds), DB::pHoldsArr($craftIDs,2)]
+        ['matIds' => $matIds, 'craftIDs' => $craftIDs]
         );
         if(!$qwe || !$qwe->rowCount()){
             return [];

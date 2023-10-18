@@ -1,9 +1,9 @@
 <?php
 
 use App\CTRL\AccSettingsCTRL;
+use App\CTRL\CraftCTRL;
 use Symphograph\Bicycle\Errors\ApiErr;
 use Symphograph\Bicycle\Errors\ValidationErr;
-
 
 require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
@@ -12,7 +12,8 @@ if (empty($_POST['method'])) {
 }
 
 match ($_POST['method']) {
-    'get' => AccSettingsCTRL::get(),
-    'list' => AccSettingsCTRL::list(),
+    'getList' => CraftCTRL::getList(),
+    'setAsUBest' => CraftCTRL::setAsUBest(),
+    'resetUBest' => CraftCTRL::resetUBest(),
     default => throw new ApiErr()
 };

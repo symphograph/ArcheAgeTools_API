@@ -3,10 +3,13 @@
 namespace App\DTO;
 
 use App\Item\PriceLog;
-use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\PDO\DB;
+use Symphograph\Bicycle\DTO\BindTrait;
 
-class PriceDTO extends DTO
+class PriceDTO
 {
+    use BindTrait;
+
     const tableName = 'uacc_prices';
     public int $accountId;
     public int $serverGroupId;
@@ -16,16 +19,8 @@ class PriceDTO extends DTO
 
     public function putToDB(): void
     {
-        $params = DB::initParams($this);
-        DB::replace(self::tableName, $params);
+        DB::replace(self::tableName, self::getAllProps());
         PriceLog::put($this);
-    }
-
-    public static function byBind(object| array $Object): PriceDTO
-    {
-        $selfObject = new self();
-        $selfObject->bindSelf($Object);
-        return $selfObject;
     }
 
     public function isExistNewerInDB(): bool

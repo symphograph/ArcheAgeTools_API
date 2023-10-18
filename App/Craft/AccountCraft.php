@@ -5,8 +5,7 @@ namespace App\Craft;
 use App\DTO\CraftDTO;
 use App\User\AccSettings;
 use Symphograph\Bicycle\Errors\AppErr;
-use PDO;
-use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\PDO\DB;
 
 class AccountCraft
 {
@@ -82,7 +81,7 @@ class AccountCraft
         return $Craft;
     }
 
-    public function putToDB(): bool
+    public function putToDB(): void
     {
         $params = [
             'accountId'   => $this->accountId,
@@ -96,7 +95,7 @@ class AccountCraft
             'spmu'        => $this->spmu,
             'allMats'     => $this->allMats
         ];
-        return DB::replace('uacc_crafts', $params);
+        DB::replace('uacc_crafts', $params);
     }
 
     public static function clearAllCrafts(): void

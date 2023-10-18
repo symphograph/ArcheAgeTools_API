@@ -5,7 +5,7 @@ namespace App\DTO;
 
 use Symphograph\Bicycle\DTO\DTOTrait;
 
-class PackRouteDTO extends DTO
+class PackRouteDTO
 {
     use DTOTrait;
     const tableName = 'packRoutes';

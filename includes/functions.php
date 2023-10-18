@@ -1,9 +1,13 @@
 <?php
 
+use Symphograph\Bicycle\Env\Server\ServerEnvCli;
+use Symphograph\Bicycle\Env\Server\ServerEnvHttp;
+use Symphograph\Bicycle\Env\Server\ServerEnvITF;
+use Symphograph\Bicycle\PDO\DB;
 use JetBrains\PhpStorm\Language;
 use Symphograph\Bicycle\Env\Env;
-use Symphograph\Bicycle\DB;
 
+/*
 function cors() {
 
     if (isset($_SERVER['HTTP_ORIGIN'])) {
@@ -23,6 +27,7 @@ function cors() {
         exit(0);
     }
 }
+*/
 
 function printr($var): void
 {
@@ -33,24 +38,24 @@ function printr($var): void
     echo '</pre>';
 }
 
-function qwe(#[Language("SQL")] string $sql, array $args = null): bool|PDOStatement
+function qwe(#[Language("SQL")] string $sql, array $args = []): false|PDOStatement
 {
-    global $DB;
-
-    if(!isset($DB)){
-        $DB = new DB();
-    }
-
-    return $DB->qwe($sql,$args);
+    return DB::qwe($sql, $args);
 }
 
-function qwe2(string $sql, array $args = null) : bool|PDOStatement
+function getRoot(): string
 {
-    global $DB2;
+    return dirname(__DIR__);
+}
 
-    if(!isset($DB2)){
-        $DB2 = new DB();
+function getServerEnvClass(): ServerEnvITF
+{
+    global $ServerEnv;
+    if(isset($ServerEnv)) {
+        return $ServerEnv;
     }
-
-    return $DB2->qwe($sql,$args);
+    if (PHP_SAPI === 'cli') {
+        return new ServerEnvCli();
+    }
+    return new ServerEnvHttp();
 }

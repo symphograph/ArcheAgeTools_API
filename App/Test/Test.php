@@ -75,14 +75,13 @@ class Test
     public function speedTestTime(string $fnName, int $count = 1, $arg = null): int|float
     {
         for ($i = $count; $i > 0; $i--) {
-            $start = self::startTime();
+            $start = microtime(true);
             self::$fnName($arg);
             $this->durations[] = self::duration($start);
         }
 
         $this->durations = array_map(fn($var) => $var*1000000, $this->durations);
         return Helpers::median($this->durations)/1000000;
-
     }
 
     public function sortFunction(array $list): void

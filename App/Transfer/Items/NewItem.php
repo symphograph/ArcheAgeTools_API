@@ -2,17 +2,14 @@
 
 namespace App\Transfer\Items;
 
-use App\DTO\DTO;
-use NilPortugues\Sql\QueryBuilder\Builder\GenericBuilder;
 use PDO;
 use Symphograph\Bicycle\DTO\DTOTrait;
-use Symphograph\Bicycle\Errors\AppErr;
-use Symphograph\Bicycle\Helpers;
 
-class NewItem extends DTO
+class NewItem
 {
     use DTOTrait;
     const tableName = '`NewItems_20230622`';
+
     public int $id;
     public string $name;
     public int $lvl;

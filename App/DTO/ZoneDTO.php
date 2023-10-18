@@ -4,10 +4,11 @@ namespace App\DTO;
 
 use Symphograph\Bicycle\DTO\DTOTrait;
 
-class ZoneDTO extends DTO
+class ZoneDTO
 {
     use DTOTrait;
     const tableName = 'zones';
+
     public int    $id;
     public string $name;
     public ?int   $side;

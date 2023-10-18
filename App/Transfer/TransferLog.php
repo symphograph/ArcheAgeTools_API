@@ -2,10 +2,7 @@
 
 namespace App\Transfer;
 
-use App\DTO\DTO;
-use Symphograph\Bicycle\DTO\DTOTrait;
-
-class TransferLog extends DTO
+class TransferLog
 {
     public int     $id;
     public string  $name;
@@ -22,6 +19,5 @@ class TransferLog extends DTO
         }
         $this->warnings = implode(' | ', $warnings);
     }
-
 
 }

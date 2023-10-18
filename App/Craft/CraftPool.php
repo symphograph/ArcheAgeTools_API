@@ -3,7 +3,7 @@
 namespace App\Craft;
 
 use App\User\AccSettings;
-use Symphograph\Bicycle\DB;
+use Symphograph\Bicycle\PDO\DB;
 
 class CraftPool
 {
