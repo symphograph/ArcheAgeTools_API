@@ -38,9 +38,9 @@ function printr($var): void
     echo '</pre>';
 }
 
-function qwe(#[Language("SQL")] string $sql, array $args = []): false|PDOStatement
+function qwe(#[Language("SQL")] string $sql, array $args = [], string $connectName = 'default'): false|PDOStatement
 {
-    return DB::qwe($sql, $args);
+    return DB::qwe($sql, $args, $connectName);
 }
 
 function getRoot(): string
@@ -51,11 +51,13 @@ function getRoot(): string
 function getServerEnvClass(): ServerEnvITF
 {
     global $ServerEnv;
-    if(isset($ServerEnv)) {
+    if (isset($ServerEnv)) {
         return $ServerEnv;
     }
     if (PHP_SAPI === 'cli') {
-        return new ServerEnvCli();
+        $ServerEnv = new ServerEnvCli();
+    } else {
+        $ServerEnv = new ServerEnvHttp();
     }
-    return new ServerEnvHttp();
+    return $ServerEnv;
 }

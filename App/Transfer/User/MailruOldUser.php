@@ -95,8 +95,7 @@ class MailruOldUser
         $arr = json_decode($result, 4);
         $List = [];
         foreach ($arr as $data){
-            $oldMailUser = new self();
-            $oldMailUser->bindSelf($data);
+            $oldMailUser = self::byBind($data);
             $List[] = $oldMailUser;
         }
         return $List;

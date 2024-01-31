@@ -7,7 +7,8 @@ use App\Craft\BufferSecond;
 use App\User\AccSettings;
 use PDO;
 
-class AppStorage
+
+class AppStorage extends \Symphograph\Bicycle\AppStorage
 {
     /**
      * @var BufferFirst[]

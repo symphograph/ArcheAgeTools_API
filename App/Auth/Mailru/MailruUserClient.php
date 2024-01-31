@@ -7,7 +7,6 @@ use App\Transfer\User\MailruOldUser;
 use Symphograph\Bicycle\Api\CurlAPI;
 use Symphograph\Bicycle\Auth\Mailru\MailruUser;
 use Symphograph\Bicycle\Errors\NoContentErr;
-use Symphograph\Bicycle\Token\CurlToken;
 
 class MailruUserClient extends MailruUser
 {
@@ -17,12 +16,13 @@ class MailruUserClient extends MailruUser
 
     public static function byAccountId(int $accountId): self|bool
     {
-        $jwt = CurlToken::create([1]);
         $curl = new CurlAPI(
             self::apiName,
             self::url,
-            ['method' => 'getById', 'accountId' => $accountId],
-            $jwt
+            [
+                'method' => 'getById',
+                'accountId' => $accountId
+            ]
         );
         $response = $curl->post();
         $MailruUser = new self();
@@ -33,12 +33,13 @@ class MailruUserClient extends MailruUser
 
     public static function byEmail(string $email): self|bool
     {
-        $jwt = CurlToken::create([1]);
         $curl = new CurlAPI(
             self::apiName,
             self::url,
-            ['method' => 'getByEmail', 'email' => $email],
-            $jwt
+            [
+                'method' => 'getByEmail',
+                'email' => $email
+            ]
         );
 
         try {
@@ -55,7 +56,6 @@ class MailruUserClient extends MailruUser
 
     public function putToAuthServer($createdAt, $visitedAt): self
     {
-        $jwt = CurlToken::create([1]);
         $curl = new CurlAPI(
             self::apiName,
             self::url,
@@ -64,8 +64,7 @@ class MailruUserClient extends MailruUser
                 'MailruUser' => json_encode($this),
                 'createdAt' => $createdAt,
                 'visitedAt' => $visitedAt
-            ],
-            $jwt
+            ]
         );
         $response = $curl->post();
         $MailUser = new self();

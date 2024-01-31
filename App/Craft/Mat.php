@@ -88,7 +88,7 @@ class Mat extends MatDTO
             return false;
         }
         /** @var self[] $arr */
-        $arr = $qwe->fetchAll(PDO::FETCH_CLASS, get_class());
+        $arr = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
         $List = [];
         foreach ($arr as $mat){
             $mat->initItem();

@@ -66,7 +66,7 @@ class AccSettingsCTRL extends AccSettings
     {
         User::auth();
         $ids = $_POST['ids'] ?? throw new ValidationErr();
-        Helpers::isArrayIntList($_POST['ids'] ?? []) or throw new ValidationErr();
+        Helpers::isArrayIntList($ids ?? []) or throw new ValidationErr();
         $list = [];
         foreach ($_POST['ids'] as $accountId){
             $list[] = AccSettings::byId($accountId);

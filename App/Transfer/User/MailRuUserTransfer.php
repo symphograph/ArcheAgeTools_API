@@ -36,10 +36,4 @@ class MailRuUserTransfer
         }
         return true;
     }
-
-
-
-
-
-
 }

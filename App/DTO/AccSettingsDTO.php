@@ -11,7 +11,6 @@ class AccSettingsDTO
     const colId = 'accountId';
 
     public int     $accountId     = 0;
-    public int     $serverId      = 9;
     public int     $serverGroupId = 100;
     public string  $publicNick    = 'Никнейм';
     public int     $grade         = 1;
