@@ -2,36 +2,36 @@
 
 namespace App\Packs;
 
-use App\User\AccSettings;
+use App\User\AccSets;
 use PDO;
+use Symphograph\Bicycle\Errors\AccountErr;
+use Symphograph\Bicycle\PDO\DB;
 
 class PackIds
 {
     /**
-     * @return array<int>
+     * @return int[]
      */
     public static function getAll(): array
     {
-        $qwe = qwe("
+        $sql = "
             select distinct p.itemId 
             from packs p
             inner join items i 
                 on i.id = p.itemId
-                and i.onOff"
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN);
+                and i.onOff";
+
+        return DB::qwe($sql)
+            ->fetchAll(PDO::FETCH_COLUMN);
     }
 
     /**
-     * @return array<int>
+     * @return int[]
+     * @throws AccountErr
      */
     public static function getUncounted(int $side = 1): array
     {
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
+        $sql = "
             select tmp.id 
             from 
             (select 
@@ -50,12 +50,15 @@ class PackIds
                     and uC.serverGroupId = :serverGroupId
                     and isBest
             ) as tmp
-            where itemId is null",
-            ['side'=>$side, 'accountId'=> $AccSets->accountId, 'serverGroupId' => $AccSets->serverGroupId]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN);
+            where itemId is null";
+
+        $params = [
+            'side'          => $side,
+            'accountId'     => AccSets::curId(),
+            'serverGroupId' => AccSets::curServerGroupId()];
+
+        return DB::qwe($sql, $params)
+            ->fetchAll(PDO::FETCH_COLUMN);
+
     }
 }

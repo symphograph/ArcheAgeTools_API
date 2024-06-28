@@ -3,61 +3,27 @@
 namespace App\User;
 
 
-use Symphograph\Bicycle\PDO\DB;
-use Symphograph\Bicycle\Errors\AppErr;
-use App\Item\{Item, Price};
+use App\Item\{Item};
+use App\Price\Price;
 use PDO;
+use Symphograph\Bicycle\Errors\AppErr;
+use Symphograph\Bicycle\PDO\DB;
 
 class Member
 {
-    public int $accountId;
-    public int $serverGroupId;
-    public ?bool $isFollow;
-    public ?int $pricesCount;
-    public ?int $followersCount;
+    public int     $accountId;
+    public int     $serverGroupId;
+    public ?bool   $isFollow;
+    public ?int    $pricesCount;
+    public ?int    $followersCount;
     public ?string $publicNick;
     public ?string $avaFileName;
-    public ?int $oldId;
-
-
+    public ?int    $oldId;
+    public ?Item  $LastPricedItem;
     /**
      * @var array<int>
      */
     private array $followMasters = [];
-    public ?Item $LastPricedItem;
-
-    public function __set(string $name, $value): void
-    {
-    }
-
-    public static function byId(int $accountId, int $serverGroup): self
-    {
-        $member = new self();
-        $member->accountId = $accountId;
-        $member->initFollowMasters($serverGroup);
-        return $member;
-    }
-
-    /**
-     * @return array<int>
-     */
-    public function getFollowMasters(): array
-    {
-        return $this->followMasters;
-    }
-
-    private function initFollowMasters(int $serverGroup): void
-    {
-        $qwe = qwe("
-            select master from uacc_follows 
-              where follower = :follower and serverGroupId = :serverGroupId",
-            ['follower' => $this->accountId, 'serverGroupId' => $serverGroup]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return;
-        }
-        $this->followMasters = $qwe->fetchAll(PDO::FETCH_COLUMN);
-    }
 
     /**
      * @return array<self>
@@ -66,7 +32,7 @@ class Member
     {
         $privateItemsStr = DB::implodeIntIn(Item::privateItems());
         //$serverGroupId = 100;
-        if($serverGroupId === 100){
+        if ($serverGroupId === 100) {
             throw new AppErr('Server not defined', 'Сервер не выбран');
         }
         $qwe = qwe("
@@ -117,20 +83,20 @@ class Member
                      lastPriceTime desc
             LIMIT 100
         ", ['serverGroupId' => $serverGroupId,
-            'accountId'    => $accountId,
+            'accountId'     => $accountId,
             /*'serverGroup3' => $serverGroup*/]
         );
 
-        $list = $qwe->fetchAll(PDO::FETCH_CLASS,self::class)
-            or throw new AppErr('memberList is empty', 'Нет данных');
+        $list = $qwe->fetchAll(PDO::FETCH_CLASS, self::class)
+        or throw new AppErr('memberList is empty', 'Нет данных');
         return $list;
     }
 
     public static function setFollow(int $follower, int $master, int $serverGroupId): void
     {
         $params = [
-            'follower'    => $follower,
-            'master'      => $master,
+            'follower'      => $follower,
+            'master'        => $master,
             'serverGroupId' => $serverGroupId
         ];
         DB::replace('uacc_follows', $params);
@@ -144,40 +110,74 @@ class Member
             where follower = :follower
                 and master = :master
                 and serverGroupId = :serverGroupId",
-            ['follower' => $follower, 'master' => $master, 'serverGroupId'=> $serverGroupId]
+            ['follower' => $follower, 'master' => $master, 'serverGroupId' => $serverGroupId]
         ) or throw new AppErr('unsetFollow err', 'Ошибка при сохранении');
+    }
+
+    public function __set(string $name, $value): void
+    {
+    }
+
+    /**
+     * @return array<int>
+     */
+    public function getFollowMasters(): array
+    {
+        return $this->followMasters;
     }
 
     public function initLastPricedItem(int $serverGroupId): bool
     {
         $Price = Price::getLastMemberPrice($this->accountId, $serverGroupId);
-        if(!$Price){
+        if (!$Price) {
             return false;
         }
-        if(!$Item = Item::byId($Price->itemId)){
+        if (!$Item = Item::byId($Price->itemId)) {
             return false;
         }
-
+        $Item->initData();
         $Item->Price = $Price;
         $this->LastPricedItem = $Item;
         return true;
     }
 
+    public static function byId(int $accountId, int $serverGroup): self
+    {
+        $member = new self();
+        $member->accountId = $accountId;
+        $member->initFollowMasters($serverGroup);
+        return $member;
+    }
+
+    private function initFollowMasters(int $serverGroup): void
+    {
+        $qwe = qwe("
+            select master from uacc_follows 
+              where follower = :follower and serverGroupId = :serverGroupId",
+            ['follower' => $this->accountId, 'serverGroupId' => $serverGroup]
+        );
+        if (!$qwe || !$qwe->rowCount()) {
+            return;
+        }
+        $this->followMasters = $qwe->fetchAll(PDO::FETCH_COLUMN);
+    }
+
     public function initIsFollow(): void
     {
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
+        $sql = "
             select * from uacc_follows 
             where follower = :follower
                 and master = :master
-                and serverGroupId = :serverGroupId",
-            [
-                'follower'    => $AccSets->accountId,
-                'master'      => $this->accountId,
-                'serverGroupId' => $AccSets->serverGroupId
-            ]
-        );
-        if(!$qwe || !$qwe->rowCount()){
+                and serverGroupId = :serverGroupId";
+
+        $params = [
+            'follower'      => AccSets::curId(),
+            'master'        => $this->accountId,
+            'serverGroupId' => AccSets::curServerGroupId()];
+
+        $qwe = qwe($sql, $params);
+
+        if (!$qwe || !$qwe->rowCount()) {
             $this->isFollow = false;
             return;
         }
@@ -186,7 +186,7 @@ class Member
 
     public function initAccData(): void
     {
-        $AccSets = AccSettings::byId($this->accountId);
+        $AccSets = AccSets::byId($this->accountId);
         $this->avaFileName = $AccSets->avaFileName;
         $this->publicNick = $AccSets->publicNick;
         $this->oldId = $AccSets->old_id ?? null;

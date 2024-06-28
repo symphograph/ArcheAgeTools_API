@@ -5,8 +5,8 @@ namespace App\Transfer\User;
 use App\Api;
 use App\Auth\Mailru\MailruUserClient;
 use App\DTO\ItemDTO;
-use App\DTO\PriceDTO;
-use App\User\AccSettings;
+use App\Price\PriceDTO;
+use App\User\AccSets;
 use App\User\Server;
 use Symphograph\Bicycle\DTO\BindTrait;
 use Symphograph\Bicycle\Errors\AccountErr;
@@ -114,7 +114,7 @@ class MailruOldUser
 
     public function updateIfExist(): bool
     {
-        $AccSets = AccSettings::byOldId($this->mail_id);
+        $AccSets = AccSets::byOldId($this->mail_id);
         if(!$AccSets){
             return false;
         }
@@ -128,7 +128,7 @@ class MailruOldUser
     {
 
         $MailUser = MailruUserClient::byOld($this);
-        $AccSets = AccSettings::byOldData($this);
+        $AccSets = AccSets::byOldData($this);
 
 
         $newUser = $MailUser->putToAuthServer(

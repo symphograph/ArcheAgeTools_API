@@ -25,7 +25,7 @@ class TransferList
     {
         $this->orderBy = $this->random ? 'rand()' : 'id';
         if(!$this->startId){
-            $this->startId = self::getLast();
+            $this->startId = $this->getLast();
         }
     }
 

@@ -1,6 +1,6 @@
 <?php
 
-use App\CTRL\AccSettingsCTRL;
+use App\CTRL\AccSetsCTRL;
 use App\CTRL\CraftCTRL;
 use Symphograph\Bicycle\Errors\ApiErr;
 use Symphograph\Bicycle\Errors\ValidationErr;

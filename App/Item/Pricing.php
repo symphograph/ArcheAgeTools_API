@@ -2,7 +2,8 @@
 
 namespace App\Item;
 
-use App\User\AccSettings;
+use App\Price\Price;
+use App\User\AccSets;
 
 class Pricing
 {
@@ -64,7 +65,6 @@ class Pricing
 
     private function initPrice(): void
     {
-        $AccSets = AccSettings::byGlobal();
         $Price = Price::bySaved($this->itemId);
         if(!$Price){
             $this->Price = new Price();

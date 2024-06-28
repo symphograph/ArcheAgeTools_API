@@ -1,6 +1,6 @@
 <?php
 
-use App\CTRL\AccSettingsCTRL;
+use App\CTRL\AccSetsCTRL;
 use Symphograph\Bicycle\Errors\ApiErr;
 use Symphograph\Bicycle\Errors\ValidationErr;
 
@@ -12,7 +12,7 @@ if (empty($_POST['method'])) {
 }
 
 match ($_POST['method']) {
-    'get' => AccSettingsCTRL::get(),
-    'list' => AccSettingsCTRL::list(),
+    'get' => AccSetsCTRL::get(),
+    'list' => AccSetsCTRL::list(),
     default => throw new ApiErr()
 };

@@ -6,7 +6,7 @@ use App\Item\Category;
 use App\Item\Item;
 use App\Packs\Zone;
 use App\ServerList;
-use App\User\AccSettings;
+use App\User\AccSets;
 use App\User\ProfLvls;
 use App\User\Server;
 use JetBrains\PhpStorm\NoReturn;
@@ -34,7 +34,7 @@ class OptionsCTRL
 
     #[NoReturn] public static function getZones(): void
     {
-        AccSettings::byJwt();
+        AccSets::byJwt();
         $zonesFrom = Zone::getFromsGroupBySide();
 
         $allZonesTo = [];

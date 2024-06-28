@@ -5,7 +5,7 @@ namespace App\Packs;
 use App\Craft\{AccountCraft, LaborData};
 use App\DTO\PackDTO;
 use App\Item\Item;
-use App\User\AccSettings;
+use App\User\AccSets;
 use PDO;
 use App\User\Prof;
 
@@ -102,7 +102,7 @@ class Pack extends PackDTO
 
     public function initCraftData(): bool
     {
-        $AccSets = AccSettings::byGlobal();
+        $AccSets = AccSets::getCurrent();
         $CraftData = AccountCraft::byResultItemId($this->itemId);
         self::initPassLabor();
         $this->laborNeed = round($this->passLabor + $CraftData->laborTotal);

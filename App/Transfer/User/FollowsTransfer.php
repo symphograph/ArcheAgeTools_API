@@ -3,7 +3,7 @@
 namespace App\Transfer\User;
 
 use App\ServerList;
-use App\User\AccSettings;
+use App\User\AccSets;
 use App\User\Member;
 use Symphograph\Bicycle\Logs\ErrorLog;
 use Throwable;
@@ -15,7 +15,7 @@ class FollowsTransfer
     {
 
         foreach ($masters as $master){
-            $masterAccSets = AccSettings::byOldId($master);
+            $masterAccSets = AccSets::byOldId($master);
             try{
                 Member::setFollow($accountId, $masterAccSets->accountId, $serverGroup);
             } catch (Throwable $err) {

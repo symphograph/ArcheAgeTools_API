@@ -8,6 +8,7 @@ use App\Craft\{AccountCraft, Craft, CraftCounter};
 use App\Item\{Item,Pricing};
 use App\Packs\{Pack, PackIds};
 use Symphograph\Bicycle\Helpers;
+use Symphograph\Bicycle\Helpers\ArrayHelper;
 
 class Test
 {
@@ -84,10 +85,10 @@ class Test
         return Helpers::median($this->durations)/1000000;
     }
 
-    public function sortFunction(array $list): void
+    public function sortFunction(array $list): array
     {
         $sort = ['categId' => 'asc', 'name' => 'asc'];
-        $list = Helpers::sortMultiArrayByProp($list, $sort);
+        return ArrayHelper::sortMultiArrayByProp($list, $sort);
     }
 
     public function sqlBenchMark(): void

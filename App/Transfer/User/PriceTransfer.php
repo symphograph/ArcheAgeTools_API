@@ -2,10 +2,7 @@
 
 namespace App\Transfer\User;
 
-use App\DTO\ItemDTO;
-use App\DTO\PriceDTO;
 use Symphograph\Bicycle\Logs\ErrorLog;
-use Symphograph\Bicycle\Logs\Log;
 
 class PriceTransfer
 {

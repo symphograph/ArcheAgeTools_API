@@ -2,12 +2,12 @@
 
 namespace App\Craft;
 
-use App\User\AccSettings;
+use App\User\AccSets;
 use App\User\Prof;
 
 class LaborData
 {
-    const defaultLaborCost = 300;
+    const int defaultLaborCost = 300;
     public int $forThisCraftDefault = 0;
     public int $forThisCraftBonused = 0;
     public int|float $forOneUnitOfThisCraft = 0;
@@ -29,8 +29,7 @@ class LaborData
 
     public static function getLaborCost(): int
     {
-        $AccSets = AccSettings::byGlobal();
-        return $AccSets->getLaborCost();
+        return AccSets::getCurrent()->getLaborCost();
     }
 
     public static function getBonusedLabor(int|float $laborNeed, int $laborBonus): int

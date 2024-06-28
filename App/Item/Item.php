@@ -2,8 +2,9 @@
 
 namespace App\Item;
 
+use App\AppStorage;
 use App\DTO\ItemDTO;
-use App\User\AccSettings;
+use App\Price\Price;
 use PDO;
 use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AppErr;
@@ -52,15 +53,11 @@ class Item extends ItemDTO
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    public static function byId(int|string $id) : self
+    public function initData(): self
     {
-        $ItemDTO = ItemDTO::byId($id)
-            or throw new AppErr("item $id does not exist in DB");
-        $Item = new self();
-        $Item->bindSelf($ItemDTO);
-        $Item->grade = $ItemDTO->basicGrade;
-        $Item->isPack = Category::isPack($Item->categId);
-        return $Item;
+        $this->grade = $this->basicGrade;
+        $this->isPack = Category::isPack($this->categId);
+        return $this;
     }
 
     public function initInfo(): void
@@ -126,13 +123,7 @@ class Item extends ItemDTO
         if(!$this->craftable || $this->personal){
             return false;
         }
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
-            select * from uacc_buyOnly 
-            where itemId = :itemId 
-            and accountId = :accountId",
-            ['itemId' => $this->id, 'accountId' => $AccSets->accountId]
-        );
-        return $qwe && $qwe->rowCount();
+
+        return in_array($this->id, AppStorage::getSelf()->buyOnlyItems);
     }
 }

@@ -1,12 +1,13 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\User\AccSettings;
+use App\Item\{Currency};
+use App\Price\Price;
+use App\User\AccSets;
 use Symphograph\Bicycle\Api\Response;
 use Symphograph\Bicycle\Errors\{AppErr, ValidationErr};
-use App\Item\{Currency, Price};
 
-$AccSets = AccSettings::byJwt();
+$AccSets = AccSets::byJwt();
 
 $id = intval($_POST['id'] ?? 0)
     or throw new ValidationErr('bad id');

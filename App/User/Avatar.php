@@ -22,7 +22,7 @@ class Avatar
             return $Avatar;
         }
         $src = self::avaFolder . $avaFileName;
-        $fullPath = FileHelper::fullPath($Avatar->src);
+        $fullPath = FileHelper::fullPath($Avatar->src, true);
 
         if(!file_exists($fullPath)){
             return false;

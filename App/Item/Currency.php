@@ -2,6 +2,7 @@
 
 namespace App\Item;
 
+use App\Price\Price;
 use PDO;
 use Symphograph\Bicycle\Helpers;
 

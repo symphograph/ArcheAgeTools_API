@@ -3,8 +3,8 @@
 namespace App\User;
 
 use App\Craft\LaborData;
-use App\DTO\AccSettingsDTO;
-use App\Item\Price;
+use App\DTO\AccSetsDTO;
+use App\Price\Price;
 use App\Transfer\User\MailruOldUser;
 use App\UserStorage;
 use Symphograph\Bicycle\DTO\ModelTrait;
@@ -13,14 +13,16 @@ use Symphograph\Bicycle\Logs\Log;
 use Symphograph\Bicycle\Token\AccessTokenData;
 
 
-class AccSettings extends AccSettingsDTO
+class AccSets extends AccSetsDTO
 {
     use ModelTrait;
     /**
-     * @var array<Prof>|null
+     * @var Prof[]|null
      */
     public ?array $Profs;
     public ?int $laborCost;
+    public static self $current;
+
 
 
     //Get-----------------------------------------------------------
@@ -35,17 +37,45 @@ class AccSettings extends AccSettingsDTO
     {
         global $AccSets;
         $accountId = AccessTokenData::accountId();
-        $AccSets = AccSettings::byIdAndInit($accountId);
+        $AccSets = AccSets::byIdAndInit($accountId);
+        self::$current = $AccSets;
         return $AccSets;
     }
 
-    public static function byGlobal(): self
+    public static function getCurrent(): self
     {
-        global $AccSets;
-        if(empty($AccSets)){
+        if(empty(self::$current)){
             throw new AccountErr('AccSets is not defined');
         }
-        return $AccSets;
+        return self::$current;
+    }
+
+    public static function curId(): int
+    {
+        return self::$current->accountId
+            ?? throw new AccountErr('AccSets is not defined');
+    }
+
+    public static function curServerGroupId(): int
+    {
+        return self::$current->serverGroupId
+            ?? throw new AccountErr('AccSets is not defined');
+    }
+
+    public static function curMode(): int
+    {
+        return self::$current->mode
+            ?? throw new AccountErr('AccSets is not defined');
+    }
+
+    /**
+     * @return Prof[]
+     * @throws AccountErr
+     */
+    public static function curProfs(): array
+    {
+        return self::$current->Profs
+            ?? throw new AccountErr('AccSets is not defined');
     }
 
     public static function getDefault(int $accountId): self
@@ -109,10 +139,7 @@ class AccSettings extends AccSettingsDTO
         if($qwe && $qwe->rowCount()){
             return true;
         }
-        /*
-        $qwe = qwe("select * from old_mailusers where lower(user_nick) = lower(:nick)", ['nick' => $nick]);
-        return ($qwe && $qwe->rowCount());
-        */
+
         return in_array($nick, UserStorage::getSelf()->oldNicks);
     }
 

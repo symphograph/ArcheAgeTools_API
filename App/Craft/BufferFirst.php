@@ -3,19 +3,12 @@
 namespace App\Craft;
 
 use App\AppStorage;
-use App\DTO\CraftDTO;
-use App\User\AccSettings;
-use PDO;
-use Symphograph\Bicycle\Helpers;
+use App\User\AccSets;
+use Symphograph\Bicycle\Helpers\ArrayHelper;
+use Symphograph\Bicycle\PDO\DB;
 
 class BufferFirst
 {
-    const sortArgs = [
-        'isUBest' => 'desc',
-        'spmu' => 'asc',
-        'craftCost' => 'asc',
-        'resultAmount' => 'desc'
-    ];
     public int $accountId;
     public int $craftId;
     public int $craftCost;
@@ -43,28 +36,24 @@ class BufferFirst
 
     public static function clearDB(): void
     {
-        $AccSets = AccSettings::byGlobal();
-        qwe("
-            delete from craftBuffer 
-                   where accountId = :accountId",
-            ['accountId' => $AccSets->accountId]
-        );
+        $sql = "delete from craftBuffer where accountId = :accountId";
+        $params = ['accountId' => AccSets::curId()];
+        DB::qwe($sql, $params);
     }
 
     public static function putToDB(int $craftId, int $craftCost, int $matSPM): void
     {
-        $AccSets = AccSettings::byGlobal();
-        qwe("
+        $accountId = AccSets::curId();
+
+        $sql = "
             replace into craftBuffer 
                 (accountId, craftId, craftCost, matSPM) 
             VALUES 
-                (:accountId, :craftId, :craftCost, :matSPM)", [
-                'accountId' => $AccSets->accountId,
-                'craftId'   => $craftId,
-                'craftCost' => $craftCost,
-                'matSPM'    => $matSPM
-            ]
-        );
+                (:accountId, :craftId, :craftCost, :matSPM)";
+
+        $params = compact('accountId', 'craftId', 'craftCost', 'matSPM');
+
+        DB::qwe($sql, $params);
     }
 
     public static function putToStorage(Craft $craft, int $craftCost, int $matSPM): void
@@ -105,17 +94,21 @@ class BufferFirst
     }
 
     /**
-     * @return array<self>|false
+     * @return self[]|false
      */
     public static function getCounted(): array|false
     {
+        $sortArgs = [
+            'isUBest' => 'desc',
+            'spmu' => 'asc',
+            'craftCost' => 'asc',
+            'resultAmount' => 'desc'
+        ];
 
         $list = AppStorage::getSelf()->CraftsFirst;
-        $list = Helpers::sortMultiArrayByProp($list, self::sortArgs);
+        $list = ArrayHelper::sortMultiArrayByProp($list, $sortArgs);
 
         self::clearStorage();
-
-
         return $list;
     }
 

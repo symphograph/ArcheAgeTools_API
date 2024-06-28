@@ -3,7 +3,7 @@
 namespace App\Craft;
 
 use App\AppStorage;
-use App\User\AccSettings;
+use App\User\AccSets;
 use Symphograph\Bicycle\DTO\BindTrait;
 
 class BufferSecond
@@ -33,22 +33,20 @@ class BufferSecond
 
     private static function putToStorage(BufferFirst $bufferFirst): void
     {
-        $bufferSecond = new self();
-        $bufferSecond->bindSelf($bufferFirst);
+        $bufferSecond = self::byBind($bufferFirst);
         AppStorage::getSelf()->CraftsSecond[] = $bufferSecond;
     }
 
     public static function saveCrafts(): void
     {
-        $AccSets = AccSettings::byGlobal();
         $firstBuffer = BufferFirst::getCounted();
 
         self::putToStorage($firstBuffer[0]);
 
         foreach ($firstBuffer as $k => $buffCraft){
             $AccCraft = AccountCraft::byParams(
-                $AccSets->accountId,
-                $AccSets->serverGroupId,
+                AccSets::curId(),
+                AccSets::curServerGroupId(),
                 $buffCraft->craftId,
                 $buffCraft->resultItemId,
                 intval($k === 0),

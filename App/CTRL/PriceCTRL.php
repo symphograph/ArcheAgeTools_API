@@ -5,10 +5,10 @@ namespace App\CTRL;
 
 
 use App\Craft\AccountCraft;
-use App\Item\Price;
+use App\Price\Price;
 use App\PriceHistory;
 use App\Transfer\User\PriceTransfer;
-use App\User\AccSettings;
+use App\User\AccSets;
 use App\User\Member;
 use JetBrains\PhpStorm\NoReturn;
 use Symphograph\Bicycle\Api\Response;
@@ -25,7 +25,7 @@ class PriceCTRL
 
     public static function listOfMember(): void
     {
-        $AccSets = AccSettings::byJwt();
+        $AccSets = AccSets::byJwt();
 
         $accountId = ($_POST['accountId'] ?? $AccSets->accountId) or throw new ValidationErr();
         $priceMember = new Member();
@@ -41,7 +41,7 @@ class PriceCTRL
 
     public static function del(): void
     {
-        $AccSets = AccSettings::byJwt();
+        $AccSets = AccSets::byJwt();
         $itemId = $_POST['itemId'] or throw new ValidationErr('itemId');
 
         Price::delFromDB($AccSets->accountId, $itemId, $AccSets->serverGroupId);
@@ -52,7 +52,7 @@ class PriceCTRL
 
     #[NoReturn] public static function getBasedList(): void
     {
-        $AccSets = AccSettings::byJwt();
+        $AccSets = AccSets::byJwt();
         $List = Price::basedList();
 
         Response::data(['Prices'=>$List]);
@@ -60,7 +60,7 @@ class PriceCTRL
 
     public static function set(): void
     {
-        $AccSets = AccSettings::byJwt();
+        $AccSets = AccSets::byJwt();
         $itemId = intval($_POST['itemId'] ?? 0)
         or throw new ValidationErr('itemId');
 

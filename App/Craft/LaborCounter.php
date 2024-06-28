@@ -2,8 +2,7 @@
 
 namespace App\Craft;
 
-use App\Item\Price;
-use App\User\Prof;
+use App\AppStorage;
 
 class LaborCounter
 {
@@ -24,7 +23,7 @@ class LaborCounter
     private function countChainLabor(Craft $craft, float|int $need = 1): void
     {
         $LaborData = LaborData::byCraft($craft);
-        $buyOnlyItems = CraftCounter::getBuyOnlyItems();
+        $buyOnlyItems = AppStorage::getSelf()->buyOnlyItems;
         $this->laborSum += $LaborData->forOneUnitOfThisCraft * $need;
         foreach ($craft->Mats as $mat){
             if(!$mat->craftable)

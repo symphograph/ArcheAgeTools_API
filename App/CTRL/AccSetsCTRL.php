@@ -5,7 +5,7 @@ namespace App\CTRL;
 use App\Auth\Mailru\MailruUserClient;
 use App\Transfer\User\MailruOldUser;
 use App\Transfer\User\PriceTransfer;
-use App\User\AccSettings;
+use App\User\AccSets;
 use App\User\User;
 use JetBrains\PhpStorm\NoReturn;
 use Symphograph\Bicycle\Api\Response;
@@ -14,19 +14,25 @@ use Symphograph\Bicycle\Errors\ValidationErr;
 use Symphograph\Bicycle\Helpers;
 use Symphograph\Bicycle\Token\AccessTokenData;
 
-class AccSettingsCTRL extends AccSettings
+class AccSetsCTRL extends AccSets
 {
     #[NoReturn] public static function get(): void
     {
         self::tryByJwt();
         self::tryByOld();
-        self::byDefault();
+        self::createByToken();
     }
 
     private static function tryByJwt(): void
     {
-        $AccSets = self::byJwt();
-        if(!$AccSets) return;
+
+        try {
+            $AccSets = self::byJwt();
+            if(!$AccSets) return;
+        } catch (\Throwable) {
+            return;
+        }
+
         if(!empty($AccSets->old_id)){
             $oldUser = MailruOldUser::byId($AccSets->old_id);
             $oldUser->updateIfExist();
@@ -43,7 +49,7 @@ class AccSettingsCTRL extends AccSettings
         $MailruUser = MailruUserClient::byAccountId($accountId)
             or throw new AccountErr("account $accountId is error");
 
-        $AccSets = AccSettings::byOldServer($accountId, $MailruUser->email);
+        $AccSets = AccSets::byOldServer($accountId, $MailruUser->email);
         if(!$AccSets){
             return;
         }
@@ -53,11 +59,12 @@ class AccSettingsCTRL extends AccSettings
         Response::data($AccSets);
     }
 
-    #[NoReturn] private static function byDefault(): void
+    #[NoReturn] private static function createByToken(): void
     {
         $AccSets = self::getDefault(AccessTokenData::accountId());
         $AccSets->initData();
         $AccSets->avaFileName = AccessTokenData::avaFileName();
+        $AccSets->authType = AccessTokenData::authType();
         $AccSets->putToDB();
         Response::data($AccSets);
     }
@@ -69,7 +76,7 @@ class AccSettingsCTRL extends AccSettings
         Helpers::isArrayIntList($ids ?? []) or throw new ValidationErr();
         $list = [];
         foreach ($_POST['ids'] as $accountId){
-            $list[] = AccSettings::byId($accountId);
+            $list[] = AccSets::byId($accountId);
         }
         Response::data($list);
     }

@@ -3,8 +3,9 @@
 namespace App\Craft;
 
 use App\DTO\MatDTO;
-use App\User\AccSettings;
-use App\Item\{Item, Price};
+use App\Item\{Item};
+use App\Price\Price;
+use App\User\AccSets;
 use PDO;
 
 class Mat extends MatDTO
@@ -16,10 +17,10 @@ class Mat extends MatDTO
     public ?Item  $Item;
     public ?bool  $isBuyOnly;
     public ?Price $Price;
-    public bool $isCounted;
+    public bool   $isCounted;
 
 
-    public static function byIds(int $matId, int $craftId) : self|bool
+    public static function byIds(int $matId, int $craftId): self|bool
     {
         $qwe = qwe("
             select i.id,
@@ -37,7 +38,7 @@ class Mat extends MatDTO
             where craftId = :craftId and i.id = :matId",
             ['craftId' => $craftId, 'matId' => $matId]
         );
-        if(!$qwe || !$qwe->rowCount()){
+        if (!$qwe || !$qwe->rowCount()) {
             return false;
         }
         $mat = $qwe->fetchObject(self::class);
@@ -45,10 +46,9 @@ class Mat extends MatDTO
         return $mat;
     }
 
-    private function initIsByOnly(): void
+    public function initItem(): void
     {
-        $this->Item->initIsBuyOnly();
-        $this->isBuyOnly = $this->Item->isBuyOnly;
+        $this->Item = Item::byId($this->id)->initData();
     }
 
     /**
@@ -62,7 +62,7 @@ class Mat extends MatDTO
             where craftId = :craftId",
             ['craftId' => $craftId]
         );
-        if(!$qwe || !$qwe->rowCount()){
+        if (!$qwe || !$qwe->rowCount()) {
             return [];
         }
         return $qwe->fetchAll(PDO::FETCH_COLUMN);
@@ -71,7 +71,7 @@ class Mat extends MatDTO
     /**
      * @return self[]|bool
      */
-    public static function getCraftMats(int $craftId) : array|bool
+    public static function getCraftMats(int $craftId): array|bool
     {
         $qwe = qwe("
             select cm.*, 
@@ -84,13 +84,13 @@ class Mat extends MatDTO
             where craftId = :craftId",
             ['craftId' => $craftId]
         );
-        if(!$qwe || !$qwe->rowCount()){
+        if (!$qwe || !$qwe->rowCount()) {
             return false;
         }
         /** @var self[] $arr */
         $arr = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
         $List = [];
-        foreach ($arr as $mat){
+        foreach ($arr as $mat) {
             $mat->initItem();
             $mat->craftable = $mat->Item->craftable;
             $List[] = $mat;
@@ -99,18 +99,12 @@ class Mat extends MatDTO
         return $List;
     }
 
-    public function initItem(): void
-    {
-        $this->Item = Item::byId($this->id);
-    }
-
     /**
      * @return int[]
      */
     public static function allPotentialMats(int $itemId, array $matIDsArr = []): array
     {
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
+        $sql = "
             select items.id,
                    cm.craftId,
                    crafts.resultItemId,
@@ -130,23 +124,24 @@ class Mat extends MatDTO
                         and uCP.accountId = :accountId
                         and uCP.serverGroupId = :serverGroupId
                 where resultItemId = :itemId
-                and uCP.itemId is null",
-            [
-                'accountId'=> $AccSets->accountId,
-                'serverGroupId'=>$AccSets->serverGroupId,
-                'itemId'=>$itemId
-            ]
+                and uCP.itemId is null";
 
-        );
+        $params = [
+            'accountId'     => AccSets::curId(),
+            'serverGroupId' => AccSets::curServerGroupId(),
+            'itemId'        => $itemId
+        ];
+
+        $qwe = qwe($sql, $params);
         $mats = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
-        //printr($mats);
-        foreach ($mats as $mat){
-            if(in_array($mat->id, $matIDsArr)){
+
+        foreach ($mats as $mat) {
+            if (in_array($mat->id, $matIDsArr)) {
                 continue;
             }
             $matIDsArr[] = $mat->id;
-            if($mat->craftable){
-                $matIDsArr = self::allPotentialMats($mat->id,$matIDsArr);
+            if ($mat->craftable) {
+                $matIDsArr = self::allPotentialMats($mat->id, $matIDsArr);
             }
         }
         return $matIDsArr;
@@ -154,47 +149,53 @@ class Mat extends MatDTO
 
     public function initPrice(): bool
     {
-        if($this->id === 500){
+        if ($this->id === 500) {
             $this->Price = Price::byParams(itemId: 500, price: 1);
             return true;
         }
         self::initIsByOnly();
 
-        if($this->isBuyOnly){
-            if(self::initPriceBySaved()){
+        if ($this->isBuyOnly) {
+            if (self::initPriceBySaved()) {
                 return true;
             }
 
-            if(GroupCraft::byCraftId($this->craftId)){
+            if (GroupCraft::byCraftId($this->craftId)) {
                 return self::initPriceByCraft();
             }
             return false;
         }
 
-        if($this->need < 0){
-            if(GroupCraft::byCraftId($this->craftId)){
+        if ($this->need < 0) {
+            if (GroupCraft::byCraftId($this->craftId)) {
                 return self::initPriceByCraft();
             }
-            if($this->craftable && self::initPriceByCraft()){
+            if ($this->craftable && self::initPriceByCraft()) {
                 return true;
             }
             return self::initPriceBySaved();
         }
 
-        if($this->Item->isTradeNPC && !$this->Item->craftable){
+        if ($this->Item->isTradeNPC && !$this->Item->craftable) {
             return self::initPriceFromNPC();
         }
 
-        if($this->Item->craftable){
+        if ($this->Item->craftable) {
             return self::initPriceByCraft();
         }
 
         return self::initPriceBySaved();
     }
 
+    private function initIsByOnly(): void
+    {
+        $this->Item->initIsBuyOnly();
+        $this->isBuyOnly = $this->Item->isBuyOnly;
+    }
+
     private function initPriceBySaved(): bool
     {
-        if($Price = Price::bySaved($this->id)){
+        if ($Price = Price::bySaved($this->id)) {
             $this->Price = $Price;
             return true;
         }
@@ -204,11 +205,11 @@ class Mat extends MatDTO
 
     private function initPriceByCraft(): bool
     {
-        if($Price = Price::byCraft($this->id)){
+        if ($Price = Price::byCraft($this->id)) {
             $this->Price = $Price;
             return true;
         }
-        if($Price = Price::byBuffer($this->id)){
+        if ($Price = Price::byBuffer($this->id)) {
             $this->Price = $Price;
             return true;
         }
@@ -217,7 +218,7 @@ class Mat extends MatDTO
 
     private function initPriceFromNPC(): bool
     {
-        if($this->Item->currencyId === 500){
+        if ($this->Item->currencyId === 500) {
             $this->Price = Price::byParams(
                 itemId: $this->id,
                 price: $this->Item->priceFromNPC,
@@ -227,13 +228,13 @@ class Mat extends MatDTO
         }
 
         $Price = Price::bySaved($this->id);
-        if($Price){
+        if ($Price) {
             $this->Price = $Price;
             return true;
         }
 
         $vPrice = Price::bySaved($this->Item->currencyId);
-        if($vPrice){
+        if ($vPrice) {
             $this->Price = Price::byParams(
                 itemId: $this->id,
                 price: $vPrice->price * $this->Item->priceFromNPC,

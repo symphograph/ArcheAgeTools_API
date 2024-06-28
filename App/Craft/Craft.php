@@ -5,7 +5,7 @@ namespace App\Craft;
 use App\AppStorage;
 use App\DTO\CraftDTO;
 use App\Errors\CraftCountErr;
-use App\User\AccSettings;
+use App\User\AccSets;
 use Symphograph\Bicycle\Errors\AppErr;
 use PDO;
 use App\User\Prof;
@@ -33,7 +33,7 @@ class Craft extends CraftDTO
      */
     public ?array $trashPool;
 
-    public static function byId(int|string $id) : self|bool
+    public static function byId(int $id) : static|false
     {
         $qwe = qwe("
             select crafts.*, 
@@ -188,17 +188,16 @@ class Craft extends CraftDTO
 
     public static function isCountedItem(int $resultItemId): bool
     {
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
+        $sql = "
             select * from uacc_crafts 
             where accountId = :accountId
             and serverGroupId = :serverGroupId
-            and itemId = :resultItemId",
-            ['accountId'    => $AccSets->accountId,
-             'serverGroupId'  => $AccSets->serverGroupId,
-             'resultItemId' => $resultItemId]
-        );
-        return boolval($qwe);
+            and itemId = :resultItemId";
+
+        $params = ['accountId'    => AccSets::curId(),
+                   'serverGroupId'  => AccSets::curServerGroupId(),
+                   'resultItemId' => $resultItemId];
+        return !!qwe($sql, $params);
     }
 
     public function initMatPrice(): bool

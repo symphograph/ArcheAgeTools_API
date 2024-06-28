@@ -8,8 +8,9 @@ use Symphograph\Bicycle\Token\Token;
 class User
 {
 
-    public static function auth(): void
+    public static function auth(array $allowedPowers = []): void
     {
-        Token::validation(ServerEnv::HTTP_ACCESSTOKEN());
+        Token::validation(ServerEnv::HTTP_ACCESSTOKEN(), $allowedPowers);
+        AccSets::byJwt();
     }
 }

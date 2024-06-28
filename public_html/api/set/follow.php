@@ -1,12 +1,12 @@
 <?php
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\User\{AccSettings, Member, Server};
+use App\User\{AccSets, Member, Server};
 use Symphograph\Bicycle\Api\Response;
 use App\Craft\AccountCraft;
 use Symphograph\Bicycle\Errors\ValidationErr;
 
-$AccSets = AccSettings::byJwt();
+$AccSets = AccSets::byJwt();
 
 $master = $_POST['master']
     ?? throw new ValidationErr('master');

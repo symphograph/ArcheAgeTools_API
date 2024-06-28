@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Item;
+namespace App\Price;
 
-use App\User\AccSettings;
+use App\User\AccSets;
 
 class PriceEnum
 {
     public static function label(Price $Price): string
     {
-        return match ($Price->method){
+        return match ($Price->Method->value){
             'bySolo', 'byAccount' => self::bySolo($Price),
             'byToNPC' => self::byToNPC(),
             'byFriends' => self::byFriends($Price),
@@ -31,13 +31,13 @@ class PriceEnum
 
     private static function byFriends(Price $Price): string
     {
-        $AuthorAccSets = AccSettings::byId($Price->accountId);
+        $AuthorAccSets = AccSets::byId($Price->accountId);
         return self::dateFormat($Price->updatedAt) . ' - ' . $AuthorAccSets->publicNick;
     }
 
     private static function byAny(Price $Price): string
     {
-        $AuthorAccSets = AccSettings::byId($Price->accountId);
+        $AuthorAccSets = AccSets::byId($Price->accountId);
         return self::dateFormat($Price->updatedAt) . ' - ' . $AuthorAccSets->publicNick;
     }
 
@@ -49,6 +49,7 @@ class PriceEnum
     private static function byFromNPC(): string {
         return 'Куплено у NPC';
     }
+
     private static function byCraft(): string {
         return 'Себестоимость (крафт)';
     }

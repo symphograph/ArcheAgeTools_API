@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Item;
+namespace App\Price;
 
-use App\DTO\PriceDTO;
-use Symphograph\Bicycle\PDO\DB;
 use Symphograph\Bicycle\DTO\BindTrait;
+use Symphograph\Bicycle\PDO\DB;
 
 class PriceLog extends PriceDTO
 {
     use BindTrait;
-    const tableName = 'uacc_priceLog';
+    const string tableName = 'uacc_priceLog';
     public string $createDate;
 
     public static function put(PriceDTO $priceDTO): void

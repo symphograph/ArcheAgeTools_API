@@ -4,10 +4,9 @@ namespace App\Craft;
 
 
 use App\Errors\CraftCountErr;
-use App\Item\Item;
-use App\User\AccSettings;
+use App\User\AccSets;
 use PDO;
-use Symphograph\Bicycle\Errors\AppErr;
+use Symphograph\Bicycle\PDO\DB;
 
 
 class CraftCounter
@@ -141,21 +140,4 @@ class CraftCounter
         return $this->groupCrafts;
     }
 
-    /**
-     * @return array<int>
-     */
-    public static function getBuyOnlyItems(): array
-    {
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
-            select itemId 
-            from uacc_buyOnly
-            where accountId = :accountId",
-            ['accountId' => $AccSets->accountId]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN);
-    }
 }

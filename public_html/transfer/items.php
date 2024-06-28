@@ -5,6 +5,7 @@ use App\Test\Test;
 use App\Transfer\Items\TransferItems;
 
 $startTestTime = Test::startTime();
+
 ?>
 <!doctype html>
 <html lang="ru">
@@ -17,9 +18,9 @@ $startTestTime = Test::startTime();
 set_time_limit(0);
 $ItemList = new TransferItems(
     startId: 100,
-    limit: 10,
-    readOnly: true,
-    random: true
+    limit: 1000000,
+    readOnly: false,
+    random: false
 );
 
 
@@ -33,7 +34,9 @@ $errorFilter = [
     /*'Category is unnecessary'*/
 ];
 //$ItemList->transferErrorItems($errorFilter);
-$ItemList->transferExistingItems();
+//$ItemList->transferExistingItems();
+
+$ItemList->transferNewItems();
 echo Test::scriptTime($startTestTime);
 ?>
 </body>

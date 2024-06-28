@@ -15,7 +15,7 @@ class PublicNick
         $this->nick = Helpers::sanitizeName($nick);
     }
 
-    public function validation(AccSettings $AccSets): void
+    public function validation(AccSets $AccSets): void
     {
         $errText = match (false) {
             self::validMinLen() => 'Не менее ' . self::minLen,
@@ -38,7 +38,7 @@ class PublicNick
         return mb_strlen($this->nick) <= self::maxLen;
     }
 
-    private function isFree(AccSettings $AccSets): bool
+    private function isFree(AccSets $AccSets): bool
     {
         if (mb_strtolower($this->nick) === mb_strtolower($AccSets->publicNick)){
             return true;

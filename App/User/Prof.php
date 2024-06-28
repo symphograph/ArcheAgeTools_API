@@ -2,6 +2,7 @@
 
 namespace App\User;
 use PDO;
+use Symphograph\Bicycle\PDO\DB;
 
 class Prof
 {
@@ -83,26 +84,26 @@ class Prof
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    public static function saveLvl(int $accountId, int $profId, int $lvl): bool
+    public static function saveLvl(int $accountId, int $profId, int $lvl): void
     {
-        $qwe = qwe("
-        replace into uacc_profs 
-            (accountId, profId, lvl) 
-        VALUES 
-            (:accountId, :profId, :lvl)",
-        ['accountId'=>$accountId, 'profId'=>$profId, 'lvl'=>$lvl]
-        );
-        return boolval($qwe);
+        $sql = "
+            replace into uacc_profs 
+                (accountId, profId, lvl) 
+            VALUES 
+                (:accountId, :profId, :lvl)";
+
+        $params = compact('accountId', 'profId', 'lvl');
+
+        DB::qwe($sql, $params);
     }
 
-    public static function getAccProfById(int $profId) :Prof|bool
+    public static function getAccProfById(int $profId) :Prof|false
     {
         if($profId === 25){
             return new self();
         }
-        $AccSets = AccSettings::byGlobal();
 
-        foreach ($AccSets->Profs as $prof){
+        foreach (AccSets::curProfs() as $prof){
             if($prof->id === $profId){
                 return $prof;
             }

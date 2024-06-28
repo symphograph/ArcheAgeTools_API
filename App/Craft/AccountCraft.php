@@ -3,7 +3,7 @@
 namespace App\Craft;
 
 use App\DTO\CraftDTO;
-use App\User\AccSettings;
+use App\User\AccSets;
 use Symphograph\Bicycle\Errors\AppErr;
 use Symphograph\Bicycle\PDO\DB;
 
@@ -21,37 +21,6 @@ class AccountCraft
     public ?string        $allMats;
     public ?LaborData     $LaborData;
     public float|int|null $laborTotal;
-
-    public function __set(string $name, $value): void
-    {
-    }
-
-
-
-    public static function byId(int $craftId): self|false
-    {
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
-            select uc.*,
-                   if(ubC.craftId, 1, 0) as isUBest
-            from uacc_crafts uc
-            left join uacc_bestCrafts ubC 
-                on uc.accountId = ubC.accountId
-                and ubC.craftId = uc.craftId
-            where uc.accountId = :accountId
-                and serverGroupId = :serverGroupId
-                and uc.craftId = :craftId",
-            [
-                'accountId'   => $AccSets->accountId,
-                'serverGroupId' => $AccSets->serverGroupId,
-                'craftId'     => $craftId
-            ]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
-        return $qwe->fetchObject(self::class);
-    }
 
     public static function byParams(
         int            $accountId,
@@ -81,38 +50,23 @@ class AccountCraft
         return $Craft;
     }
 
-    public function putToDB(): void
-    {
-        $params = [
-            'accountId'   => $this->accountId,
-            'serverGroupId' => $this->serverGroupId,
-            'craftId'     => $this->craftId,
-            'itemId'      => $this->itemId,
-            'isBest'      => intval($this->isBest),
-            'craftCost'   => $this->craftCost,
-            'datetime'    => date('Y-m-d H:i:s'),
-            'laborTotal'  => $this->laborTotal ?? 0,
-            'spmu'        => $this->spmu,
-            'allMats'     => $this->allMats
-        ];
-        DB::replace('uacc_crafts', $params);
-    }
-
     public static function clearAllCrafts(): void
     {
-        $AccSets = AccSettings::byGlobal();
-        qwe("
+        $params = [
+            'accountId'     => AccSets::curId(),
+            'serverGroupId' => AccSets::curServerGroupId()
+        ];
+        $sql = "
             delete from uacc_crafts 
             where accountId = :accountId 
-            and serverGroupId = :serverGroupId",
-            ['accountId'=>$AccSets->accountId, 'serverGroupId'=>$AccSets->serverGroupId]
-        );
-        qwe("
+            and serverGroupId = :serverGroupId";
+        DB::qwe($sql, $params);
+
+        $sql = "
             delete from uacc_CraftPool
             where accountId = :accountId
-                and serverGroupId = :serverGroupId",
-            ['accountId'=>$AccSets->accountId, 'serverGroupId'=>$AccSets->serverGroupId]
-        );
+                and serverGroupId = :serverGroupId";
+        DB::qwe($sql, $params);
     }
 
     public static function setUBest(int $accountId, int $craftId): void
@@ -123,30 +77,51 @@ class AccountCraft
                 (accountId, itemId, craftId) 
             VALUES 
                 (:accountId, :itemId, :craftId)",
-            ['accountId'=> $accountId, 'itemId' => $craft->resultItemId, 'craftId'=>$craftId]
+            ['accountId' => $accountId, 'itemId' => $craft->resultItemId, 'craftId' => $craftId]
         ) or throw new AppErr('error on Replace uBestCraft', 'Не сохранилось');
+    }
+
+    public static function byId(int $craftId): self|false
+    {
+        $sql = "
+            select uc.*,
+                   if(ubC.craftId, 1, 0) as isUBest
+            from uacc_crafts uc
+            left join uacc_bestCrafts ubC 
+                on uc.accountId = ubC.accountId
+                and ubC.craftId = uc.craftId
+            where uc.accountId = :accountId
+                and serverGroupId = :serverGroupId
+                and uc.craftId = :craftId";
+
+        $params = [
+            'accountId'     => AccSets::curId(),
+            'serverGroupId' => AccSets::curServerGroupId(),
+            'craftId'       => $craftId
+        ];
+        return DB::qwe($sql, $params)
+            ->fetchObject(self::class);
     }
 
     public static function delUBest(int $accountId, int $craftId): bool
     {
         $craft = CraftDTO::byId($craftId);
-        $qwe = qwe("
+        $sql = "
             delete from uacc_bestCrafts
             where accountId = :accountId
-                and itemId = :itemId",
-            ['accountId'=> $accountId, 'itemId' => $craft->resultItemId]
-        );
-        if(!!!$qwe){
-            $msg = "delUBest err - accountId: $accountId, craftId: $craftId";
-            throw new AppErr($msg, 'Не удалилось');
-        }
-        return true;
+                and itemId = :itemId";
+        $params = ['accountId' => $accountId, 'itemId' => $craft->resultItemId];
+        return DB::qwe($sql, $params)
+            or throw new AppErr(
+                "delUBest err - accountId: $accountId, craftId: $craftId",
+                'Не удалилось'
+            );
+
     }
 
-    public static function byResultItemId(int $resultItemId)
+    public static function byResultItemId(int $resultItemId): self|false
     {
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
+        $sql = "
             select 
                 uc.*,
                 if(ubC.craftId, 1, 0) as isUBest
@@ -158,13 +133,37 @@ class AccountCraft
                 and uc.accountId = :accountId
                 and serverGroupId = :serverGroupId
             order by isUBest desc, isBest desc, spmu, craftCost
-            limit 1",
-            ['itemId'=>$resultItemId, 'accountId'=>$AccSets->accountId, 'serverGroupId' => $AccSets->serverGroupId]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
-        }
-        return $qwe->fetchObject(self::class);
+            limit 1";
+
+        $params = [
+            'itemId'        => $resultItemId,
+            'accountId'     => AccSets::curId(),
+            'serverGroupId' => AccSets::curServerGroupId()
+        ];
+
+        return DB::qwe($sql, $params)
+            ->fetchObject(self::class);
+    }
+
+    public function __set(string $name, $value): void
+    {
+    }
+
+    public function putToDB(): void
+    {
+        $params = [
+            'accountId'     => $this->accountId,
+            'serverGroupId' => $this->serverGroupId,
+            'craftId'       => $this->craftId,
+            'itemId'        => $this->itemId,
+            'isBest'        => intval($this->isBest),
+            'craftCost'     => $this->craftCost,
+            'datetime'      => date('Y-m-d H:i:s'),
+            'laborTotal'    => $this->laborTotal ?? 0,
+            'spmu'          => $this->spmu,
+            'allMats'       => $this->allMats
+        ];
+        DB::replace('uacc_crafts', $params);
     }
 
 }

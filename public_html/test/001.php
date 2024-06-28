@@ -1,15 +1,20 @@
 <?php
+
+use App\Item\ItemList;
+use Symphograph\Bicycle\Debug\Debug;
+
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
-use App\Debug;
-use App\User\Member;
+$Debug = new Debug();
+$Debug->printHeader();
+//------------------------------------------------------------------------------------------------------------------
+$list = ItemList::byIds([100,101,102]);
+vd($list->getList());
+//printr($list->getList());
 
-$start = microtime(true);
-echo Debug::header();
-$list = Member::getList(1093, 2);
-printr($list);
 
-echo Debug::footer($start);
+//------------------------------------------------------------------------------------------------------------------
+$Debug->printFooter();
 
 
 

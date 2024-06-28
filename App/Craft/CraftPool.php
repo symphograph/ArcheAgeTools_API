@@ -2,7 +2,7 @@
 
 namespace App\Craft;
 
-use App\User\AccSettings;
+use App\User\AccSets;
 use Symphograph\Bicycle\PDO\DB;
 
 class CraftPool
@@ -24,21 +24,23 @@ class CraftPool
         return $Pool;
     }
 
-    public static function getByCache(int $resultItemId)
+    public static function getByCache(int $resultItemId): ?array
     {
-        $AccSets = AccSettings::byGlobal();
-        $qwe = qwe("
+        $sql = "
             select pool 
             from uacc_CraftPool
             where accountId = :accountId 
               and serverGroupId = :serverGroupId
-              and itemId = :itemId",
-        ['accountId' =>$AccSets->accountId, 'serverGroupId' => $AccSets->serverGroupId, 'itemId' => $resultItemId]
-        );
-        if(!$qwe || !$qwe->rowCount()){
-            return false;
+              and itemId = :itemId";
+
+        $params = ['accountId' =>AccSets::curId(),
+                   'serverGroupId' => AccSets::curServerGroupId(),
+                   'itemId' => $resultItemId];
+
+        $q = DB::qwe($sql, $params)->fetchColumn();
+        if(empty($q)){
+            return null;
         }
-        $q = $qwe->fetchColumn();
         return json_decode($q,4);
     }
 
@@ -50,10 +52,9 @@ class CraftPool
 
     private function putToDB(): void
     {
-        $AccSets = AccSettings::byGlobal();
         $params = [
-            'accountId' => $AccSets->accountId,
-            'serverGroupId' => $AccSets->serverGroupId,
+            'accountId' => AccSets::curId(),
+            'serverGroupId' => AccSets::curServerGroupId(),
             'itemId' => $this->mainCraft->resultItemId,
             'pool' => json_encode($this, JSON_FORCE_OBJECT)
         ];

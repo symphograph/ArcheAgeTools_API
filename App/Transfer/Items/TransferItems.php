@@ -38,28 +38,28 @@ class TransferItems extends TransferList
 
     public function transferNewItems(): void
     {
-        $List = NewItem::getIdList($this->startId, $this->orderBy, $this->limit);
-        self::transferList($List);
+        $ids = NewItem::getIdList($this->startId, $this->orderBy, $this->limit);
+        $this->transferList($ids);
     }
 
     public function transferErrorItems(array $errorFilter = []): void
     {
         if(empty($errorFilter)){
-            $List = ItemList::errors($this->startId, $this->orderBy, $this->limit);
+            $ids = ItemList::errors($this->startId, $this->orderBy, $this->limit);
         }else{
-            $List = ItemList::errorsFiltered($errorFilter, $this->startId, $this->orderBy, $this->limit);
+            $ids = ItemList::errorsFiltered($errorFilter, $this->startId, $this->orderBy, $this->limit);
         }
 
-        self::transferList($List);
+        $this->transferList($ids);
     }
 
-    protected function transferList(array $List): void
+    protected function transferList(array $ids): void
     {
-        foreach ($List as $id){
+        foreach ($ids as $id){
             if($this->limit > 1){
                 usleep(500);
             }
-            self::transfer($id);
+            $this->transfer($id);
         }
     }
 
@@ -77,7 +77,7 @@ class TransferItems extends TransferList
 
     private function transfer(int $id): void
     {
-        self::resetLast($id);
+        $this->resetLast($id);
         $objectDTO = self::getItemDTO($id);
         $Page = new PageItem($objectDTO, $this->readOnly);
         echo "<p>ID: $id - {$Page->ItemDTO->name}</p>";

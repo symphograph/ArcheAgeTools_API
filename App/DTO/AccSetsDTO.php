@@ -4,11 +4,12 @@ namespace App\DTO;
 
 use Symphograph\Bicycle\DTO\DTOTrait;
 
-class AccSettingsDTO
+class AccSetsDTO
 {
     use DTOTrait;
-    const tableName = 'uacc_settings';
-    const colId = 'accountId';
+
+    const string tableName = 'uacc_settings';
+    const string colId     = 'accountId';
 
     public int     $accountId     = 0;
     public int     $serverGroupId = 100;

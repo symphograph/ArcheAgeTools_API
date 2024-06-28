@@ -3,11 +3,12 @@
 namespace App\DTO;
 
 use Symphograph\Bicycle\DTO\DTOTrait;
+use Symphograph\Bicycle\PDO\DB;
 
 class MatDTO
 {
     use DTOTrait;
-    const tableName = 'craftMaterials';
+    const string tableName = 'craftMaterials';
 
     public int            $craftId;
     public int            $itemId;
@@ -17,7 +18,7 @@ class MatDTO
     public static function delAllFromCraft(int $craftId): void
     {
         $tableName = self::tableName;
-        qwe("
+        DB::qwe("
             delete from $tableName 
             where craftId = :craftId 
             and itemId !=500",
