@@ -1,7 +1,7 @@
 <?php
 
 
-use App\CTRL\ItemCTRL;
+use App\Item\ItemCTRL;
 use Symphograph\Bicycle\Errors\ApiErr;
 use Symphograph\Bicycle\Errors\ValidationErr;
 

@@ -9,23 +9,25 @@ use PDO;
 class Info
 {
     public int|null $id;
+
     /**
-     * @var array<Craft>|null
+     * @var Craft[]
      */
-    public array|null $Crafts;
+    public ?array $Crafts;
+
     /**
-     * @var array<Item>|null
+     * @var Item[]
      */
-    public array|null $CraftResults;
-    public Craft|null $BestCraft;
-    public Category|null $Category;
+    public ?array    $CraftResults;
+    public ?Craft    $BestCraft;
+    public ?Category $Category;
 
     private function __construct(int $id)
     {
         $this->id = $id;
     }
 
-    private function getResults() : array
+    private function getResults(): array
     {
         $qwe = qwe("
         select any_value(crafts.resultItemId) as resultItemId 
@@ -41,21 +43,21 @@ class Info
         ",
             ['itemId' => $this->id]
         );
-        if(!$qwe || !$qwe->rowCount()){
+        if (!$qwe || !$qwe->rowCount()) {
             return [];
         }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN,0);
+        return $qwe->fetchAll(PDO::FETCH_COLUMN, 0);
 
     }
 
     public function initResults(): void
     {
         $itemIds = self::getResults();
-        if(empty($itemIds)){
+        if (empty($itemIds)) {
             return;
         }
         $Results = Item::searchList($itemIds);
-        if(!empty($Results)){
+        if (!empty($Results)) {
             $this->CraftResults = $Results;
         }
     }
@@ -63,11 +65,11 @@ class Info
     public function initCategory(int $categId): void
     {
         $Category = Category::byId($categId);
-        if(!$Category) return;
+        if (!$Category) return;
         $this->Category = $Category;
     }
 
-    public static function byId(int $id) :  self
+    public static function byId(int $id): self
     {
         $Info = new self($id);
         $Info->initResults();

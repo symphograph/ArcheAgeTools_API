@@ -7,7 +7,8 @@ use Symphograph\Bicycle\DTO\DTOTrait;
 class ItemDTO
 {
     use DTOTrait;
-    const tableName = 'items';
+
+    const string tableName = 'items';
 
     public int     $id;
     public int     $currencyId;

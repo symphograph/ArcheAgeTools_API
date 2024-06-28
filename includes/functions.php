@@ -1,5 +1,6 @@
 <?php
 
+use Symfony\Component\VarDumper\VarDumper;
 use Symphograph\Bicycle\Env\Server\ServerEnvCli;
 use Symphograph\Bicycle\Env\Server\ServerEnvHttp;
 use Symphograph\Bicycle\Env\Server\ServerEnvITF;
@@ -60,4 +61,10 @@ function getServerEnvClass(): ServerEnvITF
         $ServerEnv = new ServerEnvHttp();
     }
     return $ServerEnv;
+}
+
+function vd($data, ?string $label = null): void
+{
+    if (!Env::isDebugMode()) return;
+    VarDumper::dump($data, $label);
 }
