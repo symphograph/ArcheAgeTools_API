@@ -2,7 +2,7 @@
 require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/vendor/autoload.php';
 
 use App\Test\Test;
-use App\Transfer\Crafts\TransferCrafts;
+use App\Transfer\Crafts\CraftTransferAgent;
 $startTestTime = Test::startTime();
 ?>
 <!doctype html>
@@ -14,7 +14,7 @@ $startTestTime = Test::startTime();
 <body style="color: white; background-color: #262525; font-family: Arial,serif; font-size: 12px">
 <?php
 set_time_limit(0);
-$CraftList = new TransferCrafts(
+$CraftList = new CraftTransferAgent(
     startId: 1,
     limit: 10,
     readOnly: true,

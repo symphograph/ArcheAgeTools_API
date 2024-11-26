@@ -2,9 +2,8 @@
 
 namespace App\Item;
 
-use App\Item\Category;
-use App\Craft\Craft;
-use PDO;
+use App\Craft\Craft\Craft;
+use App\Craft\Craft\CraftList;
 
 class Info
 {
@@ -27,36 +26,13 @@ class Info
         $this->id = $id;
     }
 
-    private function getResults(): array
-    {
-        $qwe = qwe("
-        select any_value(crafts.resultItemId) as resultItemId 
-        from craftMaterials  
-        inner join crafts 
-            on craftMaterials.craftId = crafts.id
-            and crafts.onOff
-        inner join items 
-            on items.id = crafts.resultItemId
-            and items.onOff
-            and craftMaterials.itemId = :itemId
-        group by crafts.resultItemId
-        ",
-            ['itemId' => $this->id]
-        );
-        if (!$qwe || !$qwe->rowCount()) {
-            return [];
-        }
-        return $qwe->fetchAll(PDO::FETCH_COLUMN, 0);
-
-    }
-
     public function initResults(): void
     {
-        $itemIds = self::getResults();
+        $itemIds = CraftList::getResultItemIds($this->id);
         if (empty($itemIds)) {
             return;
         }
-        $Results = Item::searchList($itemIds);
+        $Results = ItemList::byIds($itemIds)->getList();
         if (!empty($Results)) {
             $this->CraftResults = $Results;
         }

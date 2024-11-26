@@ -2,13 +2,11 @@
 
 namespace App\Test;
 
-use App\Api;
-use Symphograph\Bicycle\Errors\AppErr;
-use App\Craft\{AccountCraft, Craft, CraftCounter};
-use App\Item\{Item,Pricing};
-use App\Packs\{Pack, PackIds};
-use Symphograph\Bicycle\Helpers;
+use App\Craft\{Craft\Craft, CraftCounter, UCraft\UCraft};
+use App\Packs\{PackIds};
+use Symphograph\Bicycle\Helpers\Arr;
 use Symphograph\Bicycle\Helpers\ArrayHelper;
+use Symphograph\Bicycle\Helpers\Math;
 
 class Test
 {
@@ -16,7 +14,7 @@ class Test
 
     public function medianDuration()
     {
-        return Helpers::median($this->durations);
+        return Math::median($this->durations);
     }
 
     public static function ItemList()
@@ -24,16 +22,6 @@ class Test
 
     }
 
-    public static function pricingByItemId(): void
-    {
-        $List = Item::searchList()
-            or throw new AppErr('pricingByItemId err');
-        foreach ($List as $item){
-            if (!($Pricing = Pricing::byItemId($item->id))) {
-                echo "<br>item_id: $item->id. err";
-            }
-        }
-    }
 
     public static function countPackCrafts(): void
     {
@@ -82,13 +70,13 @@ class Test
         }
 
         $this->durations = array_map(fn($var) => $var*1000000, $this->durations);
-        return Helpers::median($this->durations)/1000000;
+        return Math::median($this->durations)/1000000;
     }
 
     public function sortFunction(array $list): array
     {
         $sort = ['categId' => 'asc', 'name' => 'asc'];
-        return ArrayHelper::sortMultiArrayByProp($list, $sort);
+        return Arr::sortMultiArrayByProp($list, $sort);
     }
 
     public function sqlBenchMark(): void
@@ -106,7 +94,7 @@ class Test
 
     public function craftCount(int $itemId): void
     {
-        AccountCraft::clearAllCrafts();
+        UCraft::clearAllCrafts();
         $craftCounter = CraftCounter::recountList([$itemId]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Price;
 
 use Symphograph\Bicycle\DTO\BindTrait;
 use Symphograph\Bicycle\PDO\DB;
+use Symphograph\Bicycle\PDO\PutMode;
 
 class PriceLog extends PriceDTO
 {
@@ -19,7 +20,7 @@ class PriceLog extends PriceDTO
         $PriceLog->putToDB();
     }
 
-    public function putToDB(): void
+    public function putToDB(PutMode $mode = PutMode::safeReplace): void
     {
         DB::replace(self::tableName, self::getAllProps());
     }

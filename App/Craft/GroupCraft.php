@@ -2,6 +2,9 @@
 
 namespace App\Craft;
 
+use App\Craft\Craft\Craft;
+use App\Mat\MatSum;
+
 class GroupCraft
 {
     public ?string $itemName;
@@ -12,6 +15,7 @@ class GroupCraft
 
     public static function byCraftId(int $craftId): self|false
     {
+
         $qwe = qwe("
             select any_value(items.name) as itemName, 
                    any_value(cg.amount) as amount, 

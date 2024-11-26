@@ -3,6 +3,7 @@
 namespace App\Craft;
 
 use App\AppStorage;
+use App\Craft\Craft\Craft;
 
 class LaborCounter
 {
@@ -12,7 +13,7 @@ class LaborCounter
     public static function recountInList(array $crafts): void
     {
         foreach ($crafts as $craftId){
-            $craft = Craft::byId($craftId);
+            $craft = Craft::byId($craftId)->initData();
             //printr($craft);
             $laborCounter = new self();
             $laborCounter->countChainLabor($craft);

@@ -6,9 +6,7 @@ use App\Transfer\TransferLog;
 use App\Transfer\TransLogTrait;
 
 
-class ItemTransLog extends TransferLog
+class ItemTransLog extends ItemTransLogDTO
 {
-    use TransLogTrait;
-    const tableName = 'transfer_Items';
 
 }

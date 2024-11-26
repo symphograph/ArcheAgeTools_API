@@ -2,6 +2,7 @@
 
 namespace App;
 use PDO;
+use Symphograph\Bicycle\PDO\DB;
 
 class PriceHistory
 {
@@ -17,9 +18,12 @@ class PriceHistory
     /**
      * @return self[]
      */
-    public static function getList(int $itemId): array
+    public static function getList(int $itemId, int $serverGroupId): array
     {
-        $qwe = qwe("
+        $operator = $serverGroupId === 100
+            ? '!='
+            : '=';
+        $sql = "
             select up.*, 
                    items.name as itemName,
                    us.publicNick,
@@ -30,10 +34,11 @@ class PriceHistory
             inner join uacc_settings us
                 on up.accountId = us.accountId
             where itemId = :itemId
+            and up.serverGroupId $operator :serverGroupId
             order by updatedAt desc
-            limit 20",
-            ['itemId' => $itemId]
-        );
+            limit 50";
+        $params = ['itemId' => $itemId, 'serverGroupId' => $serverGroupId];
+        $qwe = DB::qwe($sql,$params);
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class) ?? [];
     }
 }

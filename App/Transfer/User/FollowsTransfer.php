@@ -2,9 +2,8 @@
 
 namespace App\Transfer\User;
 
-use App\ServerList;
 use App\User\AccSets;
-use App\User\Member;
+use App\User\Member\Member;
 use Symphograph\Bicycle\Logs\ErrorLog;
 use Throwable;
 

@@ -16,8 +16,6 @@ class TransferErr extends MyErrors
         int $httpStatus = 500
     )
     {
-        $this->type = Helpers::classBasename(self::class);
-        $msg = $message;
-        parent::__construct($msg, $pubMsg, $httpStatus);
+        parent::__construct($message, $pubMsg, $httpStatus);
     }
 }

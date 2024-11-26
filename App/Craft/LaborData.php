@@ -2,8 +2,9 @@
 
 namespace App\Craft;
 
+use App\Craft\Craft\Craft;
+use App\Prof\Prof;
 use App\User\AccSets;
-use App\User\Prof;
 
 class LaborData
 {

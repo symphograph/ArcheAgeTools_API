@@ -2,12 +2,12 @@
 
 namespace App\Packs;
 
-use App\Craft\{AccountCraft, LaborData};
+use App\Craft\{LaborData, UCraft\Repo\UCraftRepo, UCraft\UCraft};
 use App\DTO\PackDTO;
 use App\Item\Item;
+use App\Prof\Prof;
 use App\User\AccSets;
 use PDO;
-use App\User\Prof;
 
 class Pack extends PackDTO
 {
@@ -18,7 +18,7 @@ class Pack extends PackDTO
     public ?int    $craftPrice;
     public ?int    $laborNeed;
 
-    public const tradeProfId = 5;
+    public const int tradeProfId = 5;
 
 
     /**
@@ -103,11 +103,11 @@ class Pack extends PackDTO
     public function initCraftData(): bool
     {
         $AccSets = AccSets::getCurrent();
-        $CraftData = AccountCraft::byResultItemId($this->itemId);
+        $uCraft = UCraftRepo::getBest($this->itemId);
         self::initPassLabor();
-        $this->laborNeed = round($this->passLabor + $CraftData->laborTotal);
+        $this->laborNeed = round($this->passLabor + $uCraft->laborTotal);
         $laborCost = $AccSets->getLaborCost();
-        $this->craftPrice = $CraftData->craftCost + $this->passLabor * $laborCost;
+        $this->craftPrice = $uCraft->craftCost + $this->passLabor * $laborCost;
         return true;
     }
 

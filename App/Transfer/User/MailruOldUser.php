@@ -4,10 +4,10 @@ namespace App\Transfer\User;
 
 use App\Api;
 use App\Auth\Mailru\MailruUserClient;
-use App\DTO\ItemDTO;
+use App\Item\ItemDTO;
 use App\Price\PriceDTO;
+use App\Server\Server;
 use App\User\AccSets;
-use App\User\Server;
 use Symphograph\Bicycle\DTO\BindTrait;
 use Symphograph\Bicycle\Errors\AccountErr;
 use Symphograph\Bicycle\Errors\CurlErr;

@@ -3,9 +3,12 @@
 namespace App\Transfer\Items;
 
 use App\Item\Category;
+use App\Item\IconIMG;
+use App\Item\ItemDTO;
+use App\Transfer\Errors\IconErr;
 use App\Transfer\Errors\ItemErr;
 use App\Transfer\Page;
-use App\DTO\ItemDTO;
+use Symphograph\Bicycle\Files\TmpUploadFile;
 
 class PageItem extends Page
 {
@@ -27,25 +30,25 @@ class PageItem extends Page
      */
     public function executeTransfer(): void
     {
-        self::initContent();
-        self::initTargetArea();
-        self::initItemId();
-        self::initItemName();
-        self::isNecessary();
-        self::initCategory();
-        self::initDescription();
-        self::initPrices();
-        self::loadIcon();
+        $this->initContent();
+        $this->initTargetArea();
+        $this->initItemId();
+        $this->initItemName();
+        $this->isNecessary();
+        $this->initCategory();
+        $this->initDescription();
+        $this->initPrices();
+        $this->loadIcon();
 
 
-        self::initItemLvl();
-        self::initIsPersonal();
-        self::initGrade();
-        self::initIsTradeNPC();
-        self::initIsGradable();
-        self::initExpiresDate();
+        $this->initItemLvl();
+        $this->initIsPersonal();
+        $this->initGrade();
+        $this->initIsTradeNPC();
+        $this->initIsGradable();
+        $this->initExpiresDate();
 
-        self::updateDB();
+        $this->updateDB();
     }
 
     //Required params________________________________
@@ -171,11 +174,26 @@ class PageItem extends Page
      */
     private function loadIcon(): void
     {
-        $iconFileName = $this->TargetArea->extractIconSRC();
-        $IconPage = new PageIcon($iconFileName, $this->ItemDTO->id);
-        $IconPage->executeTransfer($this->readOnly);
-        $this->ItemDTO->icon = $IconPage->newSRC;
-        $this->ItemDTO->iconMD5 = $IconPage->iconMD5;
+        $iconPath = $this->TargetArea->extractIconSRC();
+        $url = self::site . '/items/' . $iconPath;
+        $uploaded = TmpUploadFile::byExternal($url);
+        if(!$uploaded){
+            throw new IconErr('Icon is empty');
+        }
+
+
+        if(!$this->readOnly) {
+            $IconIMG = IconIMG::byUploaded($uploaded);
+            $uploaded->saveAs($IconIMG->getFullPath());
+            $IconIMG->putToDB();
+            if(empty($IconIMG->id)){
+                throw new IconErr('Icon is error');
+            }
+            $this->ItemDTO->iconMD5 = $IconIMG->md5;
+            $this->ItemDTO->iconId = $IconIMG->id;
+        }
+
+
     }
 
 

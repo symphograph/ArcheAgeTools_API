@@ -4,6 +4,7 @@ namespace App\Transfer\User;
 
 use App\UserStorage;
 use Symphograph\Bicycle\Logs\Log;
+use Symphograph\Bicycle\PDO\DB;
 
 class MailRuUserTransfer
 {
@@ -20,18 +21,20 @@ class MailRuUserTransfer
             if ($limit < 1) break;
             Log::msg("$oldMailUser->email started");
 
-            qwe("START TRANSACTION");
+            DB::pdo()->beginTransaction();
+
             if ($oldMailUser->updateIfExist()) {
+                DB::pdo()->commit();
                 Log::msg("$oldMailUser->email updated");
                 continue;
             }
             if(!$oldMailUser->import()){
                 Log::msg("Import $oldMailUser->email is Error");
-                qwe("ROLLBACK");
+                DB::pdo()->rollBack();
                 continue;
             }
             $limit--;
-            qwe("COMMIT");
+            DB::pdo()->commit();
             Log::msg("$oldMailUser->email Added");
         }
         return true;

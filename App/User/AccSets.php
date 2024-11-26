@@ -3,13 +3,15 @@
 namespace App\User;
 
 use App\Craft\LaborData;
-use App\DTO\AccSetsDTO;
 use App\Price\Price;
+use App\Prof\Prof;
+use App\Server\Server;
 use App\Transfer\User\MailruOldUser;
 use App\UserStorage;
 use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AccountErr;
 use Symphograph\Bicycle\Logs\Log;
+use Symphograph\Bicycle\PDO\DB;
 use Symphograph\Bicycle\Token\AccessTokenData;
 
 
@@ -27,6 +29,13 @@ class AccSets extends AccSetsDTO
 
     //Get-----------------------------------------------------------
 
+    public static function byId(int $id): static|false
+    {
+        $sql = "select * from uacc_settings where accountId = :accountId";
+        $params = ['accountId' => $id];
+        return DB::qwe($sql, $params)->fetchObject(self::class) ?? false;
+    }
+
     public static function byOldId(int $old_id): self|bool
     {
         $qwe = qwe("select * from uacc_settings where old_id = :old_id", ['old_id' => $old_id]);
@@ -35,9 +44,8 @@ class AccSets extends AccSetsDTO
 
     public static function byJwt(): self|false
     {
-        global $AccSets;
         $accountId = AccessTokenData::accountId();
-        $AccSets = AccSets::byIdAndInit($accountId);
+        $AccSets = AccSets::byId($accountId)->initData();
         self::$current = $AccSets;
         return $AccSets;
     }
@@ -65,16 +73,6 @@ class AccSets extends AccSetsDTO
     public static function curMode(): int
     {
         return self::$current->mode
-            ?? throw new AccountErr('AccSets is not defined');
-    }
-
-    /**
-     * @return Prof[]
-     * @throws AccountErr
-     */
-    public static function curProfs(): array
-    {
-        return self::$current->Profs
             ?? throw new AccountErr('AccSets is not defined');
     }
 
@@ -115,13 +113,13 @@ class AccSets extends AccSetsDTO
     }
 
     //Self-----------------------------------------------------------
-    public function initData(): void
+    public function initData(): static
     {
-        global $AccSets;
-        if(!empty($AccSets)){
-            self::initLaborCost();
+        if(!empty(self::$current)){
+            $this->initLaborCost();
         }
-        self::initProfs();
+        $this->initProfs();
+        return $this;
     }
 
     public static function genNickName(): string

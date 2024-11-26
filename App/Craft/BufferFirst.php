@@ -3,6 +3,7 @@
 namespace App\Craft;
 
 use App\AppStorage;
+use App\Craft\Craft\Craft;
 use App\User\AccSets;
 use Symphograph\Bicycle\Helpers\ArrayHelper;
 use Symphograph\Bicycle\PDO\DB;

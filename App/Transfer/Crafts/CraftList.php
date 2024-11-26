@@ -2,7 +2,7 @@
 
 namespace App\Transfer\Crafts;
 
-use App\DTO\CraftDTO;
+use App\Craft\Craft\CraftDTO;
 
 
 class CraftList extends CraftDTO

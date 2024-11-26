@@ -3,10 +3,12 @@
 namespace App\Craft;
 
 
-use App\Errors\CraftCountErr;
-use App\User\AccSets;
+use App\Craft\Craft\Craft;
+use App\Craft\Craft\CraftList;
+use App\Craft\UCraft\UCraft;
+use App\Mat\MatSum;
 use PDO;
-use Symphograph\Bicycle\PDO\DB;
+use Symphograph\Bicycle\Logs\Log;
 
 
 class CraftCounter
@@ -37,7 +39,7 @@ class CraftCounter
         if (empty($craftCounter->lost)){
             LaborCounter::recountInList($craftCounter->countedCrafts);
         }else{
-            AccountCraft::clearAllCrafts();
+            UCraft::clearAllCrafts();
         }
         return $craftCounter;
     }
@@ -52,10 +54,13 @@ class CraftCounter
             return $CraftCounter;
         }
 
-        $List = Craft::allPotentialCrafts($itemId);
+        $List = CraftList::allPotential($itemId)
+            ->initData()
+            ->getGrouppedByCol('resultItemId');
 
         foreach ($List as $resultItemId => $crafts){
             if(in_array($resultItemId, $CraftCounter->countedItems)){
+                Log::msg("$resultItemId - уже считал",[], 'craft');
                 continue;
             }
 
@@ -66,6 +71,7 @@ class CraftCounter
             }
             BufferSecond::saveCrafts();
             $CraftCounter->countedItems[] = $resultItemId;
+            CraftPool::getPoolWithAllData($resultItemId);
         }
         $CraftCounter->countedCrafts = array_unique($CraftCounter->countedCrafts);
         $CraftCounter->countedItems = array_unique($CraftCounter->countedItems);
@@ -79,10 +85,6 @@ class CraftCounter
         }
 
         $sum = $sumSPM = 0;
-
-        if(!empty($craft->error)){
-            throw new CraftCountErr('Craft '. $craft->id . 'is error');
-        }
 
         foreach ($craft->Mats as $mat) {
 

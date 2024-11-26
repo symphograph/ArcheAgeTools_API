@@ -2,6 +2,10 @@
 
 namespace App\Craft;
 
+use App\Craft\Craft\Craft;
+use App\Craft\Craft\CraftList;
+use App\Craft\Craft\Repo\CraftRepo;
+use App\Mat\MatPool;
 use App\User\AccSets;
 use Symphograph\Bicycle\PDO\DB;
 
@@ -9,7 +13,7 @@ class CraftPool
 {
     public Craft $mainCraft;
     /**
-     * @var array<Craft>
+     * @var Craft[]
      */
     public array $otherCrafts;
 
@@ -18,7 +22,7 @@ class CraftPool
         if(!$Pool = CraftPool::getPool($resultItemId)){
             return false;
         }
-        $Pool->initAllData();
+        $Pool->initData();
         $Pool->putToDB();
 
         return $Pool;
@@ -44,10 +48,11 @@ class CraftPool
         return json_decode($q,4);
     }
 
-    private function initAllData(): void
+    private function initData(): static
     {
-        self::initMatPrices();
-        self::initMatPools();
+        $this->initMatPrices();
+        $this->initMatPools();
+        return $this;
     }
 
     private function putToDB(): void
@@ -63,10 +68,14 @@ class CraftPool
 
     public static function getPool(int $resultItemId): self
     {
-        $list = Craft::getList($resultItemId);
-        $mainCraft = self::findMainCraft($list);
+        $crafts = CraftRepo::getList($resultItemId);
+        $crafts = new CraftList($crafts)
+            ->initData()
+            ->getList();
+
+        $mainCraft = self::findMainCraft($crafts);
         $otherCrafts = [];
-        foreach ($list as $craft){
+        foreach ($crafts as $craft){
             if($craft->id === $mainCraft->id){
                 continue;
             }
@@ -79,16 +88,19 @@ class CraftPool
     }
 
     /**
-     * @param array<Craft> $Crafts
-     * @return false|self
+     * @param Craft[] $Crafts
+     * @return Craft|false
      */
-    private static function findMainCraft(array $Crafts): Craft|false
+    private static function findMainCraft(array $crafts): false|Craft
     {
 
-        foreach ($Crafts as $craft){
+        foreach ($crafts as $craft){
             if($craft->countData->isUBest){
                 return $craft;
             }
+        }
+
+        foreach ($crafts as $craft){
             if($craft->countData->isBest){
                 return $craft;
             }

@@ -4,6 +4,7 @@ namespace App\Transfer;
 
 use PDO;
 use Symphograph\Bicycle\DTO\DTOTrait;
+use Symphograph\Bicycle\PDO\DB;
 use Symphograph\Bicycle\SQL\SQLBuilder;
 
 trait TransLogTrait
@@ -17,15 +18,16 @@ trait TransLogTrait
     ): array
     {
         $tableName = self::tableName;
-        $filterList = implode(',',$filter);
+        //$filterList = implode(',',$filter);
+        //printr($filterList);
         $orderBy = self::orderBy($orderBy);
-        $qwe = qwe("
+        $qwe = DB::qwe("
             select * from $tableName  
-            where error in ($filterList)
+            where error in (:filter)
             and id >= :startId
             order by $orderBy
             limit :limit",
-            ['startId'=> $startId, 'limit' => $limit]
+            ['filter' => $filter, 'startId'=> $startId, 'limit' => $limit]
         );
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
@@ -44,14 +46,5 @@ trait TransLogTrait
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    public static function create(int $id, string $name, string $error, array $warnings = []): self
-    {
-        $Log = new self();
-        $Log->id = $id;
-        $Log->name = $name;
-        $Log->error = $error;
-        $Log->initWarnings($warnings);
-        $Log->createdAt = date('Y-m-d H:i:s');
-        return $Log;
-    }
+
 }

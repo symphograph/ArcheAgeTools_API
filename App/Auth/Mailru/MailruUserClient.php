@@ -6,41 +6,28 @@ namespace App\Auth\Mailru;
 use App\Transfer\User\MailruOldUser;
 use Symphograph\Bicycle\Api\CurlAPI;
 use Symphograph\Bicycle\Auth\Mailru\MailruUser;
+use Symphograph\Bicycle\Env\Services\Service;
 use Symphograph\Bicycle\Errors\NoContentErr;
 
 class MailruUserClient extends MailruUser
 {
-    const url = '/api/user/mailru.php';
-    const apiName = 'AuthServer';
+    const string path    = '/api/user/mailru.php';
     public ?string $avaFilename;
+
+    private static function getUrl(): string
+    {
+        $serviceUrl = Service::byName('auth')->getUrl();
+        return "$serviceUrl" . self::path;
+    }
 
     public static function byAccountId(int $accountId): self|bool
     {
-        $curl = new CurlAPI(
-            self::apiName,
-            self::url,
-            [
-                'method' => 'getById',
-                'accountId' => $accountId
-            ]
-        );
-        $response = $curl->post();
-        $MailruUser = new self();
-        $MailruUser->bindSelf($response->data);
+        $params = [
+            'method' => 'getById',
+            'accountId' => $accountId
+        ];
 
-        return $MailruUser;
-    }
-
-    public static function byEmail(string $email): self|bool
-    {
-        $curl = new CurlAPI(
-            self::apiName,
-            self::url,
-            [
-                'method' => 'getByEmail',
-                'email' => $email
-            ]
-        );
+        $curl = new CurlAPI(self::getUrl(), $params);
 
         try {
             $response = $curl->post();
@@ -54,18 +41,38 @@ class MailruUserClient extends MailruUser
         return $MailruUser;
     }
 
+    public static function byEmail(string $email): self|bool
+    {
+        $params = [
+            'method' => 'getByEmail',
+            'email' => $email
+        ];
+
+        $curl = new CurlAPI(self::getUrl(),$params);
+
+        try {
+            $response = $curl->post();
+        } catch (NoContentErr) {
+            return false;
+        }
+
+        $MailruUser = new self();
+        $MailruUser->bindSelf($response->data);
+
+        return $MailruUser;
+    }
+
     public function putToAuthServer($createdAt, $visitedAt): self
     {
-        $curl = new CurlAPI(
-            self::apiName,
-            self::url,
-            [
-                'method' => 'create',
-                'MailruUser' => json_encode($this),
-                'createdAt' => $createdAt,
-                'visitedAt' => $visitedAt
-            ]
-        );
+        $params = [
+            'method' => 'create',
+            'MailruUser' => json_encode($this),
+            'createdAt' => $createdAt,
+            'visitedAt' => $visitedAt
+        ];
+
+        $curl = new CurlAPI(self::getUrl(), $params);
+
         $response = $curl->post();
         $MailUser = new self();
         $MailUser->bindSelf($response->data->newMailruUser);

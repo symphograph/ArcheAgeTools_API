@@ -2,8 +2,7 @@
 
 namespace App\Transfer;
 
-use App\Item\Item;
-use App\DTO\ItemDTO;
+use App\Item\ItemDTO;
 
 class TargetSection extends TargetArea
 {

@@ -39,24 +39,24 @@ class Pricing
 
     public function initGoldable(): void
     {
-        $this->isGoldable = self::isGoldable();
+        $this->isGoldable = self::isGoldable($this);
     }
 
-    private function isGoldable() : bool
+    public static function isGoldable(Pricing|Item $item) : bool
     {
-        if(Category::isPack($this->itemId)){
+        if(Category::isPack($item->categId)){
             return false;
         }
 
-        if ($this->isTradeNPC) {
-            if ($this->currencyId == 500)
+        if ($item->isTradeNPC) {
+            if ($item->currencyId == 500)
                 return false;
 
-            if ($this->personal)
+            if ($item->personal)
                 return false;
         }
 
-        if($this->personal and $this->craftable){
+        if($item->personal and $item->craftable){
             return false;
         }
 
@@ -72,7 +72,7 @@ class Pricing
             $this->Price->author = 'Не найдено';
             return;
         }
-        $Price->initLabel();
+        //$Price->initLabel();
         $this->Price = $Price;
     }
 }

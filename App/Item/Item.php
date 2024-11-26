@@ -3,22 +3,23 @@
 namespace App\Item;
 
 use App\AppStorage;
-use App\DTO\ItemDTO;
+use App\Item\Errors\NoCraftableErr;
 use App\Price\Price;
 use PDO;
 use Symphograph\Bicycle\DTO\ModelTrait;
-use Symphograph\Bicycle\Errors\AppErr;
-use Symphograph\Bicycle\Helpers;
+use Symphograph\Bicycle\Helpers\Arr;
 
 class Item extends ItemDTO
 {
     use ModelTrait;
+
     public ?Info    $Info;
     public ?Price   $Price;
     public ?Pricing $Pricing;
-    public int $grade = 1;
-    public bool $isBuyOnly  = false;
-    public bool $isPack;
+    public int      $grade     = 1;
+    public bool     $isBuyOnly = false;
+    public bool     $isPack;
+    public ?IconIMG $iconIMG;
 
     /**
      * @return bool|array<self>
@@ -26,20 +27,19 @@ class Item extends ItemDTO
     public static function searchList(array $ItemIds = []): bool|array
     {
 
-        if(empty($ItemIds)){
+        if (empty($ItemIds)) {
             $qwe = qwe("select *, 
             if(basicGrade,basicGrade,1) as grade 
             from items where onOff
             order by name, craftable desc, personal, grade"
             );
 
-        }else
-        {
-            if(!Helpers::isArrayIntList($ItemIds)){
+        } else {
+            if (!Arr::isArrayIntList($ItemIds)) {
                 return false;
             }
 
-            $ItemIds = '('.implode(',',$ItemIds).')';
+            $ItemIds = '(' . implode(',', $ItemIds) . ')';
             $qwe = qwe("select *, 
             if(basicGrade,basicGrade,1) as grade 
             from items where onOff
@@ -47,7 +47,7 @@ class Item extends ItemDTO
             order by name, craftable desc, personal, grade"
             );
         }
-        if(!$qwe || !$qwe->rowCount()) {
+        if (!$qwe || !$qwe->rowCount()) {
             return false;
         }
         return $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
@@ -68,49 +68,16 @@ class Item extends ItemDTO
     public function initPrice(): bool
     {
         $Price = Price::bySaved($this->id);
-        if(!$Price) return false;
+        if (!$Price) return false;
         $this->Price = $Price;
         return true;
     }
 
     public function initPricing(): void
     {
-        if($Pricing = Pricing::byItemId($this->id)){
+        if ($Pricing = Pricing::byItemId($this->id)) {
             $this->Pricing = $Pricing;
         }
-    }
-
-    /**
-     * @return int[]
-     */
-    public static function privateItems(): array
-    {
-        global $privateItems;
-        if(isset($privateItems)){
-            return $privateItems;
-        }
-
-
-        $qwe = qwe("
-            SELECT id FROM items 
-            WHERE 
-            (
-                (
-                    !isTradeNPC
-                    AND ismat
-                    AND !craftable
-                    AND onOff
-                    AND personal
-                )
-                OR id IN (SELECT id FROM currency)
-            )
-            AND id != 500
-	    ");
-        if(!$qwe || !$qwe->rowCount()){
-            return [];
-        }
-        $privateItems = $qwe->fetchAll(PDO::FETCH_COLUMN);
-        return $privateItems;
     }
 
     public function initIsBuyOnly(): void
@@ -120,10 +87,28 @@ class Item extends ItemDTO
 
     private function isBuyOnly(): bool
     {
-        if(!$this->craftable || $this->personal){
+        if (!$this->craftable || $this->personal) {
             return false;
         }
 
         return in_array($this->id, AppStorage::getSelf()->buyOnlyItems);
     }
+
+    public function initIconIMG(): static
+    {
+        $this->iconIMG = IconIMG::byId($this->iconId) ?: null;
+        return $this;
+    }
+
+    public static function getCraftIDs(int $itemId): array
+    {
+        $qwe = qwe("
+            select id from crafts 
+            where resultItemId = :resultItemId",
+            ['resultItemId' => $itemId]
+        );
+
+        return $qwe->fetchAll(PDO::FETCH_COLUMN) ?: [];
+    }
+
 }

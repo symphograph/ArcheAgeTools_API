@@ -4,14 +4,14 @@ namespace App;
 
 class UserStorage
 {
+    public static self $storage;
     public array $oldNicks = [];
 
-    public static function getSelf()
+    public static function getSelf(): UserStorage
     {
-        global $UserStorage;
-        if(!isset($UserStorage)){
-            $UserStorage = new self();
+        if(!isset(self::$storage)){
+            self::$storage = new self();
         }
-        return $UserStorage;
+        return self::$storage;
     }
 }

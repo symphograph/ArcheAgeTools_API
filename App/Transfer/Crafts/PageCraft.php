@@ -2,8 +2,8 @@
 
 namespace App\Transfer\Crafts;
 
-use App\DTO\CraftDTO;
-use App\DTO\MatDTO;
+use App\Craft\Craft\CraftDTO;
+use App\Mat\MatDTO;
 use App\Transfer\Errors\CraftErr;
 use App\Transfer\Errors\TransferErr;
 use App\Transfer\Page;

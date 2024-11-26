@@ -3,6 +3,7 @@
 namespace App\Craft;
 
 use App\AppStorage;
+use App\Craft\UCraft\UCraft;
 use App\User\AccSets;
 use Symphograph\Bicycle\DTO\BindTrait;
 
@@ -44,14 +45,13 @@ class BufferSecond
         self::putToStorage($firstBuffer[0]);
 
         foreach ($firstBuffer as $k => $buffCraft){
-            $AccCraft = AccountCraft::byParams(
+            $AccCraft = UCraft::newInstance(
                 AccSets::curId(),
                 AccSets::curServerGroupId(),
                 $buffCraft->craftId,
                 $buffCraft->resultItemId,
                 intval($k === 0),
                 $buffCraft->craftCost,
-                date('Y-m-d H:i:s'),
                 null,
                 $buffCraft->spmu,
                 null

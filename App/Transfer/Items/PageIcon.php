@@ -10,7 +10,7 @@ use Symphograph\Bicycle\FileHelper;
 
 class PageIcon extends Page
 {
-    const iconDir = '/img/icons/90/';
+    const string iconDir = '/img/icons/90/';
 
     public string  $newSRC;
     public string  $iconMD5;

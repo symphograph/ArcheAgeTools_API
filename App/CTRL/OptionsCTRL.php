@@ -3,27 +3,22 @@
 namespace App\CTRL;
 
 use App\Item\Category;
-use App\Item\Item;
-use App\Packs\Zone;
-use App\ServerList;
-use App\User\AccSets;
-use App\User\ProfLvls;
-use App\User\Server;
+use App\Item\ItemList;
+use App\Prof\Lvl\ProfLvlList;
+use App\Server\ServerList;
+use App\User\User;
+use App\Zone\Zone;
 use JetBrains\PhpStorm\NoReturn;
 use Symphograph\Bicycle\Api\Response;
-use Symphograph\Bicycle\Errors\AccountErr;
-use Symphograph\Bicycle\Errors\AppErr;
 
 class OptionsCTRL
 {
 
-    public static function getMain(): void
+    #[NoReturn] public static function getMain(): void
     {
-        $Servers = Server::getList()
-        or throw new AccountErr('servers is lost', 'Серверы не найдены');
-        $ServerGroupList = ServerList::getServerGroups();
-        $ProfLvls = ProfLvls::getList()
-        or throw new AccountErr('ProfLvls is lost', 'Профессии не найдены');
+        $Servers = ServerList::all()->getList();
+        $ServerGroupList = ServerList::all()->getServerGroups();
+        $ProfLvls = ProfLvlList::all()->initLabel()->getList();
 
         Response::data([
             'Servers'         => $Servers,
@@ -34,7 +29,7 @@ class OptionsCTRL
 
     #[NoReturn] public static function getZones(): void
     {
-        AccSets::byJwt();
+        User::auth();
         $zonesFrom = Zone::getFromsGroupBySide();
 
         $allZonesTo = [];
@@ -54,14 +49,15 @@ class OptionsCTRL
 
     #[NoReturn] public static function getCategories(): void
     {
-        $List = Category::getTree();
-        Response::data($List);
+        //User::auth();
+        $tree = Category::getTree();
+
+        Response::data($tree);
     }
 
-    public static function getSearchList(): void
+    #[NoReturn] public static function getSearchList(): void
     {
-        $List = Item::searchList()
-        or throw new AppErr('searchList is empty', 'Предметы не найдены');
+        $List = ItemList::allOn()->getList();
 
         Response::data($List);
     }

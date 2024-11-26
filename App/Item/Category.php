@@ -2,11 +2,11 @@
 
 namespace App\Item;
 
-use App\DTO\CategoryDTO;
+use App\Category\CategoryDTO;
+use PDO;
 use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Errors\AppErr;
-use PDO;
-use Symphograph\Bicycle\Helpers;
+use Symphograph\Bicycle\Helpers\Arr;
 
 class Category extends CategoryDTO
 {
@@ -41,7 +41,7 @@ class Category extends CategoryDTO
         }
 
         $List = $qwe->fetchAll(PDO::FETCH_CLASS, self::class);
-        return Helpers::colAsKey($List, 'id');
+        return Arr::colAsKey($List, 'id');
     }
 
     /**

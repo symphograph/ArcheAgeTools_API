@@ -2,8 +2,6 @@
 
 namespace App\Transfer\Errors;
 
-use Symphograph\Bicycle\Helpers;
-
 class ItemErr extends TransferErr
 {
     protected string $type = 'ItemErr';
@@ -15,8 +13,6 @@ class ItemErr extends TransferErr
         int $httpStatus = 500
     )
     {
-        $this->type = Helpers::classBasename(self::class);
-        $msg = $this->type . ': ' . $message;
-        parent::__construct($msg, $pubMsg, $httpStatus);
+        parent::__construct($message, $pubMsg, $httpStatus);
     }
 }

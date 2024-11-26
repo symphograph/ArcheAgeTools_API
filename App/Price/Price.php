@@ -2,10 +2,13 @@
 
 namespace App\Price;
 
-use App\Craft\{AccountCraft, BufferSecond};
-use App\Item\Item;
+use App\User\Member\Repo\MemberRepo;
+use App\Craft\{BufferSecond, UCraft\Repo\UCraftRepo};
+use App\Currency\Repo\CurrencyRepo;
+use App\Item\ItemList;
+use App\Item\Repo\ItemRepo;
+use App\Price\Repo\PriceRepo;
 use App\User\AccSets;
-use App\User\Member;
 use PDO;
 use Symphograph\Bicycle\DTO\ModelTrait;
 use Symphograph\Bicycle\Env\Env;
@@ -16,16 +19,13 @@ class Price extends PriceDTO
 {
     use ModelTrait;
 
-    private const array methods = [
-        'bySolo', 'byAccount', 'byToNPC', 'byFriends', 'byWellKnown', 'byAny'
-    ];
     public int     $accountId     = 1;
     public int     $itemId        = 0;
     public int     $price         = 0;
     public int     $serverGroupId = 0;
     public string  $updatedAt     = '';
     public string  $method        = 'empty';
-    public Method $Method;
+    public Method  $Method;
     public ?string $label;
     public ?string $name;
     public ?string $author;
@@ -46,15 +46,15 @@ class Price extends PriceDTO
 
     public static function getLastMemberPrice(int $accountId, int $serverGroupId = 0): self|false
     {
-        $privateItemsStr = '(' . implode(',', Item::privateItems()) . ')';
+        $privateIds = ItemRepo::getPrivateIds();
         if ($serverGroupId) {
             $sql = "select * from uacc_prices 
                     where accountId = :accountId
                     and serverGroupId = :serverGroupId
-                    and itemId not in $privateItemsStr
+                    and itemId not in (:privateIds)
                     order by updatedAt desc 
                     limit 1";
-            $params = ['accountId' => $accountId, 'serverGroupId' => $serverGroupId];
+            $params = ['accountId' => $accountId, 'serverGroupId' => $serverGroupId, 'privateIds' => $privateIds];
         } else {
             $sql = "select * from uacc_prices 
                     where accountId = :accountId
@@ -98,7 +98,6 @@ class Price extends PriceDTO
 
     /**
      * @return self[]
-     * @throws AppErr
      */
     public static function basedList(): array
     {
@@ -119,7 +118,7 @@ class Price extends PriceDTO
         return $List;
     }
 
-    public static function bySaved(int $itemId): self|bool
+    public static function bySaved(int $itemId): self|false
     {
         return match (AccSets::curMode()) {
             1 => self::byMode1($itemId),
@@ -129,9 +128,9 @@ class Price extends PriceDTO
         };
     }
 
-    private static function byMode1(int $itemId): self|bool
+    private static function byMode1(int $itemId): self|false
     {
-        if (in_array($itemId, Item::privateItems())) {
+        if (in_array($itemId, ItemRepo::getPrivateIds())) {
             if ($Price = self::bySolo($itemId)) {
                 return $Price;
             }
@@ -151,9 +150,9 @@ class Price extends PriceDTO
         return false;
     }
 
-    private static function bySolo(int $itemId): self|bool
+    private static function bySolo(int $itemId): ?self
     {
-        if ($Price = self::byAccount($itemId, AccSets::curId(), AccSets::curServerGroupId())) {
+        if ($Price = PriceRepo::byAccount($itemId, AccSets::curId(), AccSets::curServerGroupId())) {
             $Price->setMethod(Method::bySolo);
             return $Price;
         }
@@ -161,37 +160,19 @@ class Price extends PriceDTO
         return self::byToNPC($itemId);
     }
 
-    private static function byAccount(int $itemId, int $accountId, int $serverGroup): self|false
+    private static function byToNPC(int $itemId): ?self
     {
-        $sql = "
-            select * from uacc_prices 
-            where accountId = :accountId 
-                and itemId = :itemId 
-                and serverGroupId = :serverGroupId";
-
-        $params = ['accountId'     => $accountId,
-                   'itemId'        => $itemId,
-                   'serverGroupId' => $serverGroup];
-
-        $Price = DB::qwe($sql,$params)->fetchObject(self::class);
-        if (!$Price) return false;
-        $Price->setMethod(Method::byAccount);
-        return $Price;
-    }
-
-    private static function byToNPC(int $itemId): self|bool
-    {
-        if (!in_array($itemId, Item::privateItems())) {
-            return false;
+        if (!in_array($itemId, ItemRepo::getPrivateIds())) {
+            return null;
         }
 
         if (self::isCurrency($itemId)) {
-            return false;
+            return null;
         }
 
         //Можно ли продать NPC?
         $price = self::toNPC($itemId);
-        if(!$price) return false;
+        if(!$price) return null;
 
         $Price = new self();
         $Price->accountId = 1;
@@ -203,35 +184,32 @@ class Price extends PriceDTO
 
     private static function isCurrency(int $itemId): bool
     {
-        $qwe = qwe("select * from currency where id = :itemId", ['itemId' => $itemId]);
-        return ($qwe && $qwe->rowCount());
+        $ids = CurrencyRepo::getIds();
+        return in_array($itemId, $ids);
     }
 
-    private static function toNPC(int $itemId): int|false
+    private static function toNPC(int $itemId): ?int
     {
-        $sql = "
-            select priceToNPC from items 
-            where id = :itemId and priceToNPC";
-        $params = compact('itemId');
-        return qwe($sql, $params)
-                   ->fetchAll(PDO::FETCH_COLUMN)[0] ?? false;
+        return ItemRepo::byId($itemId)->priceToNPC ?? null;
     }
 
-    private static function byFriends(int $itemId): self|bool
+    private static function byFriends(int $itemId): ?self
     {
+
+
         $accountId = AccSets::curId();
         $serverGroupId = AccSets::curServerGroupId();
-        $Member = Member::byId($accountId, $serverGroupId);
+        $member = MemberRepo::get($accountId, $serverGroupId);
 
-        $members = $Member->getFollowMasters();
-        if (empty($members)) {
+        $masters = $member->getFollowMasters();
+        if (empty($masters)) {
             return self::bySolo($itemId);
         }
-        $members[] = $accountId;
+        $masters[] = $accountId;
 
-        $Price = self::byMemberList($itemId, $serverGroupId, $members);
+        $Price = self::byMemberList($itemId, $serverGroupId, $masters);
         if (!$Price) {
-            return false;
+            return null;
         }
         $Price->setMethod(Method::byFriends);
 
@@ -241,40 +219,36 @@ class Price extends PriceDTO
         return $Price;
     }
 
-    private static function byMemberList(int $itemId, int $serverGroupId, array $members)
+    private static function byMemberList(int $itemId, int $serverGroupId, array $members): ?self
     {
-        $stringMembers = implode(',', $members);
-        $qwe = qwe("
+        $sql = "
             select * 
             from uacc_prices
-            where uacc_prices.accountId in ( $stringMembers )
+            where uacc_prices.accountId in (:members)
             and itemId = :itemId
             and serverGroupId = :serverGroupId
             order by updatedAt desc 
-            limit 1",
-            ['itemId' => $itemId, 'serverGroupId' => $serverGroupId]
-        );
-        if (!$qwe || !$qwe->rowCount()) {
-            return false;
-        }
-        return $qwe->fetchObject(self::class);
+            limit 1";
+        $params = ['members' => $members, 'itemId' => $itemId, 'serverGroupId' => $serverGroupId];
+        return DB::qwe($sql, $params)->fetchObject(self::class) ?: null;
     }
 
-    private static function byWellKnown(int $itemId)
+    private static function byWellKnown(int $itemId): ?Price
     {
         $serverGroupId = AccSets::curServerGroupId();
-        $Member = Member::byId(Env::getAdminAccountId(), $serverGroupId);
-        $members = $Member->getFollowMasters();
-        $members[] = $Member->accountId;
+        $member = MemberRepo::get(Env::getAdminAccountId(), $serverGroupId);
+        $members = $member->getFollowMasters();
+        $members[] = $member->accountId;
+
         $Price = self::byMemberList($itemId, $serverGroupId, $members);
         if (!$Price) {
-            return false;
+            return null;
         }
         $Price->setMethod(Method::byWellKnown);
         return $Price;
     }
 
-    private static function byAny(int $itemId): self|false
+    private static function byAny(int $itemId): ?self
     {
         $serverGroupId = AccSets::curServerGroupId();
         if ($serverGroupId === 100) {
@@ -290,31 +264,31 @@ class Price extends PriceDTO
 
         $Price = qwe($sql, $params)
             ->fetchObject(self::class);
-        if (!$Price) return false;
+        if (!$Price) return null;
 
         $Price->setMethod(Method::byAny);
         return $Price;
     }
 
-    private static function byAnyServer(int $itemId)
+    private static function byAnyServer(int $itemId): ?self
     {
-        $qwe = qwe("select * from uacc_prices
+        $qwe = DB::qwe("select * from uacc_prices
             where itemId = :itemId
             order by updatedAt desc 
             limit 1",
             ['itemId' => $itemId]
         );
         if (!$qwe || !$qwe->rowCount()) {
-            return false;
+            return null;
         }
         $Price = $qwe->fetchObject(self::class);
         $Price->setMethod(Method::byAnyServer);
         return $Price;
     }
 
-    private static function byMode2(int $itemId): self|bool
+    private static function byMode2(int $itemId): ?self
     {
-        if (in_array($itemId, Item::privateItems())) {
+        if (in_array($itemId, ItemRepo::getPrivateIds())) {
             if ($Price = self::bySolo($itemId)) {
                 return $Price;
             }
@@ -322,21 +296,22 @@ class Price extends PriceDTO
         return self::byFriends($itemId);
     }
 
-    private static function byMode3(int $itemId): self|bool
+    private static function byMode3(int $itemId): ?self
     {
         return self::bySolo($itemId);
     }
 
-    public function initItemProps(): void
+    public function initItemProps(): static
     {
-        $item = Item::byId($this->itemId)->initData();
+        $item = ItemRepo::byId($this->itemId);
         $this->name = $item->name;
         $this->grade = $item->basicGrade;
         $this->icon = $item->icon;
+
         $AuthorAccSets = AccSets::byId($this->accountId)
         or throw new AppErr("Author $this->accountId is missed", 'Автор цены не найден');
         $this->author = $AuthorAccSets->publicNick;
-
+        return $this;
         //self::initLabel();
     }
 
@@ -346,24 +321,24 @@ class Price extends PriceDTO
         $this->label = $this->Method->label($this);
     }
 
-    public static function byCraft(int $itemId): self|false
+    public static function byCraft(int $itemId): ?self
     {
-        $CraftData = AccountCraft::byResultItemId($itemId);
-        if (!$CraftData) return false;
+        $uCraft = UCraftRepo::getBest($itemId);
+        if (!$uCraft) return null;
 
         $Price = new self();
         $Price->itemId = $itemId;
-        $Price->price = $CraftData->craftCost;
-        $Price->accountId = AccSets::curId();
+        $Price->price = $uCraft->craftCost;
+        $Price->accountId = AccSets::$current->accountId;
         $Price->setMethod(Method::byCraft);
         return $Price;
     }
 
-    public static function byBuffer(int $itemId): self|false
+    public static function byBuffer(int $itemId): ?self
     {
         $bufferData = BufferSecond::byItemId($itemId);
         if (!$bufferData) {
-            return false;
+            return null;
         }
         $Price = new self();
         $Price->itemId = $bufferData->resultItemId;
@@ -379,7 +354,7 @@ class Price extends PriceDTO
      */
     public static function lostList(array $lost): array
     {
-        $items = Item::searchList($lost);
+        $items = ItemList::byIds($lost)->getList();
         $Prices = [];
         foreach ($items as $item) {
             $Prices[] = self::byParams(
@@ -430,15 +405,24 @@ class Price extends PriceDTO
         }
     }
 
-    public function initAuthor(): void
+    public function initAuthor(): static
     {
         $AuthorAccSets = AccSets::byId($this->accountId);
         $this->author = $AuthorAccSets->publicNick;
+        return $this;
     }
 
     public function setMethod(Method $Method): void
     {
         $this->Method = $Method;
         $this->method = $Method->value;
+    }
+
+    public static function createEmpty(int $itemId): static
+    {
+        $price = new Price();
+        $price->itemId = $itemId;
+        $price->author = 'Не найдено';
+        return $price;
     }
 }

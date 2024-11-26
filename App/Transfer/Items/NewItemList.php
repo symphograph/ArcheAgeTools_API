@@ -34,4 +34,19 @@ class NewItemList extends AbstractList
         $sql = "select * from NewItems where createdAt = :date";
         return self::bySql($sql, compact('date'));
     }
+
+    public static function all(int $startId, ?string $orderBy = null, ?int $limit = null): static
+    {
+        $sql = "select * from NewItems where id >= :startId";
+        $sql = self::sql($sql, $orderBy, $limit);
+        return self::bySql($sql, compact('startId'));
+    }
+
+    /**
+     * @return NewItem[]
+     */
+    public function getList(): array
+    {
+        return $this->list;
+    }
 }
